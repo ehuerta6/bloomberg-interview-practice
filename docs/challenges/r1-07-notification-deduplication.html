@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Notification Deduplication.">
+  <title>Notification Deduplication · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · MEDIUM</p><h1>07 · Notification Deduplication</h1>
+      <h2>PR: Suppress repeated notification events</h2>
+      <h3>Summary</h3><p>Message delivery can retry an event when a worker times out. This change adds a ten-minute duplicate window so a retry does not send the same notification to a recipient repeatedly.</p>
+      <h3>Expected behavior</h3><ul>
+        <li><code>should_send(recipient, event_id, now)</code> returns true for the first delivery and records its time. Both IDs must be nonblank strings and <code>now</code> must be timezone-aware.</li>
+        <li>Deduplication is scoped to the pair of recipient and event ID; one user's event must not suppress another user's notification.</li>
+        <li>Attempts strictly less than ten minutes after the last successful delivery are suppressed. At exactly ten minutes, delivery is allowed.</li>
+        <li>A suppressed retry does not move the last-successful timestamp. An out-of-order attempt is suppressed without moving that timestamp backward.</li>
+        <li>The configured window must be positive.</li>
+      </ul>
+      <h3>Review task</h3><p>Follow how keys and timestamps change after both accepted and suppressed attempts. Use a timeline with two recipients, a retry near the window boundary, and an out-of-order event to evaluate whether the state matches “last successful delivery.”</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/07-notification-deduplication">Open the exercise folder</a> · Run <code>python3 deduplicator.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/07-notification-deduplication/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>

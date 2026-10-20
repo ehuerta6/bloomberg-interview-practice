@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: API Pagination.">
+  <title>API Pagination · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · HARD</p><h1>06 · API Pagination</h1>
+      <h2>PR: Add stable keyset pagination to the records endpoint</h2>
+      <h3>Summary</h3><p>The endpoint returns a bounded page of records from a changing data source. Records have a unique string <code>id</code>, integer <code>created_at</code>, and optional integer <code>version</code>. Shards can overlap, and a record used to create a previous-page cursor may be deleted before the next request.</p>
+      <h3>Expected behavior</h3><ul>
+        <li><code>paginate(records, cursor=None, limit=2)</code> returns <code>(page, next_cursor)</code>. The limit is a positive integer, not a boolean.</li>
+        <li>Rows missing a nonblank string ID or integer timestamp are skipped. For duplicate IDs, retain the row with the greatest version; equal versions retain the first row.</li>
+        <li>Sort by <code>(created_at, id)</code>. A cursor is that same tuple, and the next page contains only rows with a strictly greater key.</li>
+        <li>The next cursor is the final row's key only when additional rows remain. An empty or final page returns <code>None</code>.</li>
+        <li>A cursor remains useful even if its original record is no longer present.</li>
+      </ul>
+      <h3>Review task</h3><p>Trace two pages across tied timestamps, duplicate IDs, and a deleted cursor row. Check whether pagination depends on locating a previous record in the current snapshot and whether all sort columns are represented in the cursor.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/06-api-pagination">Open the exercise folder</a> · Run <code>python3 pagination.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/06-api-pagination/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>
