@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#cbcacf">
+  <meta name="description" content="Engineering Ticket: Subscription Renewal.">
+  <title>Subscription Renewal · CIC Challenge Portal</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=final-polish-2">
+  <script src="../assets/app.js?v=final-polish-1" defer></script>
+</head>
+<body class="challenge-page ticket-page">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header"><a class="brand" href="../index.html" aria-label="Coding Interview Club home"><img class="brand-logo" src="../assets/images/cic-logo.jpeg" alt=""><span>CODING<br>INTERVIEW CLUB</span></a><nav aria-label="Main navigation"><a href="../index.html#round-2">Challenges</a><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice">GitHub ↗</a></nav></header>
+<main id="main" class="challenge-shell"><a class="back-link" href="../index.html">← All challenges</a><article class="work-item">
+<header class="work-head"><div><p class="eyebrow">ENGINEERING TICKET · ROUND 02</p><h1>Subscription Renewal</h1></div><div class="work-id">TICKET #11</div><div class="badges"><span class="badge open">OPEN</span><span class="badge">BUG</span><span class="badge">PYTHON</span><span class="badge">MEDIUM</span></div></header>
+<div class="work-content"><section class="assignment-copy" aria-label="Original assignment"><h2>Reported symptom</h2><p>Members are shown as current after a renewal charge was declined, and some renewal invoices appear to have been charged more than once.</p><h3>Scenario</h3><p>A monthly subscription reaches its due date. The billing worker may retry an invoice after a timeout, and a declined payment should remain visible to account support until a later successful collection.</p><h3>Acceptance criteria</h3><ul><li>Each invoice identifier represents one charge attempt and replaying it does not charge twice.</li><li>Only a successful charge advances the renewal date; a decline preserves the due date and marks the subscription past due.</li><li>Invalid requests must leave persisted state unchanged.</li></ul><h3>State invariants</h3><p>Only a successful charge advances the renewal date; a decline preserves the due date and marks the subscription past due.</p><h3>Investigation task</h3><p>Trace the invoice id through the renewal service and gateway. Compare subscription state before and after declined, successful, early, and repeated renewal requests. Add regression coverage for the behavior you reproduce.</p></section>
+<aside class="work-tools" aria-label="Challenge tools"><section class="tool-box"><p class="eyebrow">STARTER CODE</p><a class="source-link" href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-2/11-subscription-renewal" target="_blank" rel="noreferrer">Open exercise folder ↗</a></section><section class="tool-box"><p class="eyebrow">RUN FROM EXERCISE FOLDER</p><div class="command-row"><code>python3 test_subscription_renewal.py</code><button class="copy-button" type="button" data-copy="python3 test_subscription_renewal.py" aria-label="Copy test command">Copy</button></div></section><p class="ai-note">Read here. Open only this exercise folder in your editor. Use AI in non-editing mode; make changes yourself.</p><p class="solutions-note"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-2/11-subscription-renewal/README.md" target="_blank" rel="noreferrer">View Reference Solution ↗</a></p></aside></div></article></main>
+<footer class="site-footer"><span>Unofficial educational project by the Coding Interview Club.</span><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice">Repository ↗</a></footer><div class="toast" role="status" aria-live="polite"></div></body></html>
