@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#cbcacf">
+  <meta name="description" content="Engineering Ticket: Support Ticket Assignment.">
+  <title>Support Ticket Assignment · CIC Challenge Portal</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=final-polish-2">
+  <script src="../assets/app.js?v=final-polish-1" defer></script>
+</head>
+<body class="challenge-page ticket-page">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="brand" href="../index.html" aria-label="Coding Interview Club home"><img class="brand-logo" src="../assets/images/cic-logo.jpeg" alt=""><span>CODING<br>INTERVIEW CLUB</span></a>
+  <nav aria-label="Main navigation"><a href="../index.html#round-2">Challenges</a><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice">GitHub ↗</a></nav>
+</header>
+<main id="main" class="challenge-shell">
+  <a class="back-link" href="../index.html">← All challenges</a>
+  <article class="work-item">
+    <header class="work-head"><div><p class="eyebrow">ENGINEERING TICKET · ROUND 02</p><h1>Support Ticket Assignment</h1></div><div class="work-id">TICKET #18</div><div class="badges"><span class="badge open">OPEN</span><span class="badge">BUG</span><span class="badge">PYTHON</span><span class="badge">EASY</span></div></header>
+    <div class="work-content"><section class="assignment-copy" aria-label="Original assignment">
+      <h2>Ticket: Support Ticket Assignment needs reliable state transitions</h2>
+      <h3>Reported symptom</h3><p>The support desk receives tickets from billing and technical queues. The on-call lead reports that urgent tickets can remain queued behind routine requests.</p>
+      <h3>Scenario</h3><p>Trace ticket creation order into the queue selection, then follow workload changes through assignment and reassignment. Compare the repository’s load counters with actual assigned tickets after each transition.</p>
+      <h3>Acceptance criteria</h3><ul><li>Reject malformed or duplicate tickets without state changes.</li>
+<li>Treat priority 5 as most urgent and priority 1 as least urgent.</li>
+<li>Preserve FIFO among equal-priority tickets.</li>
+<li>Assign only open tickets to eligible category agents.</li>
+<li>Keep workload counters equal to assigned-ticket counts after reassignment.</li></ul>
+      <h3>State invariants</h3><ul><li>Every assigned ticket has exactly one eligible assignee.</li>
+<li>For each agent, load equals the count of tickets assigned to that agent.</li>
+<li>Assignment consumes the highest-priority open ticket; ties preserve submission order.</li></ul>
+      <h3>Investigation task</h3><p>Trace a normal operation, a boundary or failure case, and a repeated request across the route, service, and repository. Explain which state should change, which state must remain untouched, and how your regression tests demonstrate both outcomes. Keep the implementation in memory; no external services or frameworks are required.</p>
+    </section><aside class="work-tools" aria-label="Challenge tools">
+      <section class="tool-box"><p class="eyebrow">STARTER CODE</p><a class="source-link" href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-2/18-support-ticket-assignment" target="_blank" rel="noreferrer">Open exercise folder ↗</a></section>
+      <section class="tool-box"><p class="eyebrow">RUN FROM EXERCISE FOLDER</p><div class="command-row"><code>python3 test_support_tickets.py</code><button class="copy-button" type="button" data-copy="python3 test_support_tickets.py" aria-label="Copy command python3 test_support_tickets.py">Copy</button></div></section>
+      <p class="ai-note">Read here. Open only this exercise folder in your editor. Use AI in non-editing mode; make changes yourself.</p>
+      <p class="solutions-note"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-2/18-support-ticket-assignment/README.md" target="_blank" rel="noreferrer">View Reference Solution ↗</a></p>
+    </aside></div>
+  </article>
+</main>
+<footer class="site-footer"><span>Unofficial educational project by the Coding Interview Club.</span><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice">Repository ↗</a></footer>
+<div class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
