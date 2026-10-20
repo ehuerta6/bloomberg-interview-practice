@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Seat Allocation.">
+  <title>Seat Allocation · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · HARD</p><h1>12 · Seat Allocation</h1>
+      <h2>PR: Allocate prioritized groups to available seats</h2>
+      <h3>Summary</h3><p>An event team needs to assign each party to an available block in a venue. Review the allocator against its prioritization, adjacency, accessibility, and deterministic selection rules.</p>
+      <h3>Input and output</h3><p><code>allocate_seats(rows, groups)</code> receives an insertion-ordered mapping of row names to seat dictionaries and a list of group requests. Each seat has a positive number, an accessibility flag, and an availability flag. Each group has an ID, positive size, optional numeric priority, and optional accessibility requirement. The result contains an assignment mapping and the IDs that could not be seated.</p>
+      <h3>Expected behavior and invariants</h3><ul>
+        <li>Process higher numeric priority first; preserve input order for groups with equal priority.</li>
+        <li>Assign a group only to a whole, consecutive block of available seats in one row. Never split groups or reuse seats.</li>
+        <li>When accessibility is requested, every seat in the group's block must be accessible.</li>
+        <li>Among eligible blocks, choose the row with the least available capacity left after placement. Break ties by row insertion order, then lowest seat number.</li>
+        <li>Keep the supplied venue data unchanged. Report every unseated group in processing order.</li>
+        <li>Reject malformed rows or groups, nonpositive or boolean sizes, and repeated group IDs with <code>ValueError</code>.</li>
+      </ul>
+      <h3>Review task</h3><p>Build small venue layouts that force competing choices. Trace the order of requests and candidate blocks, then test accessibility across the full block, occupied seats, ties, impossible groups, and input immutability.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/12-seat-allocation">Open the exercise folder</a> · Run <code>python3 seat_allocation.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/12-seat-allocation/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>
