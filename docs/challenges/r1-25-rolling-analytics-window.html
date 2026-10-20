@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Rolling Analytics Window.">
+  <title>Rolling Analytics Window · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · MEDIUM</p><h1>25 · Rolling Analytics Window</h1>
+      <h2>PR: Sum events inside a rolling window</h2>
+      <h3>Summary</h3><p>An analytics endpoint reports a metric over a trailing duration. Review whether its endpoints, future events, and malformed inputs are handled consistently.</p>
+      <h3>Input and output</h3><p><code>rolling_total(events, now, window_seconds)</code> accepts timestamped numeric events, a reference datetime, and a nonnegative window duration. It returns the sum of included values.</p>
+      <h3>Expected behavior and invariants</h3><ul>
+        <li>Include timestamps in the closed interval <code>[now - window, now]</code>; exclude older and future events.</li>
+        <li>Count negative event values as supplied. An empty window sums to zero.</li>
+        <li>Reject invalid event timestamps or values and negative, boolean, or nonnumeric window lengths.</li>
+        <li>Event and reference timestamps must both be timezone-aware or both naive.</li>
+      </ul>
+      <h3>Review task</h3><p>Test events at each endpoint, just outside the interval, negative values, zero-length windows, and timestamp timezone mismatches.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/25-rolling-analytics-window">Open the exercise folder</a> · Run <code>python3 rolling_window.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/25-rolling-analytics-window/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>

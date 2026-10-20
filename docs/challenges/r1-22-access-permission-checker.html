@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Access Permission Checker.">
+  <title>Access Permission Checker · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · HARD</p><h1>22 · Access Permission Checker</h1>
+      <h2>PR: Enforce access rule precedence</h2>
+      <h3>Summary</h3><p>A document service combines role grants, direct user overrides, and ownership. Review the precedence rules carefully because an incorrect allow can expose protected data.</p>
+      <h3>Input and output</h3><p><code>has_permission(user, action, resource, acl)</code> receives a user ID and roles, role grants, direct per-user allow/deny rules, and resource owners. It returns a boolean.</p>
+      <h3>Expected behavior and invariants</h3><ul>
+        <li>A direct user deny blocks the action even if a direct allow or role grant also exists. Both resource-specific and <code>*</code> rules are supported.</li>
+        <li>A direct allow grants access when no deny matches.</li>
+        <li>Otherwise any matching role grant allows the action. Role rules may target the resource or <code>*</code>.</li>
+        <li>A resource owner may read that resource, but ownership does not grant write or other actions. Unknown users are denied.</li>
+      </ul>
+      <h3>Review task</h3><p>Construct conflicting direct and role rules. Verify deny precedence across wildcard and resource-specific entries, then check ownership and unsupported actions.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/22-access-permission-checker">Open the exercise folder</a> · Run <code>python3 permissions.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/22-access-permission-checker/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>

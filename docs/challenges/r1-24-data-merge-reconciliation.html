@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Data Merge Reconciliation.">
+  <title>Data Merge Reconciliation · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · MEDIUM</p><h1>24 · Data Merge Reconciliation</h1>
+      <h2>PR: Reconcile customer snapshots and tags</h2>
+      <h3>Summary</h3><p>Two import feeds contain customer snapshots, while tags are accumulated independently. Review how timestamps choose fields and how shared metadata survives reconciliation.</p>
+      <h3>Input and output</h3><p><code>merge_records(existing, incoming)</code> accepts ordered lists of customer dictionaries with <code>customer_id</code> and ISO-sortable <code>updated_at</code> fields, plus optional tag lists. It returns a new ordered list.</p>
+      <h3>Expected behavior and invariants</h3><ul>
+        <li>Keep existing customer order. Append previously unseen customers in their first incoming order.</li>
+        <li>For matched customers, a newer timestamp supplies the ordinary fields; an equal timestamp prefers incoming fields; an older snapshot does not replace current fields.</li>
+        <li>Tags are a stable union of existing then incoming values, without duplicates, regardless of which snapshot wins.</li>
+        <li>Do not mutate either input or share mutable tag lists with the result.</li>
+      </ul>
+      <h3>Review task</h3><p>Compare newer, older, and tied snapshots. Exercise duplicate tags and verify both inputs and nested tag arrays remain isolated.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/24-data-merge-reconciliation">Open the exercise folder</a> · Run <code>python3 merge_records.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/24-data-merge-reconciliation/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>

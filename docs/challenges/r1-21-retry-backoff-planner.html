@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Retry Backoff Planner.">
+  <title>Retry Backoff Planner · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · MEDIUM</p><h1>21 · Retry Backoff Planner</h1>
+      <h2>PR: Validate and cap retry delays</h2>
+      <h3>Summary</h3><p>A client library plans delays between attempts after a temporary failure. Review whether the schedule respects its retry count, multiplier, and configured ceiling.</p>
+      <h3>Input and output</h3><p><code>retry_delays(max_retries, base_delay, multiplier=2, max_delay=None)</code> returns a list of wait durations, one for each retry after the initial request.</p>
+      <h3>Expected behavior and invariants</h3><ul>
+        <li>The first wait is <code>base_delay</code>; each subsequent wait multiplies the prior wait by <code>multiplier</code>.</li>
+        <li>When supplied, <code>max_delay</code> caps every wait, including the first.</li>
+        <li>Retry count must be a nonnegative integer; settings must be numeric and nonnegative, with multiplier at least 1. Booleans are not numeric settings.</li>
+        <li>A zero retry count returns an empty list.</li>
+      </ul>
+      <h3>Review task</h3><p>Trace the sequence before and after the cap engages. Check fractional inputs, zero retries, and invalid booleans or negative values.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/21-retry-backoff-planner">Open the exercise folder</a> · Run <code>python3 retry_plan.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/21-retry-backoff-planner/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>
