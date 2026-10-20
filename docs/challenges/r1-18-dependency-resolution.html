@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Dependency Resolution.">
+  <title>Dependency Resolution · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · HARD</p><h1>18 · Dependency Resolution</h1>
+      <h2>PR: Resolve package dependencies into installation order</h2>
+      <h3>Summary</h3><p>A package installer receives a graph of prerequisites and needs a deterministic sequence that places every dependency before the package that uses it. Review ordering, graph validation, and cycle handling.</p>
+      <h3>Input and output</h3><p><code>resolve_dependencies(graph)</code> accepts a mapping from nonblank package names to collections of dependencies. Every dependency must also be defined as a package key. It returns a list of package names in installation order.</p>
+      <h3>Expected behavior and invariants</h3><ul>
+        <li>Every dependency appears before its dependent, and every package appears exactly once.</li>
+        <li>Repeated dependency edges do not add duplicate package entries.</li>
+        <li>At each step, choose the lexicographically smallest package among those whose dependencies have all been emitted.</li>
+        <li>Reject blank or non-string package names, invalid dependency collections or names, and references to undefined packages with <code>ValueError</code>.</li>
+        <li>If the graph contains a cycle, raise <code>ValueError</code> instead of returning a partial order.</li>
+        <li>An empty graph returns an empty list.</li>
+      </ul>
+      <h3>Review task</h3><p>Trace a chain, a shared prerequisite, and several simultaneously ready packages. Then test duplicate edges, missing package definitions, a self-cycle, and a multi-node cycle.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/18-dependency-resolution">Open the exercise folder</a> · Run <code>python3 dependency_resolver.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/18-dependency-resolution/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>

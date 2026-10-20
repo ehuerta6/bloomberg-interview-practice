@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Round 1 PR review: Balance Transfer.">
+  <title>Balance Transfer · AI-Assisted Interview Practice</title>
+  <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body class="problem-page">
+  <header class="site-header"><a class="brand" href="../index.html">AI-Assisted Interview Practice</a></header>
+  <main class="problem-shell"><a href="../index.html#round-1">← All Round 1 problems</a>
+    <article class="problem"><p class="eyebrow">ROUND 1 · PR REVIEW · MEDIUM</p><h1>15 · Balance Transfer</h1>
+      <h2>PR: Transfer integer-cent balances between accounts</h2>
+      <h3>Summary</h3><p>A wallet service moves funds between two accounts. Review the validation and state changes as one transaction so invalid or unsuccessful transfers do not leave partial updates.</p>
+      <h3>Input and output</h3><p><code>transfer(accounts, source, destination, amount_cents)</code> mutates a mutable account-to-balance mapping. It returns <code>True</code> after a successful transfer and <code>False</code> when the source lacks funds.</p>
+      <h3>Expected behavior and invariants</h3><ul>
+        <li>Account balances are nonnegative integer cents; booleans are not valid integers for this contract.</li>
+        <li>Account IDs are nonblank strings. Source and destination must be distinct existing IDs. The amount must be a positive integer number of cents.</li>
+        <li>Invalid account data, IDs, or amounts raise <code>ValueError</code> without changing any balance.</li>
+        <li>If the source has insufficient funds, return <code>False</code> and leave the complete mapping unchanged.</li>
+        <li>On success, subtract from the source and add the same amount to the destination. The total balance remains constant.</li>
+      </ul>
+      <h3>Review task</h3><p>Compare state before and after success, insufficient funds, and invalid input. Check the exact-balance case, same-account transfers, boolean amounts, and whether every unsuccessful call preserves all accounts.</p>
+      <h3>Starter code</h3><p><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-1/15-balance-transfer">Open the exercise folder</a> · Run <code>python3 transfers.py</code>.</p>
+      <p class="solution-link"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/15-balance-transfer/README.md">Reference solution</a></p>
+    </article>
+  </main>
+</body>
+</html>
