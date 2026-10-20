@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#cbcacf">
+  <meta name="description" content="Engineering Ticket: Appointment Rescheduling.">
+  <title>Appointment Rescheduling · CIC Challenge Portal</title>
+  <link rel="stylesheet" href="../assets/styles.css?v=final-polish-2">
+  <script src="../assets/app.js?v=final-polish-1" defer></script>
+</head>
+<body class="challenge-page ticket-page">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="brand" href="../index.html" aria-label="Coding Interview Club home">
+    <img class="brand-logo" src="../assets/images/cic-logo.jpeg" alt="">
+    <span>CODING<br>INTERVIEW CLUB</span>
+  </a>
+  <nav aria-label="Main navigation">
+    <a href="../index.html#round-2">Challenges</a>
+    <a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice">GitHub ↗</a>
+  </nav>
+</header>
+<main id="main" class="challenge-shell">
+  <a class="back-link" href="../index.html">← All challenges</a>
+  <article class="work-item">
+    <header class="work-head">
+      <div><p class="eyebrow">ENGINEERING TICKET · ROUND 02</p><h1>Appointment Rescheduling</h1></div>
+      <div class="work-id">TICKET #09</div>
+      <div class="badges"><span class="badge open">OPEN</span><span class="badge">BUG</span><span class="badge">PYTHON</span><span class="badge">MEDIUM</span></div>
+    </header>
+    <div class="work-content">
+      <section class="assignment-copy" aria-label="Original assignment">
+<h2>Reported symptom</h2>
+<p>A patient trying to move an appointment into an occupied time can lose the original appointment.</p>
+<h3>Scenario</h3>
+<p>A clinic has one appointment per time slot. Patients may reschedule only their own appointment, and a requested slot may have been taken already.</p>
+<h3>Acceptance criteria</h3>
+<ul>
+<li>Only the appointment owner can request a change.</li>
+<li>A time already occupied by another appointment is rejected.</li>
+<li>A rejected reschedule preserves the original appointment and all other appointments.</li>
+<li>A successful reschedule frees the old slot and occupies the new slot.</li>
+<li>Unknown appointment identifiers do not change the schedule.</li>
+<li>Rescheduling to the same slot succeeds without creating a duplicate.</li>
+</ul>
+<h3>State invariants</h3>
+<ul>
+<li>Every appointment occupies exactly one time slot.</li>
+<li>A failed operation leaves the full schedule unchanged.</li>
+<li>Ownership and conflict checks do not expose or alter another patient’s appointment.</li>
+</ul>
+<h3>Investigation task</h3>
+<p>Capture the schedule before a conflicting request and compare every appointment afterward. Trace the order of writes and checks, then inspect whether the tests prove ownership and rollback behavior.</p>
+      </section>
+      <aside class="work-tools" aria-label="Challenge tools">
+        <section class="tool-box">
+          <p class="eyebrow">STARTER CODE</p>
+          <a class="source-link" href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/tree/main/round-2/09-appointment-rescheduling" target="_blank" rel="noreferrer">Open exercise folder ↗</a>
+        </section>
+        <section class="tool-box">
+          <p class="eyebrow">RUN FROM EXERCISE FOLDER</p>
+          <div class="command-row"><code>python3 test_rescheduling.py</code><button class="copy-button" type="button" data-copy="python3 test_rescheduling.py" aria-label="Copy command python3 test_rescheduling.py">Copy</button></div>
+        </section>
+        <p class="ai-note">Read here. Open only this exercise folder in your editor. Use AI in non-editing mode; make changes yourself.</p>
+        <p class="solutions-note"><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-2/09-appointment-rescheduling/README.md" target="_blank" rel="noreferrer">View Reference Solution ↗</a></p>
+      </aside>
+    </div>
+  </article>
+</main>
+<footer class="site-footer"><span>Unofficial educational project by the Coding Interview Club.</span><a href="https://github.com/ehuerta6/bloomberg-ai-interview-practice">Repository ↗</a></footer>
+<div class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
