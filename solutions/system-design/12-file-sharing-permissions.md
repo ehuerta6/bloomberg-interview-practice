@@ -15,9 +15,9 @@ Representative endpoints:
 - `GET /files/{id}` and `GET /files/{id}/download` authorize owner or direct grant.
 - `POST /files/{id}/permissions` and `DELETE /files/{id}/permissions/{user_id}` manage direct grants.
 - `POST /files/{id}/links` creates a permission-limited link; `DELETE /files/{id}/links/{link_id}` revokes it.
-- `GET /shared/{token}` hashes the token, checks status/expiry/file state, and issues a download.
+- `GET /shared/{token}` hashes the token, checks status/expiry/file state, and issues a download. `PATCH /shared/{token}/display-name` allows a valid editor link to rename the file after the same current-state checks.
 
-For upload, the application creates a random object key and pending record, then the client uploads to private storage using a narrow, short-lived upload authorization. Finalization verifies that the object exists and matches policy before exposing it.
+For upload, the application creates a random object key and pending record, then the client uploads to private storage using a narrow, short-lived upload authorization. Finalization verifies that the object exists and matches policy before exposing it. A display-name update through a link resolves the token hash, verifies the link is live and grants `editor`, confirms the file is `ready`, then updates metadata; it does not allow re-sharing, deleting, or replacing bytes.
 
 ## 3. Data Model
 

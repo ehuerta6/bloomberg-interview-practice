@@ -1,6 +1,6 @@
 # Problem 06 — Student Marketplace
 
-**Difficulty:** Medium
+**Difficulty:** Easy
 
 ## Scenario
 

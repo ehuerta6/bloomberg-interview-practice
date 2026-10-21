@@ -1,10 +1,10 @@
 # AI-Assisted Software Engineering Interview Practice
 
-50 practical exercises focused on pull request reviews, debugging, testing, and navigating unfamiliar Python codebases.
+65 practical exercises focused on pull request reviews, debugging, testing, navigating unfamiliar Python codebases, and system design.
 
 Round 1 asks you to review a proposed change against its requirements and tests. Round 2 asks you to trace a reported bug through a small multi-file codebase.
 
-These are original Coding Interview Club (CIC) practice problems. They are not official Bloomberg interview questions.
+System Design problems practice whiteboard discussion using **Clarify → Interactions → Data → Design → Improve**. Problems 01–02 originate in Noel's Coding Interview Club (CIC) workshop; 03–15 are additional practice material. These are educational practice problems, not official Bloomberg interview questions.
 
 ## Round 1 — Pull Request Reviews
 
@@ -65,3 +65,23 @@ These are original Coding Interview Club (CIC) practice problems. They are not o
 | 23 | [Product Returns & Exchanges](problems/round-2/23-product-returns-exchanges.md) | Medium |
 | 24 | [Multi-Location Inventory](problems/round-2/24-multi-location-inventory.md) | Hard |
 | 25 | [Webhook Event Processing](problems/round-2/25-webhook-event-processing.md) | Medium |
+
+## System Design (15)
+
+| # | Problem | Difficulty |
+|---:|---|---|
+| 01 | [Gym Class Sign-Up](system-design/01-gym-class-signup.md) | Easy |
+| 02 | [Campus Café Mobile Ordering](system-design/02-campus-cafe-ordering.md) | Medium |
+| 03 | [Student Study Room Booking](system-design/03-student-study-room-booking.md) | Medium |
+| 04 | [Campus Shuttle Live Tracking](system-design/04-campus-shuttle-live-tracking.md) | Medium |
+| 05 | [Library Book Loans & Holds](system-design/05-library-book-loans-holds.md) | Medium |
+| 06 | [Student Marketplace](system-design/06-student-marketplace.md) | Easy |
+| 07 | [Course Enrollment & Waitlist](system-design/07-course-enrollment-waitlist.md) | Medium |
+| 08 | [Movie Theater Seat Booking](system-design/08-movie-theater-seat-booking.md) | Hard |
+| 09 | [Notification Delivery System](system-design/09-notification-delivery-system.md) | Medium |
+| 10 | [URL Shortener & Click Analytics](system-design/10-url-shortener-click-analytics.md) | Medium |
+| 11 | [Collaborative Task Board](system-design/11-collaborative-task-board.md) | Medium |
+| 12 | [File Sharing & Permissions](system-design/12-file-sharing-permissions.md) | Medium |
+| 13 | [Campus Parcel Locker Pickup](system-design/13-campus-parcel-locker-pickup.md) | Easy |
+| 14 | [Shared Expense Splitter](system-design/14-shared-expense-splitter.md) | Medium |
+| 15 | [Live Classroom Polling](system-design/15-live-classroom-polling.md) | Hard |

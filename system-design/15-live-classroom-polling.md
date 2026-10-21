@@ -1,6 +1,6 @@
 # Problem 15 — Live Classroom Polling
 
-**Difficulty:** Medium
+**Difficulty:** Hard
 
 ## Scenario
 

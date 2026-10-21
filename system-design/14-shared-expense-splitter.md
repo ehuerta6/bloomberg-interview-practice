@@ -1,6 +1,6 @@
 # Problem 14 — Shared Expense Splitter
 
-**Difficulty:** Hard
+**Difficulty:** Medium
 
 ## Scenario
 
@@ -13,8 +13,8 @@ Design a small group expense application. It calculates obligations but does not
 - A member can create a group and invite other existing users. Only group members can view its expenses and balances.
 - A member can record an expense with a description, payer, currency, total amount, and the participants who share it.
 - The first version supports equal splits and explicit per-person amounts. For either mode, allocated shares must sum exactly to the expense total in the currency's minor unit (for example cents).
-- The creator can correct or delete an expense while it has no associated settlement. Changes must update all affected balances consistently and leave an audit record.
-- A member can record a repayment from one member to another. A repayment reduces the sender's debt to the receiver and is separately identifiable from an expense.
+- A member can record a repayment from one member to another and allocate it to one or more outstanding expense shares owed to that receiver. Allocations must total the repayment amount and cannot exceed the selected shares' unpaid amounts. A repayment is separately identifiable from an expense.
+- The creator can correct or delete an expense only while none of its shares have repayment allocations. Changes must update all affected balances consistently and leave an audit record. Once any share has been settled, the expense is immutable; members use a compensating expense or repayment to correct the ledger.
 - Each member can view a balance summary and the underlying expenses and repayments. A positive amount means the member is owed money; a negative amount means the member owes money.
 - The system must reject cross-group payers/participants, negative amounts, unsupported currency mismatches, and duplicate repayment submissions caused by a client retry.
 
@@ -24,11 +24,11 @@ Design a small group expense application. It calculates obligations but does not
 - Use integer minor units or an exact decimal representation; binary floating point is not acceptable for persisted money.
 - For an equal split with a remainder, define a deterministic rule that allocates every minor unit exactly once (for example, sort participant IDs and distribute leftover cents in that order).
 - Balances can be derived from expenses and repayments for this initial scale. If you introduce cached totals, explain how they stay consistent with source records.
-- Clarify correction semantics: the recommended scope is to edit/delete only unsettled expenses, while repayment records are immutable and corrected by a compensating repayment.
+- Repayment allocations make it possible to identify which expense obligations were settled. Repayment records and their allocations are immutable and corrected by a compensating repayment.
 
 ## Your Task
 
-Design the data model and the workflows for recording an expense, computing balances, and recording an off-app repayment. Explain the equal-split remainder rule and how a retried request avoids duplicate repayments. Walk through how an expense correction affects multiple participants without leaving a partially updated set of shares. State the invariants used to verify that group balances net to zero.
+Design the data model and the workflows for recording an expense, computing balances, and recording an off-app repayment allocated to specific outstanding shares. Explain the equal-split remainder rule and how a retried request avoids duplicate repayments. Walk through how an unsettled expense correction affects multiple participants without leaving a partially updated set of shares. State the invariants used to verify that group balances net to zero.
 
 ## Interviewer Follow-Ups
 
