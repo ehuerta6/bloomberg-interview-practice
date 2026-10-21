@@ -1,26 +1,29 @@
 # Team Invitation System Reference Solution
 
-## Reported behavior
+## What was wrong
 
-The service accepts invitations after their deadline unless expiration has already been swept, so behavior depends on a background job having run. Lifecycle transitions also need to prevent duplicate active invitations while allowing a fresh invite after expiry.
+`InvitationService.accept` checked the invitation status but accepted a pending invitation even when `now` was later than `expires_at`. That granted team membership from an expired link whenever the background expiration sweep had not run.
 
 ## Reproduce and investigate
 
-From this folder, run:
+From the starter folder, run:
 
 ```sh
 python3 test_team_invitations.py
 ```
 
-Start with `routes.py` to see the request boundary, then follow the call into `service.py` and the in-memory `repository.py`. Reproduce the reported scenario and inspect repository state before and after each operation. The starter tests include examples that pass and regressions that expose the issue.
+Create an invitation with `now=10` and `ttl=2`, then accept it at time 13 without calling `expire`. Inspect both the invitation status and `repo.members`. Trace the request through `routes.py` and `InvitationService.accept`; compare direct acceptance with the periodic `expire` path.
 
 ## Fix
 
-Make acceptance enforce the deadline itself, transition an overdue pending invitation to expired, and ensure pending, accepted, cancelled, and expired states have distinct allowed transitions. Preserve the invited role only when acceptance succeeds.
+Accept only pending invitations whose inclusive deadline has not passed. When a pending invitation is accepted after its deadline, mark it expired and reject the request without adding a member. Keep acceptance, cancellation, and expiration as one-way lifecycle transitions, and grant the requested role only after acceptance succeeds.
 
-## Regression coverage
+## Regression tests
 
-The solution tests cover valid and invalid requests, state invariants, boundary conditions, repeated operations, and failure paths. They assert the data stored in the repository as well as returned results.
+- `test_invitation_expires_after_inclusive_deadline` accepts at the deadline and rejects after it, checking the expired status.
+- `test_role_is_granted_only_after_acceptance` checks that membership is created with the invited role only on acceptance.
+- `test_active_pending_invite_prevents_duplicate_but_expired_does_not` covers duplicate live invites and a replacement after expiry.
+- Other tests cover cancellation, duplicate membership, invalid roles, cancelled-address reinvitation, and repeat-safe expiration sweeps.
 
 ## Run the solution tests
 

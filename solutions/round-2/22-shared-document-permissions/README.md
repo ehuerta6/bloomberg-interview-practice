@@ -1,26 +1,29 @@
 # Shared Document Permissions Reference Solution
 
-## Reported behavior
+## What was wrong
 
-Access checks can fall through to a direct or inherited grant after a collaborator has been revoked at the document. A revoked collaborator can retain access through a parent folder, so revocation precedence needs to be explicit.
+Permission resolution could return a direct document grant before checking the document’s revocation set. A user revoked at the document could therefore keep access through a grant on that document or an inherited folder grant.
 
 ## Reproduce and investigate
 
-From this folder, run:
+From the starter folder, run:
 
 ```sh
 python3 test_document_permissions.py
 ```
 
-Start with `routes.py` to see the request boundary, then follow the call into `service.py` and the in-memory `repository.py`. Reproduce the reported scenario and inspect repository state before and after each operation. The starter tests include examples that pass and regressions that expose the issue.
+Grant a user editor access from the root folder and a direct viewer grant on the document, then revoke that user at the document. Check `PermissionService.role` and `DocumentRoutes.access`. Follow the lookup order through ownership, document grants, and the parent-folder chain.
 
 ## Fix
 
-Resolve ownership first, then apply document-specific revocation, direct grant, and folder inheritance from nearest parent outward. A folder revocation blocks inherited access at that folder boundary while a document-level direct grant can explicitly regrant access. Apply role levels consistently to read, edit, and share.
+Resolve the owner first, then reject a document-revoked user before considering direct or inherited grants. Otherwise use the document grant if present, then walk from the nearest folder toward its parents. A folder revocation blocks inherited access through that scope; an explicit document regrant clears the document revocation. Apply role levels consistently to read, edit, and share.
 
-## Regression coverage
+## Regression tests
 
-The solution tests cover valid and invalid requests, state invariants, boundary conditions, repeated operations, and failure paths. They assert the data stored in the repository as well as returned results.
+- `test_document_revocation_overrides_direct_and_inherited_grants` checks that revocation denies access despite both grant sources.
+- `test_folder_revocation_blocks_inherited_access_only` checks inherited denial and an explicit document grant.
+- `test_nearest_inherited_grant_and_parent_inheritance` checks nested-folder precedence.
+- Other tests cover owner access, editor capabilities, invalid actions and documents, owner revocation, and termination on a folder cycle.
 
 ## Run the solution tests
 

@@ -1,26 +1,29 @@
 # Webhook Event Processing Reference Solution
 
-## Reported behavior
+## What was wrong
 
-The receiver ignores event sequence ordering, so a delayed payment event can replace a shipped or delivered status. Duplicate event IDs also need a durable in-memory record so retries cannot append history or reapply transitions.
+The receiver deduplicated repeated event IDs, but it applied every new event ID regardless of sequence. A delayed event with a lower or equal sequence could overwrite the order’s newer status and append out-of-order history.
 
 ## Reproduce and investigate
 
-From this folder, run:
+From the starter folder, run:
 
 ```sh
 python3 test_webhook_events.py
 ```
 
-Start with `routes.py` to see the request boundary, then follow the call into `service.py` and the in-memory `repository.py`. Reproduce the reported scenario and inspect repository state before and after each operation. The starter tests include examples that pass and regressions that expose the issue.
+Send sequence 2 with status `shipped`, then send a different event ID at sequence 1 with status `paid`. Inspect the order status and history. Follow validation and deduplication in `WebhookService.receive`, then check whether it compares the new sequence with the latest applied one.
 
 ## Fix
 
-Validate the event before mutation, deduplicate by event ID, and compare each event’s sequence with the most recently applied sequence for that order. Ignore and record stale events so a retry stays idempotent; apply newer events once and retain an ordered history.
+Keep event-ID deduplication, then compare the sequence with the last applied sequence for that order. Apply only strictly newer events. Record stale event IDs as processed so their retries remain duplicates, without changing status or adding history.
 
-## Regression coverage
+## Regression tests
 
-The solution tests cover valid and invalid requests, state invariants, boundary conditions, repeated operations, and failure paths. They assert the data stored in the repository as well as returned results.
+- `test_out_of_order_event_does_not_regress_state` verifies that a delayed lower-sequence event does not replace `shipped`.
+- `test_same_sequence_conflict_is_stale_and_idempotent` checks that equal-sequence events are ignored and their retries are duplicates.
+- `test_duplicate_event_id_applies_once` covers retry deduplication; `test_newer_events_advance_status_and_keep_history` checks ordered progress.
+- Other tests cover malformed events, unknown orders, and independent sequence histories for separate orders.
 
 ## Run the solution tests
 

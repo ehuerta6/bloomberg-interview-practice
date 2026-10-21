@@ -1,26 +1,29 @@
 # Data Import Pipeline Reference Solution
 
-## Reported behavior
+## What was wrong
 
-The row parser converts values with `int()`, which silently truncates floats and treats booleans as amounts. Those values can enter storage as valid records.
+The row parser passed every amount through `int()`. That silently truncated a float such as `1.5` to `1` and treated `True` as `1`, allowing malformed amounts into storage.
 
 ## Reproduce and investigate
 
-From this folder, run:
+From the starter folder, run:
 
 ```sh
 python3 test_data_import.py
 ```
 
-Start with `routes.py` to see the request boundary, then follow the call into `service.py` and the in-memory `repository.py`. Reproduce the reported scenario and inspect repository state before and after each operation. The starter tests include examples that pass and regressions that expose the issue.
+Import rows with amounts `1.5` and `True`, then inspect the accepted IDs and repository records. Follow the call from `ImportRoutes.post` through `ImportService.import_rows` to `parse`. Check that an invalid row produces an error while valid neighboring rows still commit.
 
 ## Fix
 
-Validate each row’s required fields and integer amount, normalize email, preserve the first occurrence of each external ID, skip duplicates against both the file and repository, and continue importing valid rows while returning row-level errors.
+Accept actual integers or base-10 integer strings, while explicitly excluding booleans and floats. Normalize email addresses, validate required fields and nonnegative amounts, and preserve the first valid occurrence of each external ID. Return row-level errors and continue processing independent rows.
 
-## Regression coverage
+## Regression tests
 
-The solution tests cover valid and invalid requests, state invariants, boundary conditions, repeated operations, and failure paths. They assert the data stored in the repository as well as returned results.
+- `test_normalizes_email_and_rejects_invalid_numbers` covers normalization, a negative amount, and a float.
+- `test_boolean_amount_is_not_an_integer_amount` prevents Python booleans from being treated as integers.
+- `test_valid_rows_commit_independently_despite_bad_neighbor` checks partial success and error reporting.
+- Other tests cover duplicate IDs in one file, duplicates already in storage, missing fields, and a non-list request body.
 
 ## Run the solution tests
 

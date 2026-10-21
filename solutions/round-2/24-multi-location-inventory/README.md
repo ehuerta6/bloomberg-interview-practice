@@ -1,26 +1,29 @@
 # Multi-Location Inventory Reference Solution
 
-## Reported behavior
+## What was wrong
 
-Transfer lifecycle updates source stock and transfer status separately. A duplicate delivery or a receive/cancel race can create or destroy units unless each state transition is atomic and idempotent.
+Starting a transfer deducted units from the source and also credited the destination immediately. Receiving the in-transit transfer credited the destination a second time; cancelling it restored the source but left the premature destination credit behind.
 
 ## Reproduce and investigate
 
-From this folder, run:
+From the starter folder, run:
 
 ```sh
 python3 test_inventory_transfers.py
 ```
 
-Start with `routes.py` to see the request boundary, then follow the call into `service.py` and the in-memory `repository.py`. Reproduce the reported scenario and inspect repository state before and after each operation. The starter tests include examples that pass and regressions that expose the issue.
+Start a transfer from east to west and inspect both quantities before receiving it. Then receive it and compare the destination quantity with the requested transfer. Also start and cancel a separate transfer, checking that the source is restored and the destination is unchanged. Trace each transition through `TransferService.start`, `receive`, and `cancel`.
 
 ## Fix
 
-Reserve units at the source when a transfer starts, then atomically move the transfer from in_transit to received or cancelled. Receiving adds destination stock exactly once; cancellation restores source stock exactly once. Reject duplicate IDs, invalid quantities, same-location moves, and insufficient stock without partial writes.
+Deduct the source quantity when the transfer enters `in_transit`, but leave destination stock unchanged until receipt. A successful receipt credits the destination once and marks the transfer received. Cancellation restores the source once and marks the transfer cancelled. Reject duplicate IDs and operations that do not match the current transfer state.
 
-## Regression coverage
+## Regression tests
 
-The solution tests cover valid and invalid requests, state invariants, boundary conditions, repeated operations, and failure paths. They assert the data stored in the repository as well as returned results.
+- `test_start_then_receive_moves_stock_once` checks the destination before and after receipt.
+- `test_receive_twice_is_rejected_without_duplication` checks repeat delivery.
+- `test_cancel_restores_source_and_cannot_be_received` verifies cancellation’s stock effects and terminal state.
+- Other tests cover invalid starts, duplicate IDs, same-location transfers, conservation including in-transit units, and cancellation after receipt.
 
 ## Run the solution tests
 
