@@ -10,7 +10,7 @@ From this folder, run `python3 test_refunds.py`; `test_uncaptured_or_unknown_pay
 
 ## Investigation
 
-Follow the service from payment lookup through eligibility, refund-id lookup, and ledger mutation. Check state and aggregate totals after success, rejection, exact retries, and conflicting reuse of a refund identifier. The tests check the stored records and state totals so the failure is visible at the domain boundary.
+Follow the service from payment lookup through payment-state eligibility and refund-record creation. Compare the payment's refunded total and status before and after an accepted refund, an over-refund, a replay with the same refund ID, and a request against an authorized but uncaptured payment.
 
 ## Fix
 
@@ -18,7 +18,7 @@ Refunds are accepted only for captured or partially refunded payments. The servi
 
 ## Regression Tests
 
-The corrected suite covers the reported failure, normal success, rejected and repeated requests, and state invariants. It also checks boundary or retry behavior with deterministic clocks and in-memory repositories. All assertions inspect returned results and persisted state.
+The tests cover refunds from captured payments, partial and full refund totals, uncaptured and unknown payments, amounts beyond the remaining balance, exact idempotent retries, conflicting refund-ID reuse, and invalid amounts. They verify that rejected requests do not append a refund or change payment state.
 
 ## Run the Corrected Tests
 

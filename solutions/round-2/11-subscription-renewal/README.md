@@ -2,19 +2,21 @@
 
 ## What Was Broken
 
-Members are shown as current after a renewal charge was declined, and some renewal invoices appear to have been charged more than once. The defect occurs because the workflow does not consistently preserve its key state invariant: only a successful charge advances the renewal date; a decline preserves the due date and marks the subscription past due.
+When the payment gateway declined a renewal, the starter stored a `declined` invoice but left the subscription `active`. Account views could therefore report a member as current even though the renewal remained unpaid.
 
 ## Reproduce and Investigate
 
-From this folder, run `python3 test_subscription_renewal.py`. Compare the reported state with the state stored by the service. Then follow the request through its service, store, and provider or record types. The tests use in-memory state, so each run starts fresh.
+From this folder, run `python3 test_subscription_renewal.py`. Configure the fake gateway to decline, renew on the due date, and compare the invoice record with the subscription status and due date. Then replay that invoice and verify it does not call the gateway again; a later collection attempt must use a new invoice ID.
+
+Trace the route through `RenewalService`, `RenewalStore`, and the fake gateway. Check early renewal, declined renewal, successful renewal, and replay paths independently so a status update does not accidentally charge or advance the date.
 
 ## The Fix
 
-The corrected service validates the request before mutation, persists state at the appropriate transition, and handles retries according to the stable event, invoice, transaction, session, or job identifier. Each invoice identifier represents one charge attempt. A replay returns the stored outcome, including a decline, without charging again; a later collection attempt needs a new invoice identifier.
+A decline now marks the subscription `past_due`, records the declined invoice, and preserves the existing due date. Any invoice ID with a recorded outcome is idempotent, so both paid and declined replays return the saved outcome without another gateway call. A later collection uses a new invoice ID. A successful charge advances from the scheduled due date by one month, clamps month-end dates to the last valid day, and returns the subscription to `active`.
 
-## Regression Coverage
+## Regression Tests
 
-The tests cover the reported failure, its successful path, and boundary or replay behavior. They assert persisted records and externally visible effects rather than implementation details.
+The corrected suite checks that a decline leaves the due date unchanged and sets `past_due`; replaying that declined invoice after the gateway recovers does not charge again; a new invoice ID can collect the balance; successful replays charge once; early attempts make no gateway call; month-end dates clamp correctly; canceled and missing subscriptions do not create charges or invoices.
 
 ## Run
 

@@ -10,7 +10,7 @@ From this folder, run `python3 test_enrollment.py`; `test_prerequisite_is_requir
 
 ## Investigation
 
-Follow prerequisite evaluation before enrollment creation, then inspect counts by state. Drop a learner from a full course and verify that exactly one eligible waitlisted row is promoted. The tests check the stored records and state totals so the failure is visible at the domain boundary.
+Trace prerequisite evaluation and capacity checks before the enrollment row is written. Then inspect enrollment statuses for a full course: after a current learner drops, determine which waitlisted learner is promoted and whether a repeated drop changes the roster again.
 
 ## Fix
 
@@ -18,7 +18,7 @@ The service verifies all prerequisites before creating an enrollment. Capacity c
 
 ## Regression Tests
 
-The corrected suite covers the reported failure, normal success, rejected and repeated requests, and state invariants. It also checks boundary or retry behavior with deterministic clocks and in-memory repositories. All assertions inspect returned results and persisted state.
+The tests cover completed and missing prerequisites, enrollment at capacity, waitlist ordering, drop-and-promote behavior, duplicate enrollment, and invalid course or learner IDs. Assertions check both the result and persisted statuses so capacity counts only enrolled students.
 
 ## Run the Corrected Tests
 

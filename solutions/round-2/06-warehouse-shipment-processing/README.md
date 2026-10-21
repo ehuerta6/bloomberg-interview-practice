@@ -10,7 +10,7 @@ From this folder, run `python3 test_shipments.py`; `test_failed_order_releases_e
 
 ## Investigation
 
-Trace each SKU through reservation, commit, and backorder recording. Inspect inventory and reservations at the point a later line fails; then compare all-or-nothing and partial fulfillment results. The tests check the stored records and state totals so the failure is visible at the domain boundary.
+Trace each order line through reservation, shipment commit, and backorder recording. Use an order where an early SKU is available but a later SKU is short, then inspect both on-hand quantities and reservation records after the failed all-or-nothing attempt. Compare that result with the explicitly partial-fulfillment path.
 
 ## Fix
 
@@ -18,7 +18,7 @@ The service tracks each reservation made during an all-or-nothing attempt and re
 
 ## Regression Tests
 
-The corrected suite covers the reported failure, normal success, rejected and repeated requests, and state invariants. It also checks boundary or retry behavior with deterministic clocks and in-memory repositories. All assertions inspect returned results and persisted state.
+The tests cover successful full shipment, rollback after a later SKU fails, partial shipment with a recorded remainder, duplicate shipment IDs, and invalid quantities. They assert that failure leaves no orphan reservations and that committed shipment quantities reconcile with inventory.
 
 ## Run the Corrected Tests
 

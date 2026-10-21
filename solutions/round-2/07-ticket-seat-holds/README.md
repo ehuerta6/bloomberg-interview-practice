@@ -10,7 +10,7 @@ From this folder, run `python3 test_holds.py`; `test_expired_hold_releases_seat`
 
 ## Investigation
 
-Use the injected clock to inspect the hold at its expiry boundary. Compare a temporary hold, an expired hold, and a confirmed hold while checking ownership and seat availability. The tests check the stored records and state totals so the failure is visible at the domain boundary.
+Use the injected clock to compare a hold immediately before and exactly at its five-minute expiry. Follow the hold record and seat lookup for the original buyer, a second buyer, and a confirmed booking; the expiry rule must not free a confirmed seat or let another buyer confirm someone else's hold.
 
 ## Fix
 
@@ -18,7 +18,7 @@ A hold is active only while confirmed or before its expiry time. Expired holds c
 
 ## Regression Tests
 
-The corrected suite covers the reported failure, normal success, rejected and repeated requests, and state invariants. It also checks boundary or retry behavior with deterministic clocks and in-memory repositories. All assertions inspect returned results and persisted state.
+The tests cover a live hold, expiration at the boundary, replacement by a second buyer, confirmation, duplicate hold IDs, and attempts to use another buyer's hold. They inspect stored hold and confirmed-booking state so capacity remains consistent across retries.
 
 ## Run the Corrected Tests
 

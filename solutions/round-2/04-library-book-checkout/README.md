@@ -10,7 +10,7 @@ From this folder, run `python3 test_library.py`; in `test_return_releases_copy_a
 
 ## Investigation
 
-Compare `available_copies` before checkout, after checkout, and after return. Follow the loan record status and test that a queued reader receives priority when a copy returns. The tests check the stored records and state totals so the failure is visible at the domain boundary.
+Trace checkout and return through the loan repository, then compare available-copy counts before checkout, during the loan, and after return. Check the reservation queue as well: a returning copy should be offered to its next reader, and a different reader must not bypass that reservation.
 
 ## Fix
 
@@ -18,7 +18,7 @@ A successful return marks the loan closed, so active-loan counts release that co
 
 ## Regression Tests
 
-The corrected suite covers the reported failure, normal success, rejected and repeated requests, and state invariants. It also checks boundary or retry behavior with deterministic clocks and in-memory repositories. All assertions inspect returned results and persisted state.
+The tests cover checkout and return, rejection of a repeated return, reservation priority, duplicate loan IDs, and the active-loan count after each transition. They assert repository state so the returned success value cannot hide a copy that remains incorrectly checked out.
 
 ## Run the Corrected Tests
 

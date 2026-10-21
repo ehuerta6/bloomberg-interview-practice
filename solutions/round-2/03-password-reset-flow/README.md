@@ -10,7 +10,7 @@ From this folder, run `python3 test_password_reset.py`; `test_retry_invalidates_
 
 ## Investigation
 
-Trace `issue` and `reset` through the token repository. Compare token records after the second request; verify expiry at the exact boundary and verify a failed attempt leaves the password untouched. The tests check the stored records and state totals so the failure is visible at the domain boundary.
+Trace token creation and password updates through the service and token repository. After issuing two tokens for one account, inspect both records and attempt each token. Also check the exact expiry instant and confirm invalid or reused tokens leave the stored password unchanged.
 
 ## Fix
 
@@ -18,7 +18,7 @@ A new token invalidates earlier unused tokens for the same user before it is sav
 
 ## Regression Tests
 
-The corrected suite covers the reported failure, normal success, rejected and repeated requests, and state invariants. It also checks boundary or retry behavior with deterministic clocks and in-memory repositories. All assertions inspect returned results and persisted state.
+The tests cover a successful reset, invalidation of an older token, exact expiry, unknown tokens, one-time use, and invalid replacement passwords. Assertions verify both token state and the account's stored password after rejected requests.
 
 ## Run the Corrected Tests
 
