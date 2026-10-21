@@ -2,20 +2,20 @@
 
 ## What broke
 
-The draft replaces the full record with a newer snapshot, dropping tags unique to the older record; its shallow copies also share tag arrays with callers.
+For a newer snapshot, the draft replaces the whole dictionary, so tags present only in the existing record disappear. For an unmatched existing customer, `record.copy()` is shallow, so editing the returned `tags` list also edits the caller's input.
 
 ## Reproduce the issue
 
-Run `python3 merge_records.py` in the starter folder. The focused regression case demonstrates the discrepancy. Run `python3 merge_records.py` here to verify the corrected behavior.
+From `round-1/24-data-merge-reconciliation/`, run `python3 merge_records.py`. `test_tags_are_union_of_both_sources` drops `"vip"`; `test_result_records_do_not_share_tag_lists_with_inputs` mutates the original list through the result. Run it in this solution folder to confirm both regressions pass.
 
 ## Investigation approach
 
-Trace the implementation in policy order and compare each branch against the boundary conditions in the challenge. Use small inputs that isolate one decision at a time, then check state, ordering, and input preservation where they apply.
+Trace how `merged` is initialized and how a matching incoming record replaces `merged[customer_id]`. That replacement selects the right newer ordinary fields but discards the older tag list. Also inspect the shallow `copy()` calls for existing and new records: nested lists remain shared even when the outer dictionaries are distinct.
 
 ## Correction
 
-The solution applies the challenge rules explicitly, checks invalid inputs before using them, and avoids unintended mutation or unstable decisions. The corrected behavior is implemented independently rather than importing starter code.
+The solution copies each record and its tag list. For a matching ID, it chooses ordinary fields by timestamp (incoming wins ties), then builds a stable de-duplicated union from existing tags followed by incoming tags regardless of which snapshot wins. Existing order is kept and new IDs are appended in incoming order.
 
 ## Regression tests
 
-The tests cover ordinary cases, the defect boundary, adjacent edge cases, and invariants. Run them with `python3 merge_records.py`.
+`test_tags_are_union_of_both_sources` and `test_result_records_do_not_share_tag_lists_with_inputs` cover tag loss and aliasing. The suite also checks newer, older, and tied timestamps; stable customer ordering; and unchanged inputs. Run it with `python3 merge_records.py`.

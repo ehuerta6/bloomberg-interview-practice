@@ -2,20 +2,20 @@
 
 ## What broke
 
-The draft accepts negative retry counts and multipliers below one, silently returning an empty or shrinking schedule instead of rejecting invalid settings.
+The draft passes `max_retries` directly to `range`, so `-1` silently produces an empty plan. It also accepts `multiplier=0`; for three retries and a base delay of 1, it returns `[1, 0, 0]` instead of rejecting a shrinking schedule.
 
 ## Reproduce the issue
 
-Run `python3 retry_plan.py` in the starter folder. The focused regression case demonstrates the discrepancy. Run `python3 retry_plan.py` here to verify the corrected behavior.
+From `round-1/21-retry-backoff-planner/`, run `python3 retry_plan.py`. `test_negative_retry_count_is_rejected` and `test_invalid_multiplier_is_rejected` fail because neither call raises `ValueError`. Run it in this solution folder to confirm the corrections.
 
 ## Investigation approach
 
-Trace the implementation in policy order and compare each branch against the boundary conditions in the challenge. Use small inputs that isolate one decision at a time, then check state, ordering, and input preservation where they apply.
+Trace `retry_delays` through its `range(max_retries)` loop and the multiplier update. A negative count skips the loop entirely, while a zero multiplier erases later waits. Then inspect where `max_delay` is applied: the starter caps the completed list, which yields the same visible values for ordinary finite inputs but does not validate the schedule parameters.
 
 ## Correction
 
-The solution applies the challenge rules explicitly, checks invalid inputs before using them, and avoids unintended mutation or unstable decisions. The corrected behavior is implemented independently rather than importing starter code.
+The solution validates that the retry count is a nonnegative non-boolean integer and that delay settings are numeric, non-boolean, and within range (`multiplier >= 1`). It caps each delay before appending it, then multiplies that capped wait to form the next candidate. This keeps every result at or below the ceiling and handles a cap smaller than the base delay.
 
 ## Regression tests
 
-The tests cover ordinary cases, the defect boundary, adjacent edge cases, and invariants. Run them with `python3 retry_plan.py`.
+`test_negative_retry_count_is_rejected` and `test_invalid_multiplier_is_rejected` cover the starter defects. The suite also verifies exponential growth, a custom multiplier, fractional waits, zero retries, and both cap behavior and preservation of earlier waits. The solution adds `test_retry_count_must_not_be_boolean`. Run it with `python3 retry_plan.py`.

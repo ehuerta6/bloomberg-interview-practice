@@ -2,20 +2,20 @@
 
 ## What broke
 
-The draft returns immediately for a direct allow before checking a conflicting direct deny, granting access against the explicit user block.
+The draft checks the user's `allow` rule first and returns immediately. If the same user is both allowed and denied `write` on `docs`, `has_permission` returns `True`; the explicit deny should take precedence.
 
 ## Reproduce the issue
 
-Run `python3 permissions.py` in the starter folder. The focused regression case demonstrates the discrepancy. Run `python3 permissions.py` here to verify the corrected behavior.
+From `round-1/22-access-permission-checker/`, run `python3 permissions.py`. `test_direct_deny_overrides_direct_allow` fails because the conflicting rules grant access. Run it in this solution folder to confirm the deny wins.
 
 ## Investigation approach
 
-Trace the implementation in policy order and compare each branch against the boundary conditions in the challenge. Use small inputs that isolate one decision at a time, then check state, ordering, and input preservation where they apply.
+Trace `has_permission` in branch order. The direct allow branch returns before the code reads `deny`, so role checks and ownership are never reached for a direct match. Test a user with both rules and no roles to isolate that precedence defect; then separately check how role grants and owner reads behave.
 
 ## Correction
 
-The solution applies the challenge rules explicitly, checks invalid inputs before using them, and avoids unintended mutation or unstable decisions. The corrected behavior is implemented independently rather than importing starter code.
+The solution checks resource-specific and wildcard direct denies first and returns `False` on a match. It then checks direct allows, role grants, and finally read-only ownership. This ordering lets a deny override every grant while keeping role and owner behavior available when no direct deny matches.
 
 ## Regression tests
 
-The tests cover ordinary cases, the defect boundary, adjacent edge cases, and invariants. Run them with `python3 permissions.py`.
+`test_direct_deny_overrides_direct_allow` reproduces the defect. The suite also covers a deny overriding a role grant, direct and role grants, unsupported actions, owner read-only access, and an unknown user. Run it with `python3 permissions.py`.

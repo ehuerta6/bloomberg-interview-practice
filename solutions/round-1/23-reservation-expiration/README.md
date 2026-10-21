@@ -2,20 +2,20 @@
 
 ## What broke
 
-The draft uses a strict less-than comparison, leaving a reservation pending at its exact deadline. It also leaks a TypeError when timestamp timezone styles cannot be compared.
+The draft uses `expires_at < now`, so a pending reservation whose deadline equals `now` stays pending and is omitted from `expired_ids`. It also compares timestamps before checking timezone style, leaking `TypeError` for an aware expiration and naive `now`.
 
 ## Reproduce the issue
 
-Run `python3 reservations.py` in the starter folder. The focused regression case demonstrates the discrepancy. Run `python3 reservations.py` here to verify the corrected behavior.
+From `round-1/23-reservation-expiration/`, run `python3 reservations.py`. `test_exact_deadline_is_expired` fails because the record remains pending; `test_naive_and_aware_times_are_not_mixed` errors with `TypeError` rather than receiving `ValueError`. Run it in this solution folder to confirm both cases pass.
 
 ## Investigation approach
 
-Trace the implementation in policy order and compare each branch against the boundary conditions in the challenge. Use small inputs that isolate one decision at a time, then check state, ordering, and input preservation where they apply.
+In `expire_reservations`, follow the parsed `expires_at` into the `status == "pending"` condition. The strict comparison explains the exact-deadline result. Separately, compare the timestamp's `tzinfo` with `now.tzinfo` before ordering them; Python raises `TypeError` when one datetime is aware and the other is naive.
 
 ## Correction
 
-The solution applies the challenge rules explicitly, checks invalid inputs before using them, and avoids unintended mutation or unstable decisions. The corrected behavior is implemented independently rather than importing starter code.
+The solution validates `now`, parses and copies each record, rejects mismatched timezone styles with `ValueError`, and transitions only pending records where `expires_at <= now`. It appends IDs at the moment of transition, preserving input order, and leaves caller-owned dictionaries unchanged.
 
 ## Regression tests
 
-The tests cover ordinary cases, the defect boundary, adjacent edge cases, and invariants. Run them with `python3 reservations.py`.
+`test_exact_deadline_is_expired` and `test_naive_and_aware_times_are_not_mixed` cover the two defects. Other cases check a future reservation, confirmed and already-expired records, newly expired ID order, and input immutability. Run them with `python3 reservations.py`.
