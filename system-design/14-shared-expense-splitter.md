@@ -1,0 +1,41 @@
+# Problem 14 — Shared Expense Splitter
+
+**Difficulty:** Hard
+
+## Scenario
+
+A group of students shares costs for a club trip. Members need to record purchases paid by one person, split each purchase among selected participants, see their net balances, and record repayments made outside the app. The app should explain how it calculated each person's share so totals remain understandable.
+
+Design a small group expense application. It calculates obligations but does not move money or connect to a bank.
+
+## Functional Requirements
+
+- A member can create a group and invite other existing users. Only group members can view its expenses and balances.
+- A member can record an expense with a description, payer, currency, total amount, and the participants who share it.
+- The first version supports equal splits and explicit per-person amounts. For either mode, allocated shares must sum exactly to the expense total in the currency's minor unit (for example cents).
+- The creator can correct or delete an expense while it has no associated settlement. Changes must update all affected balances consistently and leave an audit record.
+- A member can record a repayment from one member to another. A repayment reduces the sender's debt to the receiver and is separately identifiable from an expense.
+- Each member can view a balance summary and the underlying expenses and repayments. A positive amount means the member is owed money; a negative amount means the member owes money.
+- The system must reject cross-group payers/participants, negative amounts, unsupported currency mismatches, and duplicate repayment submissions caused by a client retry.
+
+## Constraints & Assumptions
+
+- Each group uses one currency at a time; exchange rates and payment processing are out of scope.
+- Use integer minor units or an exact decimal representation; binary floating point is not acceptable for persisted money.
+- For an equal split with a remainder, define a deterministic rule that allocates every minor unit exactly once (for example, sort participant IDs and distribute leftover cents in that order).
+- Balances can be derived from expenses and repayments for this initial scale. If you introduce cached totals, explain how they stay consistent with source records.
+- Clarify correction semantics: the recommended scope is to edit/delete only unsettled expenses, while repayment records are immutable and corrected by a compensating repayment.
+
+## Your Task
+
+Design the data model and the workflows for recording an expense, computing balances, and recording an off-app repayment. Explain the equal-split remainder rule and how a retried request avoids duplicate repayments. Walk through how an expense correction affects multiple participants without leaving a partially updated set of shares. State the invariants used to verify that group balances net to zero.
+
+## Interviewer Follow-Ups
+
+- The group grows and recomputing balances from every record becomes slow. What is a safe first optimization?
+- A member disputes a recorded repayment. How would you preserve history while correcting the balance?
+- Groups need to record expenses in multiple currencies. What additional data and user decisions are required?
+
+## Reference Solution
+
+[View the reference solution](../solutions/system-design/14-shared-expense-splitter.md)
