@@ -2,19 +2,19 @@
 
 ## What Was Broken
 
-A post can be approved by its author, and two reviewers can make conflicting decisions while the history shows only the final state. The defect occurs because the workflow does not consistently preserve its key state invariant: authors cannot review their own posts; every accepted decision appends an actor, decision, and note to the audit history.
+The starter accepted a review from the post’s author. The author could approve or reject their own pending post, and the service would change the post state and append that decision to the audit log.
 
 ## Reproduce and Investigate
 
-From this folder, run `python3 test_moderation_workflow.py`. Compare the reported state with the state stored by the service. Then follow the request through its service, store, and provider or record types. The tests use in-memory state, so each run starts fresh.
+From this folder, run `python3 test_moderation_workflow.py`. The self-review case submits a post as `author-1`, then attempts to approve it as the same user. Check both the returned status and the post and audit records afterward. Also trace the repeated-decision test to see how a pending post becomes terminal.
 
 ## The Fix
 
-The corrected service validates the request before mutation, persists state at the appropriate transition, and handles retries according to the stable event, invoice, transaction, session, or job identifier. Only a pending post can receive one valid review decision.
+Before changing state, `review` rejects an author reviewing their own post with `forbidden`. A valid reviewer can decide only a pending post, and only `approve` or `reject` are accepted. Successful decisions update the post and append an audit event containing the post, reviewer, decision, and note. Invalid, forbidden, or conflicting requests leave state and audit history untouched.
 
-## Regression Coverage
+## Regression Tests
 
-The tests cover the reported failure, its successful path, and boundary or replay behavior. They assert persisted records and externally visible effects rather than implementation details.
+The suite covers an approved post and its audit actor, forbidden self-review, a second decision against a terminal post, and an unsupported decision that must not mutate state.
 
 ## Run
 

@@ -2,19 +2,19 @@
 
 ## What Was Broken
 
-The same event appears twice in a recipient’s inbox, while a temporary provider outage leaves some messages in an ambiguous state. The defect occurs because the workflow does not consistently preserve its key state invariant: a delivery record is persisted before the external send attempt and records each attempt and terminal state.
+`DeliveryService.deliver` sent the provider request every time the same event ID was submitted. The store already held a `sent` delivery, but the starter did not return it before trying the provider again. A caller retry after a successful send therefore created a duplicate notification.
 
 ## Reproduce and Investigate
 
-From this folder, run `python3 test_notification_delivery.py`. Compare the reported state with the state stored by the service. Then follow the request through its service, store, and provider or record types. The tests use in-memory state, so each run starts fresh.
+From this folder, run `python3 test_notification_delivery.py`. The replay case sends `evt-1` twice and checks both the provider call count and the stored attempt count. Trace `deliver` into `DeliveryStore` and `RecordingProvider`: the store retains one delivery row, so provider calls reveal the duplicate side effect. The other tests exercise transient failure, exhausted attempts, and a later retry.
 
 ## The Fix
 
-The corrected service validates the request before mutation, persists state at the appropriate transition, and handles retries according to the stable event, invoice, transaction, session, or job identifier. A notification is keyed by event ID; repeated submissions of the same event do not produce another send after success.
+`deliver` now returns an already-sent record without contacting the provider. It also rejects reuse of an event ID for different recipient or message content. Before each provider call, the service saves the record with its incremented attempt count; it saves `sent` or `failed` after the outcome. `retry` resumes only deliveries that have not succeeded.
 
-## Regression Coverage
+## Regression Tests
 
-The tests cover the reported failure, its successful path, and boundary or replay behavior. They assert persisted records and externally visible effects rather than implementation details.
+The suite verifies one provider call for a duplicate successful request, retries through two transient failures, persists failure after three attempts, resumes a failed delivery successfully, and rejects changed content under an existing event ID.
 
 ## Run
 

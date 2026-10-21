@@ -2,19 +2,19 @@
 
 ## What Was Broken
 
-A user logs out, but the same session token still opens protected pages; logging out on one device must not sign out all devices. The defect occurs because the workflow does not consistently preserve its key state invariant: revocation is scoped to one session, persisted, and idempotent; another device’s session remains active.
+Logout saved `revoked_at`, but the starter’s authorization check only tested whether the session record existed. A revoked session therefore continued to authorize access. The stored revocation timestamp had no effect on requests.
 
 ## Reproduce and Investigate
 
-From this folder, run `python3 test_session_revocation.py`. Compare the reported state with the state stored by the service. Then follow the request through its service, store, and provider or record types. The tests use in-memory state, so each run starts fresh.
+From this folder, run `python3 test_session_revocation.py`. The first test logs one user in on two devices, logs out session `s-1`, then checks authorization for both IDs. Compare `SessionService.is_authorized` with the `revoked_at` value held by `SessionStore`.
 
 ## The Fix
 
-The corrected service validates the request before mutation, persists state at the appropriate transition, and handles retries according to the stable event, invoice, transaction, session, or job identifier. A revoked session is no longer authorized for protected access.
+Authorization now requires a stored session whose `revoked_at` is still unset. Logout records the first revocation time and leaves it unchanged on repeated calls. Because sessions are stored separately, revoking one device does not revoke another; an unknown session is never authorized.
 
-## Regression Coverage
+## Regression Tests
 
-The tests cover the reported failure, its successful path, and boundary or replay behavior. They assert persisted records and externally visible effects rather than implementation details.
+The suite checks logout on one of two sessions, repeated logout preserving the original timestamp, and rejection of an unknown session ID.
 
 ## Run
 

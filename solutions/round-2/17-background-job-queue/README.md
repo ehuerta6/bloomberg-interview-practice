@@ -2,19 +2,19 @@
 
 ## What Was Broken
 
-Two workers process the same job after a short delay, and expired work is not reliably reclaimed after a worker disappears. The defect occurs because the workflow does not consistently preserve its key state invariant: expired leases can be reclaimed, stale workers cannot complete or fail another worker’s lease, and retries stop at the configured attempt limit.
+The starter let each caller claim the first nonterminal job, even when another worker held an unexpired lease. It also treated a lease as valid at its exact expiry time. Two workers could consequently own the same job, while an expired worker could still complete or fail it at the boundary.
 
 ## Reproduce and Investigate
 
-From this folder, run `python3 test_job_queue.py`. Compare the reported state with the state stored by the service. Then follow the request through its service, store, and provider or record types. The tests use in-memory state, so each run starts fresh.
+From this folder, run `python3 test_job_queue.py`. The concurrent-claim test asks two workers to claim at time 100 and checks the lease owner. The reclaim and stale-owner tests use deterministic timestamps around lease expiry; trace `claim`, `complete`, and `fail` while checking the job’s owner, deadline, and attempt count.
 
 ## The Fix
 
-The corrected service validates the request before mutation, persists state at the appropriate transition, and handles retries according to the stable event, invoice, transaction, session, or job identifier. A live lease has one owner and excludes other workers until it expires.
+`claim` skips a live lease, reassigns an expired lease, and increments attempts on each claim. Completion and failure require the current owner and a lease that has not expired; the deadline itself is expired. A failure requeues the job until the attempt limit, then marks it failed. If a worker disappears on the final attempt, the next claim after expiry marks that job failed instead of leaving it leased forever. Repeated completion of a done job is harmless.
 
-## Regression Coverage
+## Regression Tests
 
-The tests cover the reported failure, its successful path, and boundary or replay behavior. They assert persisted records and externally visible effects rather than implementation details.
+The suite covers exclusion of a second worker during a live lease, reclaim after expiry, retry after a reported failure, idempotent duplicate completion, rejection of a stale worker after reassignment, and exhaustion after a final worker disappears.
 
 ## Run
 
