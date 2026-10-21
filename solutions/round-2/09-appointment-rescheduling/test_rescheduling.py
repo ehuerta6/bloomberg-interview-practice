@@ -32,4 +32,15 @@ class RescheduleTests(unittest.TestCase):
         self.assertEqual(self.service.reschedule("a1", "patient-a", "10:00"), "rescheduled")
         self.assertEqual(self.repo.time_of("a1"), "10:00")
 
+    def test_empty_new_slot_is_rejected_without_moving_appointment(self):
+        self.assertEqual(self.service.reschedule("a1", "patient-a", ""), "not_found")
+        self.assertEqual(self.repo.time_of("a1"), "10:00")
+
+
+    def test_failed_second_move_rolls_back_to_current_slot(self):
+        self.service.reschedule("a1", "patient-a", "12:00")
+        self.assertEqual(self.service.reschedule("a1", "patient-a", "11:00"), "conflict")
+        self.assertEqual(self.repo.time_of("a1"), "12:00")
+        self.assertIsNone(self.repo.appointment_at("10:00"))
+
 if __name__ == "__main__": unittest.main()

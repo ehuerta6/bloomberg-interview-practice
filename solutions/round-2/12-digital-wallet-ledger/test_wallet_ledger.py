@@ -46,5 +46,27 @@ class WalletLedgerTests(unittest.TestCase):
         self.assertEqual(service.transfer("tx-5", "w-1", "w-2", 250).status, "conflict")
 
 
+    def test_same_wallet_transfer_is_rejected_without_entries(self):
+        store, service = self.build()
+        self.assertEqual(service.transfer("tx-self", "w-1", "w-1", 100).status, "rejected")
+        self.assertEqual(store.balance("w-1"), 5000)
+        self.assertEqual(store.entries_for("tx-self"), [])
+
+
+    def test_invalid_amount_is_rejected_without_entries(self):
+        store, service = self.build()
+        for amount in (0, -1):
+            self.assertEqual(service.transfer("tx-invalid", "w-1", "w-2", amount).status, "rejected")
+        self.assertEqual(store.balance("w-1"), 5000)
+        self.assertEqual(store.entries, [])
+
+
+    def test_transaction_id_cannot_be_reused_for_different_transfer(self):
+        store, service = self.build()
+        service.transfer("tx-4", "w-1", "w-2", 100)
+        self.assertEqual(service.transfer("tx-4", "w-1", "w-2", 200).status, "conflict")
+        self.assertEqual(store.balance("w-1"), 4900)
+        self.assertEqual(len(store.entries_for("tx-4")), 2)
+
 if __name__ == "__main__":
     unittest.main()

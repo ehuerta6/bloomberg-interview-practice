@@ -53,5 +53,39 @@ class BackgroundJobQueueTests(unittest.TestCase):
         self.assertEqual(store.get("job-5").status, "failed")
 
 
+    def test_wrong_worker_cannot_complete_active_lease(self):
+        store, queue = self.build()
+        queue.enqueue("job-4", "sync", {})
+        queue.claim("worker-a", 100)
+        self.assertEqual(queue.complete("job-4", "worker-b", 101).status, "conflict")
+        self.assertEqual(store.get("job-4").status, "leased")
+
+
+    def test_retry_limit_moves_job_to_terminal_failed_state(self):
+        store, queue = self.build()
+        queue.enqueue("job-5", "sync", {})
+        queue.claim("worker-a", 100)
+        queue.fail("job-5", "worker-a", "first", 101)
+        queue.claim("worker-b", 102)
+        queue.fail("job-5", "worker-b", "second", 103)
+        queue.claim("worker-c", 104)
+        self.assertEqual(queue.fail("job-5", "worker-c", "last", 105).status, "failed")
+        self.assertIsNone(queue.claim("worker-d", 200))
+
+
+    def test_lease_expiry_boundary_rejects_old_worker(self):
+        store, queue = self.build()
+        queue.enqueue("job-6", "sync", {})
+        queue.claim("worker-a", 100)
+        self.assertEqual(queue.complete("job-6", "worker-a", 130).status, "conflict")
+        self.assertEqual(store.get("job-6").status, "leased")
+
+
+    def test_duplicate_job_id_is_rejected(self):
+        _, queue = self.build()
+        queue.enqueue("job-7", "sync", {})
+        with self.assertRaises(ValueError):
+            queue.enqueue("job-7", "other", {})
+
 if __name__ == "__main__":
     unittest.main()

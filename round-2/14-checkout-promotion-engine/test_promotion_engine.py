@@ -39,5 +39,18 @@ class PromotionEngineTests(unittest.TestCase):
         self.assertEqual(quote.total, 9400)
 
 
+    def test_unknown_promotion_code_leaves_cart_undiscounted(self):
+        _, service = self.build()
+        quote = service.quote([("book", 1, 2000)], "MISSING")
+        self.assertEqual(quote.discount, 0)
+        self.assertEqual(quote.total, 2000)
+
+
+    def test_fixed_discount_is_limited_to_eligible_subtotal(self):
+        _, service = self.build()
+        quote = service.quote([("book", 1, 300), ("pen", 1, 5000)], "SHIP5")
+        self.assertEqual(quote.discount, 300)
+        self.assertEqual(quote.total, 5000)
+
 if __name__ == "__main__":
     unittest.main()

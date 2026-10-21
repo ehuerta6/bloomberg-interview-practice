@@ -31,5 +31,24 @@ class InvoiceReconciliationTests(unittest.TestCase):
         self.assertEqual(store.invoice("inv-1").paid_cents, 0)
 
 
+    def test_payment_reference_reused_for_other_amount_is_conflict(self):
+        store, service = self.build()
+        service.apply_payment("pay-5", "inv-1", 1000)
+        self.assertEqual(service.apply_payment("pay-5", "inv-1", 2000).status, "conflict")
+        self.assertEqual(store.invoice("inv-1").paid_cents, 1000)
+
+
+    def test_unknown_invoice_does_not_record_payment(self):
+        store, service = self.build()
+        self.assertEqual(service.apply_payment("pay-missing", "missing", 100).status, "rejected")
+        self.assertIsNone(store.payment("pay-missing"))
+
+
+    def test_zero_payment_is_rejected_without_mutation(self):
+        store, service = self.build()
+        self.assertEqual(service.apply_payment("pay-zero", "inv-1", 0).status, "rejected")
+        self.assertEqual(store.invoice("inv-1").paid_cents, 0)
+        self.assertIsNone(store.payment("pay-zero"))
+
 if __name__ == "__main__":
     unittest.main()

@@ -33,5 +33,24 @@ class ModerationWorkflowTests(unittest.TestCase):
         self.assertEqual(len(store.audit_for("post-1")), 1)
 
 
+    def test_rejection_records_actor_and_note(self):
+        store, service = self.build()
+        self.assertEqual(service.review("post-1", "reviewer-2", "reject", "spam").status, "rejected")
+        event = store.audit_for("post-1")[0]
+        self.assertEqual((event.actor, event.decision, event.note), ("reviewer-2", "reject", "spam"))
+
+
+    def test_invalid_decision_does_not_change_post_or_audit(self):
+        store, service = self.build()
+        self.assertEqual(service.review("post-1", "reviewer-1", "hide", "reason").status, "invalid")
+        self.assertEqual(store.post("post-1").status, "pending")
+        self.assertEqual(store.audit_for("post-1"), [])
+
+
+    def test_missing_post_does_not_create_audit_event(self):
+        store, service = self.build()
+        self.assertEqual(service.review("missing", "reviewer-1", "approve", "safe").status, "invalid")
+        self.assertEqual(store.audit, [])
+
 if __name__ == "__main__":
     unittest.main()

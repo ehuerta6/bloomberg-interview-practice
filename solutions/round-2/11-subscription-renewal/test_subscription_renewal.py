@@ -43,5 +43,33 @@ class SubscriptionRenewalTests(unittest.TestCase):
         self.assertEqual(gateway.charges, [])
 
 
+    def test_early_renewal_does_not_call_gateway_or_change_state(self):
+        store, gateway, service = self.build()
+        result = service.renew("sub-1", "invoice-early", "2026-09-30")
+        self.assertEqual(result.status, "not_due")
+        self.assertEqual(gateway.charges, [])
+        self.assertEqual(store.get("sub-1").next_due, "2026-10-01")
+
+
+    def test_renewal_preserves_month_end_schedule(self):
+        store, _, service = self.build()
+        store.get("sub-1").next_due = "2026-01-31"
+        self.assertEqual(service.renew("sub-1", "invoice-jan", "2026-01-31").status, "paid")
+        self.assertEqual(store.get("sub-1").next_due, "2026-02-28")
+
+
+    def test_canceled_subscription_is_not_charged(self):
+        store, gateway, service = self.build()
+        store.get("sub-1").status = "canceled"
+        self.assertEqual(service.renew("sub-1", "invoice-canceled", "2026-10-01").status, "not_due")
+        self.assertEqual(gateway.charges, [])
+
+
+    def test_missing_subscription_does_not_create_invoice_or_charge(self):
+        store, gateway, service = self.build()
+        self.assertEqual(service.renew("missing", "invoice-x", "2026-10-01").status, "missing")
+        self.assertEqual(store.invoices, {})
+        self.assertEqual(gateway.charges, [])
+
 if __name__ == "__main__":
     unittest.main()

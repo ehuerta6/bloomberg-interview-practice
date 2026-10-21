@@ -30,4 +30,18 @@ class HoldTests(unittest.TestCase):
         self.assertTrue(self.service.confirm("h1", "buyer-a"))
         self.assertFalse(self.service.hold("A1", "buyer-b", "h2"))
 
+    def test_hold_expiring_at_now_is_available_to_another_buyer(self):
+        self.service.hold("A1", "buyer-a", "h1")
+        self.now += timedelta(minutes=5)
+        self.assertTrue(self.service.hold("A1", "buyer-b", "h2"))
+        self.assertEqual(self.repo.hold_for_seat("A1").hold_id, "h2")
+
+
+    def test_confirmed_hold_remains_unavailable_after_deadline(self):
+        self.service.hold("A1", "buyer-a", "h1")
+        self.assertTrue(self.service.confirm("h1", "buyer-a"))
+        self.now += timedelta(minutes=10)
+        self.assertFalse(self.service.hold("A1", "buyer-b", "h2"))
+        self.assertEqual(self.repo.hold_for_seat("A1").hold_id, "h1")
+
 if __name__ == "__main__": unittest.main()

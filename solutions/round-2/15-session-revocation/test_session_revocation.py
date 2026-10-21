@@ -31,5 +31,29 @@ class SessionRevocationTests(unittest.TestCase):
         self.assertFalse(service.is_authorized("missing"))
 
 
+    def test_active_session_is_authorized_before_logout(self):
+        _, service = self.build()
+        service.login("s-4", "alice", "tablet")
+        self.assertTrue(service.is_authorized("s-4"))
+
+
+    def test_unknown_session_is_not_authorized(self):
+        _, service = self.build()
+        self.assertFalse(service.is_authorized("missing"))
+
+
+    def test_logout_of_unknown_session_is_safe(self):
+        store, service = self.build()
+        self.assertFalse(service.logout("missing", "10:00"))
+        self.assertEqual(store.sessions, {})
+
+
+    def test_duplicate_session_id_cannot_replace_existing_user(self):
+        store, service = self.build()
+        service.login("s-5", "alice", "phone")
+        with self.assertRaises(ValueError):
+            service.login("s-5", "mallory", "phone")
+        self.assertEqual(store.get("s-5").user_id, "alice")
+
 if __name__ == "__main__":
     unittest.main()

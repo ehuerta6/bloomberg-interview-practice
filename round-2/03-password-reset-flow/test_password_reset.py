@@ -33,4 +33,18 @@ class PasswordResetTests(unittest.TestCase):
         self.assertFalse(self.service.reset("missing", "hash"))
         self.assertIsNone(self.repo.password_hash("u1"))
 
+    def test_tokens_for_different_users_are_independent(self):
+        self.service.issue("u1", "t1")
+        self.service.issue("u2", "t2")
+        self.assertTrue(self.service.reset("t1", "hash-one"))
+        self.assertTrue(self.service.reset("t2", "hash-two"))
+        self.assertEqual(self.repo.password_hash("u1"), "hash-one")
+        self.assertEqual(self.repo.password_hash("u2"), "hash-two")
+
+
+    def test_token_is_valid_immediately_before_expiration(self):
+        self.service.issue("u1", "t1")
+        self.now += timedelta(minutes=19, seconds=59)
+        self.assertTrue(self.service.reset("t1", "new-hash"))
+
 if __name__ == "__main__": unittest.main()

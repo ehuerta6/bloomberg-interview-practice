@@ -34,4 +34,15 @@ class RefundTests(unittest.TestCase):
         self.assertEqual(self.service.refund("p1", "rf2", 2500), "rejected")
         self.assertEqual(self.repo.refunded_total("p1"), 3000)
 
+    def test_full_refund_marks_payment_fully_refunded(self):
+        self.assertEqual(self.service.refund("p1", "rf1", 5000), "refunded")
+        self.assertEqual(self.repo.payment_state("p1"), "refunded")
+        self.assertEqual(self.repo.refunded_total("p1"), 5000)
+
+
+    def test_refund_reference_cannot_be_reused_for_different_amount(self):
+        self.service.refund("p1", "rf1", 1000)
+        self.assertEqual(self.service.refund("p1", "rf1", 2000), "rejected")
+        self.assertEqual(self.repo.refunded_total("p1"), 1000)
+
 if __name__ == "__main__": unittest.main()

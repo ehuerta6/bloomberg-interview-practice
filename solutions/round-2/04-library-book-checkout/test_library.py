@@ -33,4 +33,16 @@ class LibraryTests(unittest.TestCase):
         self.assertEqual(self.service.checkout("b1", "reader-b", "l2"), "l2")
         self.assertIsNone(self.service.checkout("b1", "reader-c", "l3"))
 
+    def test_unknown_book_cannot_be_reserved_or_checked_out(self):
+        self.assertFalse(self.service.reserve("missing", "reader-a"))
+        self.assertIsNone(self.service.checkout("missing", "reader-a", "l1"))
+        self.assertNotIn("l1", self.repo.loans)
+
+
+    def test_duplicate_loan_id_does_not_replace_active_loan(self):
+        self.service.checkout("b1", "reader-a", "l1")
+        self.assertIsNone(self.service.checkout("b1", "reader-b", "l1"))
+        self.assertEqual(self.repo.loan("l1").reader_id, "reader-a")
+        self.assertEqual(self.repo.available_copies("b1"), 0)
+
 if __name__ == "__main__": unittest.main()

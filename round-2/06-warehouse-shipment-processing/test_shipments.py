@@ -37,5 +37,17 @@ class ShipmentTests(unittest.TestCase):
         self.repo.reserve("sku-a", 3)
         self.assertEqual(self.service.fulfill("o1", {"sku-a": 2}), "backordered")
         self.assertEqual(self.repo.reserved("sku-a"), 3)
+    def test_partial_fulfillment_is_idempotent_on_order_retry(self):
+        lines = {"sku-a": 3, "sku-b": 3}
+        self.assertEqual(self.service.fulfill("o1", lines, allow_partial=True), "partially_shipped")
+        self.assertEqual(self.service.fulfill("o1", lines, allow_partial=True), "already_shipped")
+        self.assertEqual(self.repo.on_hand("sku-a"), 1)
+        self.assertEqual(self.repo.on_hand("sku-b"), 0)
+
+    def test_unknown_sku_is_backordered_without_consuming_known_stock(self):
+        self.assertEqual(self.service.fulfill("o1", {"sku-a": 1, "missing": 1}), "backordered")
+        self.assertEqual(self.repo.on_hand("sku-a"), 4)
+        self.assertEqual(self.repo.reserved("sku-a"), 0)
+
 
 if __name__ == "__main__": unittest.main()
