@@ -1,42 +1,37 @@
-# Ticket 24: Multi-Location Inventory (Hard)
+# Ticket #24 — Multi-Location Inventory
 
-## Ticket
+**Difficulty:** Hard
 
-Multi-Location Inventory needs reliable state transitions.
+## Problem
 
-## Reported symptom
+### Reported symptom
 
 Warehouse staff move goods between retail locations. Recent counts show phantom stock after repeated delivery scans and missing stock after cancelled shipments. The tool uses a local ledger and does not call shipping systems.
 
-## Scenario
+### Scenario
 
 Trace a transfer through start, receive, repeat receive, and cancellation. Compare total stock across locations and inspect the transfer status at each step.
 
-## Acceptance criteria
-
+## Acceptance Criteria
 - Starting a transfer removes units from source stock and records one in-transit transfer.
 - Receiving adds exactly the reserved units to destination stock once.
 - Cancelling restores the source exactly once and prevents receipt.
 - Invalid transfers change neither stock nor transfer history.
 - Reject operations that do not match the transfer state.
 
-## State invariants
-
+## State Invariants
 - Across an in-transit transfer, total on-hand plus in-transit stock is conserved.
 - Each transfer has exactly one terminal outcome.
 - A terminal transfer cannot be received or cancelled again.
 
-## Investigation task
+## Investigation
 
-Trace a normal operation, a boundary or failure case, and a repeated request across the route, service, and repository. Explain which state should change, which state must remain untouched, and how your regression tests demonstrate both outcomes. Keep the implementation in memory; no external services or frameworks are required.
+Follow one transfer from start through receive, repeated receive, and cancellation attempts. Run a second transfer through cancellation before receipt. Reconcile source stock, destination stock, in-transit units, and transfer state after every transition.
 
-## Run the starter tests
+## Starter Code
 
-```sh
-python3 test_inventory_transfers.py
-```
+[View starter code](../../round-2/24-multi-location-inventory/)
 
-## Exercise folders
+## Reference Solution
 
-- [Starter exercise](../../round-2/24-multi-location-inventory/)
-- [Reference solution](../../solutions/round-2/24-multi-location-inventory/)
+[View solution](../../solutions/round-2/24-multi-location-inventory/)

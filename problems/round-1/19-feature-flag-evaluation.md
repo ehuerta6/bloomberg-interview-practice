@@ -1,6 +1,4 @@
-# 19 · Feature Flag Evaluation
-
-**Round:** 1 · PR Review
+# PR #19 — Feature Flag Evaluation
 
 **Difficulty:** Medium
 
@@ -19,7 +17,6 @@ A rollout service combines a global enable switch, explicit user lists, and dete
 If rollout is used, the percentage must be numeric and between 0 and 100. A missing user ID is treated as off.
 
 ## Expected behavior, edge cases, and invariants
-
 - A globally disabled flag is always off.
 - A denylisted user is off even if also allowlisted. An allowlisted user is on unless denied.
 - Other users receive a stable bucket from 0 through 99 based on SHA-256 of their user ID string. Enable the user when the bucket is strictly less than `rollout_percent`.
@@ -29,9 +26,11 @@ If rollout is used, the percentage must be numeric and between 0 and 100. A miss
 
 Test precedence before rollout, exact bucket boundaries, stable results across calls, malformed percentages, and users without IDs.
 
-## Starter and solution
 
-- [Starter code: `feature_flags.py`](../../round-1/19-feature-flag-evaluation/feature_flags.py)
-- [Reference solution and explanation](../../solutions/round-1/19-feature-flag-evaluation/README.md)
+## Starter Code
 
-Run the starter from its folder with `python3 feature_flags.py`.
+[View starter code](../../round-1/19-feature-flag-evaluation/)
+
+## Reference Solution
+
+[View solution](../../solutions/round-1/19-feature-flag-evaluation/)

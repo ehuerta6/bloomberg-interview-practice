@@ -1,42 +1,37 @@
-# Ticket 18: Support Ticket Assignment (Easy)
+# Ticket #18 — Support Ticket Assignment
 
-## Ticket
+**Difficulty:** Easy
 
-Support Ticket Assignment needs reliable state transitions.
+## Problem
 
-## Reported symptom
+### Reported symptom
 
 The support desk receives tickets from billing and technical queues. The on-call lead reports that urgent tickets can remain queued behind routine requests.
 
-## Scenario
+### Scenario
 
 Trace ticket creation order into the queue selection, then follow workload changes through assignment and reassignment. Compare the repository’s load counters with actual assigned tickets after each transition.
 
-## Acceptance criteria
-
+## Acceptance Criteria
 - Reject malformed or duplicate tickets without state changes.
 - Treat priority 5 as most urgent and priority 1 as least urgent.
 - Preserve FIFO among equal-priority tickets.
 - Assign only open tickets to eligible category agents.
 - Keep workload counters equal to assigned-ticket counts after reassignment.
 
-## State invariants
-
+## State Invariants
 - Every assigned ticket has exactly one eligible assignee.
 - For each agent, load equals the count of tickets assigned to that agent.
 - Assignment consumes the highest-priority open ticket; ties preserve submission order.
 
-## Investigation task
+## Investigation
 
-Trace a normal operation, a boundary or failure case, and a repeated request across the route, service, and repository. Explain which state should change, which state must remain untouched, and how your regression tests demonstrate both outcomes. Keep the implementation in memory; no external services or frameworks are required.
+Follow a submitted ticket as multiple agents claim work, including a tie in priority and an agent who is not eligible for the ticket's category. After assignment and reassignment, compare each agent's load counter with the tickets actually assigned to that agent.
 
-## Run the starter tests
+## Starter Code
 
-```sh
-python3 test_support_tickets.py
-```
+[View starter code](../../round-2/18-support-ticket-assignment/)
 
-## Exercise folders
+## Reference Solution
 
-- [Starter exercise](../../round-2/18-support-ticket-assignment/)
-- [Reference solution](../../solutions/round-2/18-support-ticket-assignment/)
+[View solution](../../solutions/round-2/18-support-ticket-assignment/)

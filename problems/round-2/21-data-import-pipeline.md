@@ -1,42 +1,37 @@
-# Ticket 21: Data Import Pipeline (Medium)
+# Ticket #21 — Data Import Pipeline
 
-## Ticket
+**Difficulty:** Medium
 
-Data Import Pipeline needs reliable state transitions.
+## Problem
 
-## Reported symptom
+### Reported symptom
 
 An operations team imports a partner CSV through a small in-memory adapter. Bad rows must be reported without losing valid neighboring records, while duplicate partner IDs must never silently replace customer data.
 
-## Scenario
+### Scenario
 
 Trace a mixed batch containing valid rows, malformed values, repeated IDs, and an ID already in storage. Inspect accepted IDs, error row numbers, and the stored record after each import.
 
-## Acceptance criteria
-
+## Acceptance Criteria
 - Return a row-level result for valid and invalid input rows.
 - Do not let a duplicate overwrite an accepted or preexisting record.
 - Continue after a bad row and commit valid independent rows.
 - Accept nonnegative integer amounts supplied as integers or base-10 numeric strings; reject booleans and floats.
 - Return 400 for a non-list request body.
 
-## State invariants
-
+## State Invariants
 - A stored external ID maps to at most one record.
 - Within one batch, the first valid row for an ID wins.
 - Invalid or duplicate rows have no persistence effect.
 
-## Investigation task
+## Investigation
 
-Trace a normal operation, a boundary or failure case, and a repeated request across the route, service, and repository. Explain which state should change, which state must remain untouched, and how your regression tests demonstrate both outcomes. Keep the implementation in memory; no external services or frameworks are required.
+Run a mixed import containing valid rows, malformed amounts, duplicate IDs within the batch, and IDs already stored. Compare row numbers and per-row outcomes, confirm valid independent rows persist, and inspect state after a non-list request body.
 
-## Run the starter tests
+## Starter Code
 
-```sh
-python3 test_data_import.py
-```
+[View starter code](../../round-2/21-data-import-pipeline/)
 
-## Exercise folders
+## Reference Solution
 
-- [Starter exercise](../../round-2/21-data-import-pipeline/)
-- [Reference solution](../../solutions/round-2/21-data-import-pipeline/)
+[View solution](../../solutions/round-2/21-data-import-pipeline/)

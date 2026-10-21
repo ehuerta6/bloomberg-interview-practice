@@ -1,43 +1,38 @@
-# Ticket 23: Product Returns & Exchanges (Medium)
+# Ticket #23 — Product Returns & Exchanges
 
-## Ticket
+**Difficulty:** Medium
 
-Product Returns & Exchanges needs reliable state transitions.
+## Problem
 
-## Reported symptom
+### Reported symptom
 
 A store accepts customer returns for refunds or size exchanges. A failed replacement lookup left returned stock available even though no exchange was recorded, and customers could exceed the quantity purchased by splitting requests.
 
-## Scenario
+### Scenario
 
 Exercise a refund and exchange from the same order line, then try exceeding the original purchased quantity. Force an exchange failure with no replacement stock and compare stock and return records before and after.
 
-## Acceptance criteria
-
+## Acceptance Criteria
 - Refund amount equals returned quantity times the original unit price.
 - Refund and exchange return the original SKU to stock.
 - Exchange consumes replacement stock only when available.
 - Failed requests make no stock or ledger changes.
 - Return limits account for earlier refunds and exchanges combined.
 
-## State invariants
-
+## State Invariants
 - A line cannot have more units returned than purchased.
 - Every completed return case corresponds to exactly one stock and financial effect.
 - Stock counts never become negative.
 - Replaying a return ID cannot apply effects twice.
 
-## Investigation task
+## Investigation
 
-Trace a normal operation, a boundary or failure case, and a repeated request across the route, service, and repository. Explain which state should change, which state must remain untouched, and how your regression tests demonstrate both outcomes. Keep the implementation in memory; no external services or frameworks are required.
+Trace a refund and an exchange against the same order line, then split additional returns until the purchased quantity would be exceeded. Force an unavailable replacement and replay a completed return ID; compare inventory, refund totals, and return records after each attempt.
 
-## Run the starter tests
+## Starter Code
 
-```sh
-python3 test_returns.py
-```
+[View starter code](../../round-2/23-product-returns-exchanges/)
 
-## Exercise folders
+## Reference Solution
 
-- [Starter exercise](../../round-2/23-product-returns-exchanges/)
-- [Reference solution](../../solutions/round-2/23-product-returns-exchanges/)
+[View solution](../../solutions/round-2/23-product-returns-exchanges/)

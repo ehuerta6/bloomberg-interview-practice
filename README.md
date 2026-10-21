@@ -1,71 +1,67 @@
-# Coding Interview Club: Bloomberg AI Interview Practice
+# AI-Assisted Software Engineering Interview Practice
 
-The Coding Interview Club created these five Python exercises to help students practice debugging with an AI helper. Their workflow draws on one club member's prep and mock-interview notes. The exercises are original practice, not actual or leaked Bloomberg questions or official interview requirements. Formats and tools can vary, so follow the instructions you receive.
+50 practical exercises focused on pull request reviews, debugging, testing, and navigating unfamiliar Python codebases.
 
-## Challenge Portal
+Round 1 asks you to review a proposed change against its requirements and tests. Round 2 asks you to trace a reported bug through a small multi-file codebase.
 
-Open the [CIC Challenge Portal](https://ehuerta6.github.io/bloomberg-ai-interview-practice/) to choose a practice exercise and read its assignment in the browser. Then clone this repository, open only the selected exercise folder in VS Code, and run its command from that folder. Use a non-editing AI helper to investigate the code; make and explain the changes yourself.
+These are original Coding Interview Club (CIC) practice problems. They are not official Bloomberg interview questions.
 
-GitHub Pages serves the portal from the repository settings: choose **Deploy from a branch**, set **Branch** to `main`, set **Folder** to `/docs`, and save.
+## Round 1 — Pull Request Reviews
 
-## Get started
+| # | Problem | Difficulty |
+|---:|---|---|
+| 01 | [Code Validator](problems/round-1/01-code-validator.md) | Easy |
+| 02 | [Event Scheduler](problems/round-1/02-event-scheduler.md) | Medium |
+| 03 | [Cappy's Snack Inventory](problems/round-1/03-snack-inventory.md) | Easy |
+| 04 | [Coupon Eligibility](problems/round-1/04-coupon-eligibility.md) | Medium |
+| 05 | [Session Token Expiration](problems/round-1/05-session-token-expiration.md) | Medium |
+| 06 | [API Pagination](problems/round-1/06-api-pagination.md) | Hard |
+| 07 | [Notification Deduplication](problems/round-1/07-notification-deduplication.md) | Medium |
+| 08 | [File Upload Validation](problems/round-1/08-file-upload-validation.md) | Easy |
+| 09 | [Gradebook Aggregation](problems/round-1/09-gradebook-aggregation.md) | Medium |
+| 10 | [CSV Import Parser](problems/round-1/10-csv-import-parser.md) | Medium |
+| 11 | [URL Query Parameter Parser](problems/round-1/11-url-query-parameter-parser.md) | Easy |
+| 12 | [Seat Allocation](problems/round-1/12-seat-allocation.md) | Hard |
+| 13 | [LRU Cache](problems/round-1/13-lru-cache.md) | Medium |
+| 14 | [Request Rate Limiter](problems/round-1/14-request-rate-limiter.md) | Hard |
+| 15 | [Balance Transfer](problems/round-1/15-balance-transfer.md) | Medium |
+| 16 | [Log Filtering](problems/round-1/16-log-filtering.md) | Easy |
+| 17 | [Search Ranking](problems/round-1/17-search-ranking.md) | Medium |
+| 18 | [Dependency Resolution](problems/round-1/18-dependency-resolution.md) | Hard |
+| 19 | [Feature Flag Evaluation](problems/round-1/19-feature-flag-evaluation.md) | Medium |
+| 20 | [Shipping Fee Calculator](problems/round-1/20-shipping-fee-calculator.md) | Medium |
+| 21 | [Retry Backoff Planner](problems/round-1/21-retry-backoff-planner.md) | Medium |
+| 22 | [Access Permission Checker](problems/round-1/22-access-permission-checker.md) | Hard |
+| 23 | [Reservation Expiration](problems/round-1/23-reservation-expiration.md) | Medium |
+| 24 | [Data Merge Reconciliation](problems/round-1/24-data-merge-reconciliation.md) | Medium |
+| 25 | [Rolling Analytics Window](problems/round-1/25-rolling-analytics-window.md) | Medium |
 
-Clone the repository:
+## Round 2 — Engineering Tickets
 
-```sh
-git clone https://github.com/ehuerta6/bloomberg-ai-interview-practice.git
-cd bloomberg-ai-interview-practice
-```
-
-Choose an exercise below. Read its PR or Ticket in the Challenge Portal, then open only that exercise folder in VS Code with **File → Open Folder**. If the VS Code command-line tool is enabled, `code round-1/01-code-validator` opens the first exercise from the repository root. Keeping your editor focused on the selected exercise helps limit what your AI tool sees.
-
-| ID | Exercise | Assignment | Open this folder | Run from that folder |
-| --- | --- | --- | --- | --- |
-| `r1-p1` | Student Code Validator | [`Code Validator assignment`](https://ehuerta6.github.io/bloomberg-ai-interview-practice/challenges/r1-01-code-validator.html) | `round-1/01-code-validator` | `python3 validator.py` |
-| `r1-p2` | Event Scheduler | [`Event Scheduler assignment`](https://ehuerta6.github.io/bloomberg-ai-interview-practice/challenges/r1-02-event-scheduler.html) | `round-1/02-event-scheduler` | `python3 scheduler.py` |
-| `r1-p3` | Cappy's Snack Inventory | [`Snack Inventory assignment`](https://ehuerta6.github.io/bloomberg-ai-interview-practice/challenges/r1-03-snack-inventory.html) | `round-1/03-snack-inventory` | `python3 inventory.py` |
-| `r2-p1` | Cappy Event Registration System | [`Event Registration assignment`](https://ehuerta6.github.io/bloomberg-ai-interview-practice/challenges/r2-01-event-registration.html) | `round-2/01-event-registration` | `python3 test_event_registration.py` |
-| `r2-p2` | Cappy Orders | [`Order Processing assignment`](https://ehuerta6.github.io/bloomberg-ai-interview-practice/challenges/r2-02-order-processing.html) | `round-2/02-order-processing` | `python3 test_order_processing.py` |
-
-For example, from a terminal at the repository root, start Round 1, Problem 1 with:
-
-```sh
-cd round-1/01-code-validator
-python3 validator.py
-```
-
-If you opened that problem folder directly in VS Code, its terminal is already there; run `python3 validator.py`. On some systems, use `python` instead. The exercises use Python's standard library, so no package installation or virtual environment is needed.
-
-## Reference Solutions
-
-The Bloomberg Interview Preparation Night workshop has concluded, so reference solutions are now publicly available. Use the original exercises to investigate the bugs first, then compare your work with the corrected implementation and explanation.
-
-- [Round 1 · Code Validator](https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/01-code-validator/README.md)
-- [Round 1 · Event Scheduler](https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/02-event-scheduler/README.md)
-- [Round 1 · Cappy's Snack Inventory](https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-1/03-snack-inventory/README.md)
-- [Round 2 · Event Registration](https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-2/01-event-registration/README.md)
-- [Round 2 · Order Processing](https://github.com/ehuerta6/bloomberg-ai-interview-practice/blob/main/solutions/round-2/02-order-processing/README.md)
-
-The `round-1/` and `round-2/` directories contain the original starter exercises, including their intentionally incomplete or misleading tests. The `solutions/` directory contains corrected implementations, tests, and explanations. These remain original CIC practice exercises, not official Bloomberg interview questions.
-
-## What you'll practice
-
-Round 1 is pull request review in a single Python file. The implementation and `unittest` tests are together in that file. Round 2 gives you a small multi-file codebase and an engineering ticket; trace how a request and its state move between modules.
-
-Use this sequence: **Read the assignment. Inspect the code. Find a gap. Fix and test it.** Try a concrete input, check what the tests actually assert, and add a regression test for the behavior you investigate. Some starter tests are meant to fail. Others may be misleading, unrelated, or incomplete, so passing tests alone do not prove the code is right.
-
-## Work with AI
-
-Use AI to explain a function or traceback, trace a value through the code, or help think of a test. For example: “For this input, the code returns X. What should I inspect to understand why?” Ask it to point to evidence, then check that evidence yourself. Make the changes and explain your reasoning; the AI should help you investigate, not do the exercise for you.
-
-The exercise's `AGENTS.md` asks the helper to read only that folder, avoid searching elsewhere for assignments or solutions, offer hints gradually, and leave all edits to you. These instructions guide behavior; they cannot restrict filesystem access, so an AI tool may still be able to read other folders. Open only the selected exercise in your editor and choose a read-only or non-editing AI mode; keep edit or agent mode off. Check the tool's access, and share the relevant assignment details yourself when you want help reasoning about them.
-
-## Resources
-
-- [Python `unittest`](https://docs.python.org/3/library/unittest.html)
-- [HackerRank: AI Assistant in Interviews](https://candidatesupport.hackerrank.com/articles/6665907643-ai-assistant-in-interviews)
-- [GitHub Copilot prompt engineering](https://docs.github.com/en/copilot/concepts/prompting/prompt-engineering)
-- [GitHub Copilot: Explore a codebase](https://docs.github.com/en/copilot/tutorials/explore-a-codebase)
-- [Martin Fowler: Test-Driven Development](https://martinfowler.com/bliki/TestDrivenDevelopment.html)
-
-Corrected solutions and explanations are kept on a separate local branch for workshop staff. They will be published after the workshop, with authorization. Cappy, the club's capybara, appears in a few exercise names.
+| # | Problem | Difficulty |
+|---:|---|---|
+| 01 | [Event Registration](problems/round-2/01-event-registration.md) | Medium |
+| 02 | [Order Processing](problems/round-2/02-order-processing.md) | Medium |
+| 03 | [Password Reset Flow](problems/round-2/03-password-reset-flow.md) | Medium |
+| 04 | [Library Book Checkout](problems/round-2/04-library-book-checkout.md) | Easy |
+| 05 | [Refund Processing](problems/round-2/05-refund-processing.md) | Medium |
+| 06 | [Warehouse Shipment Processing](problems/round-2/06-warehouse-shipment-processing.md) | Hard |
+| 07 | [Ticket Seat Holds](problems/round-2/07-ticket-seat-holds.md) | Medium |
+| 08 | [Course Enrollment](problems/round-2/08-course-enrollment.md) | Medium |
+| 09 | [Appointment Rescheduling](problems/round-2/09-appointment-rescheduling.md) | Medium |
+| 10 | [Notification Delivery](problems/round-2/10-notification-delivery.md) | Medium |
+| 11 | [Subscription Renewal](problems/round-2/11-subscription-renewal.md) | Medium |
+| 12 | [Digital Wallet Ledger](problems/round-2/12-digital-wallet-ledger.md) | Hard |
+| 13 | [Invoice Reconciliation](problems/round-2/13-invoice-reconciliation.md) | Medium |
+| 14 | [Checkout Promotion Engine](problems/round-2/14-checkout-promotion-engine.md) | Medium |
+| 15 | [Session Revocation](problems/round-2/15-session-revocation.md) | Easy |
+| 16 | [Content Moderation Workflow](problems/round-2/16-content-moderation-workflow.md) | Medium |
+| 17 | [Background Job Queue](problems/round-2/17-background-job-queue.md) | Hard |
+| 18 | [Support Ticket Assignment](problems/round-2/18-support-ticket-assignment.md) | Easy |
+| 19 | [Parking Permit Management](problems/round-2/19-parking-permit-management.md) | Easy |
+| 20 | [Team Invitation System](problems/round-2/20-team-invitation-system.md) | Easy |
+| 21 | [Data Import Pipeline](problems/round-2/21-data-import-pipeline.md) | Medium |
+| 22 | [Shared Document Permissions](problems/round-2/22-shared-document-permissions.md) | Hard |
+| 23 | [Product Returns & Exchanges](problems/round-2/23-product-returns-exchanges.md) | Medium |
+| 24 | [Multi-Location Inventory](problems/round-2/24-multi-location-inventory.md) | Hard |
+| 25 | [Webhook Event Processing](problems/round-2/25-webhook-event-processing.md) | Medium |
