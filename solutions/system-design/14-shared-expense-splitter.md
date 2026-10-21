@@ -19,16 +19,16 @@ Representative endpoints:
 
 An expense request is validated for group membership, currency, positive total, payer membership, and participant membership. The service calculates shares in minor units, verifies the share sum, then inserts the expense and all share rows in one transaction. On retry with the same idempotency key, it returns the original result rather than inserting a duplicate.
 
-A repayment request names the outstanding shares it pays. In one transaction the service locks or conditionally updates those shares, verifies each debtor and expense payer match the sender and receiver, checks that no allocation exceeds its remaining amount, and inserts the repayment plus allocation rows. A unique request key makes the whole operation idempotent. An expense edit uses the same transaction to verify its version and that no share has an allocation before replacing the shares and writing the audit snapshot.
+A repayment request names the outstanding shares it pays. In one transaction the service locks or conditionally updates those shares, verifies the expense and repayment belong to the same group and currency, verifies each debtor and expense payer match the sender and receiver, checks that no allocation exceeds its remaining amount, and inserts the repayment plus allocation rows. A unique `(group_id, request_key)` makes the whole operation idempotent. An expense edit uses the same transaction to verify its version and that no share has an allocation before replacing the shares and writing the audit snapshot.
 
 ## 3. Data Model
 
 - `users(user_id PK, display_name)` stores identity references.
 - `groups(group_id PK, name, currency_code, created_by FK -> users)` has exactly one currency.
 - `group_members(group_id FK -> groups, user_id FK -> users, joined_at, PK(group_id,user_id))` defines access.
-- `expenses(expense_id PK, group_id FK -> groups, paid_by_user_id FK -> users, created_by_user_id FK -> users, description, amount_minor, currency_code, version, deleted_at, created_at)` stores the payer's outlay.
+- `expenses(expense_id PK, group_id FK -> groups, paid_by_user_id FK -> users, created_by_user_id FK -> users, description, amount_minor, currency_code, version, deleted_at, created_at)` stores the payer's outlay. Its currency must match the group's currency.
 - `expense_shares(expense_id FK -> expenses, user_id FK -> users, amount_minor, PK(expense_id,user_id))` stores each participant's obligation. Shares must be nonnegative and sum to the parent amount.
-- `repayments(repayment_id PK, group_id FK -> groups, from_user_id FK -> users, to_user_id FK -> users, amount_minor, currency_code, request_key, created_by_user_id FK -> users, created_at, UNIQUE(group_id,request_key))` records an off-app settlement. Sender and recipient must differ and both belong to the group.
+- `repayments(repayment_id PK, group_id FK -> groups, from_user_id FK -> users, to_user_id FK -> users, amount_minor, currency_code, request_key, created_by_user_id FK -> users, created_at, UNIQUE(group_id,request_key))` records an off-app settlement. Its currency must match the group. Sender and recipient must differ and both belong to the group.
 - `repayment_allocations(repayment_id FK -> repayments, expense_id FK -> expenses, debtor_user_id, amount_minor, PK(repayment_id, expense_id, debtor_user_id))` identifies which participant share a repayment settles. A composite foreign key to `expense_shares(expense_id,user_id)` ensures that participant owes the expense; the service verifies the expense payer is the repayment recipient and that the allocation does not exceed the remaining share.
 - `expense_audit(audit_id PK, expense_id FK -> expenses, actor_user_id FK -> users, action, prior_snapshot, created_at)` captures corrections/deletion.
 
@@ -104,7 +104,7 @@ erDiagram
     }
     REPAYMENTS {
         int repayment_id PK
-        int group_id FK
+        int group_id FK, UK
         int from_user_id FK
         int to_user_id FK
         int created_by_user_id FK
@@ -126,7 +126,7 @@ erDiagram
     }
 ```
 
-An expense has at least one share. The database can enforce same-group membership using composite foreign keys or the service can validate it transactionally; state which enforcement is available in the chosen relational database. The ERD's user references are foreign keys, not embedded names.
+An expense has at least one share. `REPAYMENTS` uses composite uniqueness on `(group_id, request_key)`; neither field is globally unique by itself. The database can enforce same-group membership using composite foreign keys or the service can validate it transactionally; state which enforcement is available in the chosen relational database. The ERD's user references are foreign keys, not embedded names.
 
 ## 6. Walkthrough
 

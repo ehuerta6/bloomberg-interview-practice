@@ -2,7 +2,7 @@
 
 15 whiteboard-style interview exercises for practicing **Clarify → Interactions → Data → Design → Improve**. Start with the smallest correct design, state your assumptions, and use the follow-ups to explain when the design should change.
 
-Problems 01–02 originated in Noel's CIC workshop. Their reference designs are reconstructed from the workshop requirements provided for this question bank because the presentation was not available locally. Problems 03–15 are additional practice material. None are official Bloomberg interview questions.
+Problems 01–02 are adapted from Noel's CIC workshop. Their Mermaid diagrams are editable adaptations of the workshop reference designs, not exact reproductions of Noel's drawings. Problems 03–15 are additional practice material. None are official Bloomberg interview questions.
 
 | # | Problem | Difficulty |
 |---:|---|---|

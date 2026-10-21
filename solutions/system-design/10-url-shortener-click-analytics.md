@@ -64,7 +64,7 @@ erDiagram
         int owner_id PK, FK
         string idempotency_key PK
         string request_hash
-        int link_id FK
+        int link_id FK, UK
         datetime created_at
     }
     CLICK {

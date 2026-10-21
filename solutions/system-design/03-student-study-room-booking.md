@@ -10,7 +10,7 @@ Important invariants: active reservations for the same room cannot overlap; a ca
 
 Possible endpoints include `GET /rooms?start=...&end=...&capacity=...&facilities=...`, `POST /reservations`, `GET /me/reservations`, and `DELETE /reservations/{id}`. Staff use `POST /room-blocks` and `DELETE /room-blocks/{id}`. The availability search is a candidate finder, not a promise.
 
-To reserve, the service validates interval bounds and filters, begins a transaction, serializes changes for the selected room, checks for overlapping confirmed reservations and staff blocks, and inserts a confirmed reservation only if none conflict. It commits and returns confirmation; otherwise it returns a conflict and asks the client to refresh availability.
+Reservation creation and staff block creation/removal all serialize on the same room row. The service validates interval bounds, begins a transaction, checks for overlapping confirmed reservations and staff blocks, and inserts a confirmed reservation only if none conflict. A room block is likewise rejected or handled under an explicit override policy if it overlaps a confirmed reservation. It commits and returns the result; otherwise it returns a conflict and asks the client to refresh availability.
 
 ## 3. Data Model
 
@@ -89,7 +89,7 @@ erDiagram
 
 A student searches for a room for 2:00–3:00 PM with at least six seats and a whiteboard. The service filters active rooms by capacity and facility joins, then excludes rooms with any overlapping confirmed reservation or room block. The app displays candidate rooms with an availability timestamp/notice that a result can change.
 
-The student chooses one room. The service begins a transaction, locks that room row (or uses an equivalent serializable reservation strategy), repeats the overlap checks, inserts the confirmed reservation, and commits. If a concurrent request already won, the second insert is rejected as a conflict rather than double-booking.
+The student chooses one room. The service begins a transaction, locks that room row (or uses an equivalent serializable strategy shared with staff-block writes), repeats the overlap checks, inserts the confirmed reservation, and commits. If a concurrent reservation or maintenance block already won, the second conflicting write is rejected rather than double-booking or blocking an existing reservation silently.
 
 ## 7. Design Decisions
 

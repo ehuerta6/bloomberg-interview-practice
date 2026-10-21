@@ -2,7 +2,7 @@
 
 ## 1. Clarify
 
-Assume course identity, instructor assignments, and student enrollment already exist. Each course has at most one open poll. A student gets one current vote per poll and may change it before close. The vote row, not a client-side counter, is authoritative. Results are aggregate only; the initial system does not show which student selected which option to other users.
+Assume course identity, instructor assignments, and student enrollment already exist. Each course has at most one open poll. A student gets one current vote per poll and may change it before close. Options become immutable when the poll opens; if a correction is necessary, close the poll and create another. The vote row, not a client-side counter, is authoritative. Results are aggregate only; the initial system does not show which student selected which option to other users.
 
 A vote is accepted only when its transaction observes the poll as open. Poll closure and vote submission serialize on the poll row (or use equivalent database isolation/conditional updates), giving a clear ordering: a vote committed before close counts; one after close is rejected. For a modest first release, use server-sent events for one-way result updates and an HTTP snapshot after reconnect. A periodic refresh fallback is reasonable if persistent connections are not supported.
 
@@ -16,7 +16,7 @@ Representative endpoints:
 - `GET /polls/{id}/results` returns aggregate counts after course authorization.
 - `GET /polls/{id}/events` opens an SSE stream for authorized users.
 
-On vote, the service authenticates the student, verifies enrollment and that the option belongs to the poll, locks/serializes on the poll, checks `open`, then inserts or updates the unique `(poll_id, student_id)` vote. It commits before notifying connected clients. Result counts are queried or derived from vote rows. A reconnecting client fetches a fresh snapshot before resuming the event stream.
+On vote, the service authenticates the student, verifies enrollment and that the option belongs to the poll, locks/serializes on the poll, checks `open`, then inserts or updates the unique `(poll_id, student_id)` vote and increments the poll's result version in one transaction. It commits before notifying connected clients. Result counts are queried or derived from vote rows. A reconnecting client first establishes its event stream, then fetches a snapshot with the current version; it applies only later-version events, avoiding a gap between snapshot and subscription.
 
 ## 3. Data Model
 
@@ -24,7 +24,7 @@ On vote, the service authenticates the student, verifies enrollment and that the
 - `courses(course_id PK, name)` is the existing course record.
 - `course_members(course_id FK -> courses, user_id FK -> users, role, PK(course_id,user_id))` records student enrollment or instructor assignment. Role is constrained to student/instructor.
 - `polls(poll_id PK, course_id FK -> courses, created_by FK -> users, question, state, opened_at, closed_at, created_at, version)` stores lifecycle. Enforce at most one open poll per course with a filtered unique index where supported, or lock the course row during open.
-- `poll_options(option_id PK, poll_id FK -> polls, label, position, UNIQUE(poll_id,position), UNIQUE(poll_id,label))` stores answers.
+- `poll_options(poll_id FK -> polls, option_id, label, position, PK(poll_id, option_id), UNIQUE(poll_id,position), UNIQUE(poll_id,label))` stores answers. The composite primary key lets a vote reference an option only within its own poll.
 - `votes(poll_id FK -> polls, student_id FK -> users, option_id FK -> poll_options, updated_at, PK(poll_id,student_id))` holds each student's current vote. A composite FK `(poll_id, option_id)` ensures the chosen option belongs to the poll.
 
 Invariants: only the assigned instructor opens/closes or creates polls; a student must be enrolled; only open polls accept votes; a vote references an option from its own poll; unique poll/student means one current vote; close and vote serialize; counts equal grouped vote rows. Keep no separate count as canonical state.
@@ -83,8 +83,8 @@ erDiagram
         datetime closed_at
     }
     POLL_OPTIONS {
+        int poll_id PK, FK
         int option_id PK
-        int poll_id FK
         string label
         int position
     }
@@ -96,13 +96,13 @@ erDiagram
     }
 ```
 
-`VOTES` has one row for each poll/student pair. The database should additionally enforce `(poll_id, option_id)` against `POLL_OPTIONS(poll_id, option_id)` (or the equivalent unique key) so an option from a different poll cannot be selected.
+`VOTES` has one row for each poll/student pair. Its `(poll_id, option_id)` composite foreign key references the composite primary key on `POLL_OPTIONS`, so an option from a different poll cannot be selected.
 
 ## 6. Walkthrough
 
-An enrolled student submits option 2. The service verifies enrollment, loads the poll and option, and begins a transaction that serializes on the poll row. If the poll is open and option 2 belongs to it, the service inserts or updates the student's vote row. The unique key makes repeated clicks update the same current vote rather than add another voter. After commit, it computes or reads aggregate counts and publishes an update to connected course clients. If a student's vote changes, the previous option count decreases and the new one increases because counts come from current vote rows.
+An enrolled student submits option 2. The service verifies enrollment, loads the poll and option, and begins a transaction that serializes on the poll row. If the poll is open and option 2 belongs to it, the service inserts or updates the student's vote row and increments the poll version. The unique key makes repeated clicks update the same current vote rather than add another voter. After commit, it computes or reads aggregate counts and publishes an update carrying that version to connected course clients. If a student's vote changes, the previous option count decreases and the new one increases because counts come from current vote rows.
 
-An instructor closing the poll takes the same poll-row serialization point. If closure commits first, later votes fail; if a vote commits first, it is included in final results. A client reconnects by requesting the snapshot and then subscribing to updates, so it does not depend on receiving every prior event.
+An instructor closing the poll takes the same poll-row serialization point and increments the version. If closure commits first, later votes fail; if a vote commits first, it is included in final results. A reconnecting client subscribes, then fetches a current snapshot and ignores stream events at or below the snapshot version. Later events carry larger versions, so out-of-order or duplicate events cannot roll results backward.
 
 ## 7. Design Decisions
 

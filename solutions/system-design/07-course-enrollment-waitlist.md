@@ -95,7 +95,7 @@ erDiagram
     WAITLIST_ENTRY {
         int section_id PK, FK
         int position PK
-        int enrollment_id FK
+        int enrollment_id UK, FK
         datetime created_at
     }
 ```

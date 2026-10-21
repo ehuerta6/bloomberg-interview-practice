@@ -6,16 +6,16 @@
 
 A campus café wants students to order ahead during the lunch rush. Students browse the menu, submit and pay for an order, then check its progress. Café staff need a screen showing incoming orders and a way to update each order as it moves through preparation. The first release serves one café location.
 
-This is an original CIC workshop problem. It is an educational exercise, not an official Bloomberg interview question.
+Adapted from Noel's CIC workshop. This is an educational exercise, not an official Bloomberg interview question.
 
 ## Functional Requirements
 
 - Students can browse menu items, prices, and whether each product is currently available.
 - Students can submit an order with one or more menu items and quantities, then pay through a payment provider.
 - Sold-out items cannot be ordered. Stock counts must not become negative when orders arrive concurrently.
-- Staff can view incoming orders and move them through forward-only statuses: `PLACED`, `PREPARING`, `READY`, and `COMPLETED`.
+- Staff can view incoming orders and move paid orders through forward-only statuses: `PLACED`, `PREPARING`, `READY`, and `PICKED_UP`.
 - Students can view the current status of their own order.
-- A student may cancel only before preparation begins. A cancelled order cannot later advance through preparation statuses.
+- A student may cancel only before preparation begins. A cancelled order cannot later advance through preparation statuses. `CANCELLED` is a separate terminal status.
 - The order must retain the price charged for each item at placement time, even if the menu price changes later.
 
 ## Constraints & Assumptions

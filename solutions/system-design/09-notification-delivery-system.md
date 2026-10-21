@@ -31,8 +31,7 @@ One event belongs to one recipient, so user identity is not repeated in each del
 flowchart LR
     Features[Application Features] --> API[Notification API]
     API --> DB[(Notification Database)]
-    Worker[Delivery Worker] --> DB
-    Worker --> Pref[Preference Rules]
+    Worker[Delivery Worker] -->|claim delivery; load preferences| DB
     Worker --> Email[Email Provider]
     User[User] --> App[Application UI]
     App --> API
@@ -70,8 +69,8 @@ erDiagram
     }
     DELIVERY {
         int delivery_id PK
-        int event_id FK
-        string channel
+        int event_id FK, UK
+        string channel UK
         string status
         int attempts
         datetime next_attempt_at
@@ -79,15 +78,15 @@ erDiagram
     }
     DELIVERY_ATTEMPT {
         int attempt_id PK
-        int delivery_id FK
-        int attempt_number
+        int delivery_id FK, UK
+        int attempt_number UK
         string outcome
         datetime started_at
         datetime completed_at
     }
 ```
 
-`DELIVERY` has a unique `(event_id, channel)` business key even though its surrogate ID is shown as the primary key. Preference rows may be absent; use category defaults, with required security policy taking precedence.
+`DELIVERY` has a composite unique key `(event_id, channel)` and `DELIVERY_ATTEMPT` has `(delivery_id, attempt_number)` even though each also has a surrogate primary key. Preference rows may be absent; use category defaults, with required security policy taking precedence.
 
 ## 6. Walkthrough
 

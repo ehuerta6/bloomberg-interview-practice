@@ -77,8 +77,8 @@ erDiagram
     }
     CONVERSATION {
         int conversation_id PK
-        int listing_id FK
-        int buyer_id FK
+        int listing_id FK, UK
+        int buyer_id FK, UK
         datetime created_at
     }
     MESSAGE {

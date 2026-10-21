@@ -58,7 +58,7 @@ erDiagram
     COPIES {
         int copy_id PK
         int title_id FK
-        string barcode
+        string barcode UK
         string state
     }
     STUDENTS {

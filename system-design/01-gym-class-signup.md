@@ -6,15 +6,16 @@
 
 A neighborhood gym wants members to browse its weekly group-class schedule and reserve a place. Classes such as yoga or cycling are offered as scheduled sessions with a fixed capacity. Members currently call the front desk to ask whether a class has room. The gym wants a small application that makes sign-up and cancellation predictable for members and staff.
 
-This is an original CIC workshop problem. It is an educational exercise, not an official Bloomberg interview question.
+Adapted from Noel's CIC workshop. This is an educational exercise, not an official Bloomberg interview question.
 
 ## Functional Requirements
 
 - Members can browse the weekly schedule, including each session's class type, start time, and capacity/availability.
 - A member can register for a session while it has a place.
 - A session cannot have more confirmed signups than its capacity.
-- When a session is full, later registration requests join a first-come, first-served waitlist.
-- A member can cancel their registration. A cancellation frees a place and promotes the earliest waitlisted signup, if one exists.
+- Each signup has one state: `confirmed`, `waitlisted`, or `cancelled`.
+- When a session is full, later registration requests join a first-come, first-served waitlist. Existing waitlisted members always have priority over new registration requests when a place opens.
+- A member can cancel their registration at any time. Cancelling a confirmed signup frees a place and promotes the earliest waitlisted signup, if one exists.
 - The promoted member receives a notification. The member's signup state must reflect that promotion.
 - A member must not hold two active signups for the same session. Cancelled history may be retained.
 
@@ -25,7 +26,7 @@ This is an original CIC workshop problem. It is an educational exercise, not an 
 - Treat the database as the source of truth. A registration or cancellation should report a definite result.
 - “First come” means the order in which accepted signup requests are committed by the system. Clarify the exact tie-breaker if two requests arrive at effectively the same time.
 - Do not assume a promoted member must reconfirm; the stated requirement is to promote them and notify them.
-- Clarify schedule time zone and whether members can cancel after a class begins.
+- Clarify the schedule time zone and the ordering rule for requests accepted at effectively the same time.
 
 ## Your Task
 

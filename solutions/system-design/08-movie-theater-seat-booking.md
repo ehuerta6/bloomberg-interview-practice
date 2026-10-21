@@ -14,7 +14,7 @@ The payment provider accepts an idempotency key and returns a stable transaction
 - `POST /payment-callbacks` records provider outcome idempotently.
 - `GET /bookings/{id}/tickets` verifies ownership and returns issued tickets.
 
-The hold operation transaction locks or conditionally inserts allocations for every requested `(showing_id, seat_id)`. It commits only if all seats can be claimed. Payment is an external call and must not be made while holding a database lock. The service records a payment attempt, calls the provider, and finalizes after a response/callback in a short transaction.
+The hold operation transaction locks or conditionally inserts allocations for every requested `(showing_id, seat_id)`, in sorted seat order to reduce deadlocks. It commits only if all seats can be claimed. Payment is an external call and must not be made while holding a database lock. The service records a payment attempt, calls the provider, and finalizes after a response/callback in a short transaction.
 
 ## 3. Data Model
 
@@ -23,9 +23,9 @@ The hold operation transaction locks or conditionally inserts allocations for ev
 - `Seat(seat_id PK, auditorium_id FK, label, accessibility_type)` has a globally unique seat ID and unique `(auditorium_id, label)`.
 - `Showing(showing_id PK, auditorium_id FK, starts_at, status)` identifies a movie event. A showing uses seats from its auditorium.
 - `Booking(booking_id PK, customer_id FK, showing_id FK, status, expires_at, created_at)` has `HELD`, `CONFIRMED`, `EXPIRED`, or `CANCELLED` state. Only a held booking has a future expiry.
-- `SeatAllocation(showing_id FK, seat_id FK, booking_id FK, allocated_at)` has primary key `(showing_id, seat_id)`. It represents the current hold or sold allocation. This unique key is the central no-double-booking invariant. On expiry/failure, allocation rows are removed transactionally; on success, they remain attached to the confirmed booking.
+- `SeatAllocation(showing_id FK, seat_id FK, booking_id FK, allocated_at)` has primary key `(showing_id, seat_id)` and a unique key `(showing_id, seat_id, booking_id)` for ticket references. It represents the current hold or sold allocation. The primary key is the central no-double-booking invariant. On expiry/failure, allocation rows are removed transactionally; on success, they remain attached to the confirmed booking.
 - `PaymentAttempt(payment_attempt_id PK, booking_id FK, idempotency_key UNIQUE, provider_transaction_id UNIQUE nullable, status, amount_minor, created_at)` stores provider interaction without card data. The provider transaction ID makes repeated callbacks idempotent.
-- `Ticket(ticket_id PK, booking_id FK, showing_id, seat_id, issued_at)` has unique `(showing_id, seat_id)` and is created only on confirmation.
+- `Ticket(ticket_id PK, booking_id FK, showing_id FK, seat_id FK, issued_at)` has unique `(showing_id, seat_id)` and is created only on confirmation. A composite foreign key `(showing_id, seat_id, booking_id)` references the matching seat allocation so a ticket cannot name another booking's seat or a seat from a different showing.
 
 The service validates that each requested seat belongs to the showing's auditorium before allocation. The seat ID is globally unique, so each allocation has a valid foreign key to one physical seat; the cross-check against the showing's auditorium is a business constraint.
 
@@ -59,6 +59,9 @@ erDiagram
     SEAT ||--o{ SEAT_ALLOCATION : assigned_as
     BOOKING ||--o{ PAYMENT_ATTEMPT : charges
     BOOKING ||--o{ TICKET : issues
+    SEAT_ALLOCATION ||--o| TICKET : confirms
+    SHOWING ||--o{ TICKET : covers
+    SEAT ||--o{ TICKET : identifies
 
     CUSTOMER {
         int customer_id PK
@@ -87,9 +90,9 @@ erDiagram
         datetime expires_at
     }
     SEAT_ALLOCATION {
-        int showing_id PK, FK
-        int seat_id PK, FK
-        int booking_id FK
+        int showing_id PK, FK, UK
+        int seat_id PK, FK, UK
+        int booking_id FK, UK
         datetime allocated_at
     }
     PAYMENT_ATTEMPT {
@@ -103,13 +106,13 @@ erDiagram
     TICKET {
         int ticket_id PK
         int booking_id FK
-        int showing_id FK
-        int seat_id FK
+        int showing_id FK, UK
+        int seat_id FK, UK
         datetime issued_at
     }
 ```
 
-Enforce the showing-to-seat auditorium match in the hold transaction so a showing cannot allocate a seat from another auditorium.
+Enforce the showing-to-seat auditorium match in the hold transaction so a showing cannot allocate a seat from another auditorium. `SEAT_ALLOCATION` also has the additional unique key `(showing_id, seat_id, booking_id)` targeted by the ticket composite foreign key; it guarantees all three references name the same allocation.
 
 ## 6. Walkthrough
 
@@ -128,7 +131,7 @@ The allocation table makes the uniqueness invariant directly enforceable by the 
 - Provider success is received twice. Unique transaction ID and booking state make the second callback a no-op.
 - Provider accepted payment but the caller timed out. Retry with the same idempotency key; reconcile by provider transaction/callback before issuing tickets.
 - Provider reports success after seat release. Do not silently confirm. Mark payment for compensation and refund/void it; manual review is appropriate if the provider cannot guarantee reversal.
-- Expiration workers may run late. Reads and new holds should treat expired allocations as reclaimable within a transaction, rather than relying only on a timely background job.
+- Expiration workers may run late. When a new hold finds an allocation whose booking has expired, the transaction locks that booking, changes it to `EXPIRED`, removes all of its allocations, then retries the requested-seat inserts before committing. This preserves all-or-nothing holds without relying only on a timely background job.
 
 ## 9. Improvements
 

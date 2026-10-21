@@ -15,6 +15,7 @@ Design a first version for authenticated campus users. Folders and real-time col
 - An owner can grant another user `viewer` or `editor` access to an individual file and can revoke that grant.
 - Viewers can read metadata and download. Editors can also update the display name, including through an editor share link. Only the owner can grant/revoke access or delete the file.
 - Every download and metadata change must check current authorization. Knowing a storage key or URL must not be sufficient to access a private object.
+- A completed file cannot be overwritten by reusing an upload authorization issued for a pending upload.
 - The owner can create an optional share link with a selected `viewer` or `editor` permission and an expiration time. The owner can revoke it. A link that is expired, revoked, or tied to a deleted file grants no access.
 - Uploads have a maximum size and an allowed content-type list supplied by application configuration. Failed or abandoned uploads must not create a visible completed file record.
 

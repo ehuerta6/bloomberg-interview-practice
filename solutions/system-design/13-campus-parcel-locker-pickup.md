@@ -17,7 +17,7 @@ Representative endpoints:
 - `POST /staff/packages/{id}/codes` revokes an old code and issues a replacement.
 - `GET /staff/packages/{id}` displays package and notification state to authorized staff.
 
-On pickup, the service hashes and looks up the code, checks expiry, package state, and attempt limit, then claims the code and creates a pending pickup attempt. It sends one open command to the associated locker. On controller success, one transaction consumes the code, marks the package collected, clears the package's locker assignment, and marks the locker free. The kiosk receives a generic failure for invalid codes.
+On pickup, the service hashes and looks up the code, checks expiry, package state, and attempt limit, then conditionally claims the still-unclaimed code and creates a pending pickup attempt in one transaction. Only one concurrent request can claim it. It sends one open command to the associated locker. On controller success, one transaction consumes the code, marks the package collected, clears the package's locker assignment, and marks the locker free. A retry with the same command ID returns or reconciles the same attempt; a new command cannot reuse a claimed or consumed code. The kiosk receives a generic failure for invalid codes.
 
 ## 3. Data Model
 
@@ -79,7 +79,7 @@ erDiagram
         int package_id PK
         int student_id FK
         int received_by FK
-        int locker_id FK "nullable, unique"
+        int locker_id FK, UK "nullable"
         string tracking_reference
         string state
         datetime stored_at
