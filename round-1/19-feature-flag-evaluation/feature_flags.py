@@ -52,6 +52,11 @@ class FeatureFlagTests(unittest.TestCase):
     def test_missing_user_does_not_get_rollout(self):
         self.assertFalse(evaluate_flag({"enabled": True, "rollout_percent": 100}, {}))
 
+    def test_invalid_percentage_is_not_hidden_by_allowlist(self):
+        flag = {"enabled": True, "allowlist": ["u"], "rollout_percent": "50"}
+        with self.assertRaises(ValueError):
+            evaluate_flag(flag, {"user_id": "u"})
+
 
 if __name__ == "__main__":
     unittest.main()

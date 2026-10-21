@@ -57,5 +57,15 @@ class SubscriptionRenewalTests(unittest.TestCase):
         self.assertEqual(store.invoices, {})
         self.assertEqual(gateway.charges, [])
 
+    def test_declined_invoice_replay_does_not_charge_again(self):
+        store, gateway, service = self.build(approved=False)
+        first = service.renew("sub-1", "invoice-declined", "2026-10-01")
+        gateway.approved = True
+        replay = service.renew("sub-1", "invoice-declined", "2026-10-01")
+        self.assertEqual(first.status, "declined")
+        self.assertEqual(replay.status, "declined")
+        self.assertEqual(gateway.charges, [("invoice-declined", 1200)])
+        self.assertEqual(store.get("sub-1").next_due, "2026-10-01")
+
 if __name__ == "__main__":
     unittest.main()

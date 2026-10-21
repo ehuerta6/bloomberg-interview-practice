@@ -24,6 +24,7 @@ def _select_band(weight, brackets):
     if not isinstance(brackets, (list, tuple)) or not brackets:
         raise ValueError("weight_brackets must contain at least one band")
     previous_limit = _ZERO
+    normalized = []
     for index, bracket in enumerate(brackets):
         try:
             upper_limit = bracket.get("up_to_kg")
@@ -35,13 +36,17 @@ def _select_band(weight, brackets):
         if upper_limit is None:
             if index != len(brackets) - 1:
                 raise ValueError("only the final weight band may be unbounded")
+        else:
+            upper_limit = _amount(upper_limit, "up_to_kg")
+            if upper_limit <= previous_limit:
+                raise ValueError("weight band limits must increase")
+            previous_limit = upper_limit
+        normalized.append((upper_limit, per_kg))
+    if normalized[-1][0] is not None:
+        raise ValueError("weight bands must end with an unbounded band")
+    for upper_limit, per_kg in normalized:
+        if upper_limit is None or weight <= upper_limit:
             return per_kg
-        upper_limit = _amount(upper_limit, "up_to_kg")
-        if upper_limit <= previous_limit:
-            raise ValueError("weight band limits must increase")
-        if weight <= upper_limit:
-            return per_kg
-        previous_limit = upper_limit
     raise ValueError("weight bands must end with an unbounded band")
 
 
@@ -68,10 +73,9 @@ def calculate_shipping(order, rates):
         raise ValueError("shipping amounts cannot be negative")
     if discount > _HUNDRED:
         raise ValueError("shipping discount must not exceed 100 percent")
+    per_kg = _select_band(weight, rate.get("weight_brackets"))
     if subtotal >= free_over:
         return _ZERO.quantize(_CENT)
-
-    per_kg = _select_band(weight, rate.get("weight_brackets"))
     raw_fee = base_fee + weight * per_kg
     discounted_fee = raw_fee * (_HUNDRED - discount) / _HUNDRED
     return max(discounted_fee, minimum_fee).quantize(_CENT, rounding=ROUND_HALF_UP)
@@ -138,6 +142,11 @@ class ShippingTests(unittest.TestCase):
     def test_boolean_amount_is_rejected(self):
         with self.assertRaises(ValueError):
             calculate_shipping({"zone": "local", "subtotal": True, "weight_kg": "1"}, self.rates)
+
+    def test_free_shipping_does_not_hide_invalid_rate_configuration(self):
+        rates = {"local": {"base_fee": "3", "minimum_fee": "0", "free_over": "75", "weight_brackets": [{"up_to_kg": "5", "per_kg": "1"}, {"up_to_kg": "2", "per_kg": "2"}, {"up_to_kg": None, "per_kg": "1"}]}}
+        with self.assertRaises(ValueError):
+            calculate_shipping({"zone": "local", "subtotal": "75", "weight_kg": "1"}, rates)
 
 
 if __name__ == "__main__":

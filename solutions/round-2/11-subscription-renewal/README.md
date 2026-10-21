@@ -10,7 +10,7 @@ From this folder, run `python3 test_subscription_renewal.py`. Compare the report
 
 ## The Fix
 
-The corrected service validates the request before mutation, persists state at the appropriate transition, and handles retries according to the stable event, invoice, transaction, session, or job identifier. Each invoice identifier represents one charge attempt and replaying it does not charge twice.
+The corrected service validates the request before mutation, persists state at the appropriate transition, and handles retries according to the stable event, invoice, transaction, session, or job identifier. Each invoice identifier represents one charge attempt. A replay returns the stored outcome, including a decline, without charging again; a later collection attempt needs a new invoice identifier.
 
 ## Regression Coverage
 

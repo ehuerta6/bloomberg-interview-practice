@@ -8,6 +8,11 @@ def evaluate_flag(flag, user):
     """Apply global disable, denylist, allowlist, then stable rollout."""
     if not flag.get("enabled", False):
         return False
+    percentage = flag.get("rollout_percent", 0)
+    if not isinstance(percentage, (int, float)) or isinstance(percentage, bool):
+        raise ValueError("rollout_percent must be numeric")
+    if not 0 <= percentage <= 100:
+        raise ValueError("rollout_percent must be between 0 and 100")
     user_id = user.get("user_id")
     if user_id is None:
         return False
@@ -15,11 +20,6 @@ def evaluate_flag(flag, user):
         return False
     if user_id in flag.get("allowlist", ()):
         return True
-    percentage = flag.get("rollout_percent", 0)
-    if not isinstance(percentage, (int, float)) or isinstance(percentage, bool):
-        raise ValueError("rollout_percent must be numeric")
-    if not 0 <= percentage <= 100:
-        raise ValueError("rollout_percent must be between 0 and 100")
     if percentage == 0:
         return False
     if percentage == 100:
@@ -63,6 +63,11 @@ class FeatureFlagTests(unittest.TestCase):
     def test_invalid_percentage_is_rejected(self):
         with self.assertRaises(ValueError):
             evaluate_flag({"enabled": True, "rollout_percent": 101}, {"user_id": "u"})
+
+    def test_invalid_percentage_is_rejected_even_for_allowlisted_user(self):
+        flag = {"enabled": True, "allowlist": ["u"], "rollout_percent": "50"}
+        with self.assertRaises(ValueError):
+            evaluate_flag(flag, {"user_id": "u"})
 
 
 if __name__ == "__main__":

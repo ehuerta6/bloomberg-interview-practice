@@ -11,7 +11,7 @@ class RenewalService:
         if subscription is None:
             return type("Result", (), {"status": "missing"})()
         prior = self.store.invoice_status(invoice_id)
-        if prior == "paid":
+        if prior:
             return type("Result", (), {"status": prior})()
         if subscription.status not in ("active", "past_due") or today < subscription.next_due:
             return type("Result", (), {"status": "not_due"})()
