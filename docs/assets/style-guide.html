@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>CIC shared styles — component preview</title>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="site-brand" href="#main"><img src="cic-logo.png" alt="" width="447" height="447"><span>Coding Interview Club</span></a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="#components" aria-current="page">Components</a>
+      <a href="#reading">Reading</a>
+      <a href="#solution">Solution reveal</a>
+    </nav>
+  </header>
+  <main class="container" id="main" tabindex="-1">
+    <header class="page-header">
+      <p class="eyebrow">Shared assets · component preview</p>
+      <h1>Practice, with room to think.</h1>
+      <p>This preview exercises the site’s shared styles. It contains sample interface text, not an interview assignment.</p>
+      <div class="actions"><a class="button" href="#components">Explore components</a><a class="button button-secondary" href="#reading">Read sample content</a></div>
+    </header>
+    <section id="components" aria-labelledby="components-title">
+      <h2 id="components-title">Practice categories</h2>
+      <ul class="problem-grid">
+        <li><article class="problem-card"><span class="tag">Round 1</span><h3><a href="#reading">Review a proposed change</a></h3><p>Follow the requirements and explain what the code does.</p><p class="meta">Sample category · Pull request review</p></article></li>
+        <li><article class="problem-card"><span class="tag">Round 2</span><h3><a href="#reading">Trace an engineering ticket</a></h3><p>Read a small codebase and follow the evidence.</p><p class="meta">Sample category · Debugging</p></article></li>
+        <li><article class="problem-card"><span class="tag">System Design</span><h3><a href="#reading">Discuss a system</a></h3><p>Clarify the problem and explain your design decisions.</p><p class="meta">Sample category · Whiteboard discussion</p></article></li>
+      </ul>
+    </section>
+    <section class="prose" id="reading" aria-labelledby="reading-title">
+      <h2 id="reading-title">Readable assignments</h2>
+      <p>Use a clear hierarchy, ordinary <a href="#solution">text links</a>, and room for code. Long identifiers such as <code>an_example_identifier_that_should_wrap_without_expanding_the_mobile_viewport</code> stay inside the page.</p>
+      <blockquote><p>Practice at your own pace. Explain what you observe and why it matters.</p></blockquote>
+      <h3>Code and tables</h3>
+      <p>Keyboard users can focus and scroll the code block and table below when the content extends beyond the viewport.</p>
+      <pre tabindex="0" aria-label="Sample Python code"><code>def describe_practice_problem(category, identifier, title):
+    return f"{category}: {identifier} — {title}; read the requirements before making a change"</code></pre>
+      <div class="table-scroll" role="region" aria-label="Sample category comparison" tabindex="0">
+        <table><caption>Sample practice modes</caption><thead><tr><th scope="col">Mode</th><th scope="col">Primary task</th><th scope="col">Evidence</th></tr></thead><tbody><tr><th scope="row">Round 1</th><td>Review a proposed implementation</td><td>Requirements, code, and tests</td></tr><tr><th scope="row">Round 2</th><td>Trace a bug through a small codebase</td><td>Observed behavior and the reported ticket</td></tr></tbody></table>
+      </div>
+      <aside class="notice"><p><strong>Sample notice.</strong> Text and borders communicate the message without relying on color.</p></aside>
+      <details id="solution"><summary>Reveal sample reference discussion</summary><div class="details-content"><h3>Explain the reasoning</h3><p>Native disclosure works with a keyboard and does not require JavaScript.</p><p><a href="#main">Return to the beginning</a></p></div></details>
+    </section>
+  </main>
+  <footer class="site-footer"><div class="container">Coding Interview Club · Shared style preview</div></footer>
+</body>
+</html>
