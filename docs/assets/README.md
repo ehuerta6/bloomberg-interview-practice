@@ -1,8 +1,9 @@
 # CIC shared site assets
 
-Use `assets/site.css` and `assets/cic-logo.png` from HTML pages generated directly
-under `docs/`. The CSS uses system fonts and a black, white, and gray palette;
-it has no runtime dependencies or JavaScript.
+The homepage generated directly under `docs/` uses `assets/site.css` and
+`assets/cic-logo.png`. Generated problem pages under `docs/problems/` use
+`../assets/site.css` and `../assets/cic-logo.png`. The CSS uses system fonts and
+a black, white, and gray palette; it has no runtime dependencies or JavaScript.
 
 ## Logo provenance
 
