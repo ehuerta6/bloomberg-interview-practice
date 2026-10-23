@@ -68,8 +68,7 @@ erDiagram
     USERS ||--o{ REPAYMENTS : receives
     USERS ||--o{ REPAYMENTS : creates
     REPAYMENTS ||--|{ REPAYMENT_ALLOCATIONS : allocates
-    EXPENSES ||--o{ REPAYMENT_ALLOCATIONS : settles
-    USERS ||--o{ REPAYMENT_ALLOCATIONS : debtor
+    EXPENSE_SHARES ||--o{ REPAYMENT_ALLOCATIONS : settled_by
     EXPENSES ||--o{ EXPENSE_AUDIT : has
     USERS ||--o{ EXPENSE_AUDIT : changes
 
@@ -126,7 +125,7 @@ erDiagram
     }
 ```
 
-An expense has at least one share. `REPAYMENTS` uses composite uniqueness on `(group_id, request_key)`; neither field is globally unique by itself. The database can enforce same-group membership using composite foreign keys or the service can validate it transactionally; state which enforcement is available in the chosen relational database. The ERD's user references are foreign keys, not embedded names.
+An expense has at least one share. `REPAYMENTS` uses composite uniqueness on `(group_id, request_key)`; neither field is globally unique by itself. The database can enforce same-group membership using composite foreign keys or the service can validate it transactionally; state which enforcement is available in the chosen relational database. The `EXPENSE_SHARES` relationship represents the composite foreign key `(expense_id, debtor_user_id)` to `(expense_id, user_id)`; each allocation settles one specific share. The ERD's user references are foreign keys, not embedded names.
 
 ## 6. Walkthrough
 

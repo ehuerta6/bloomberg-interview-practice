@@ -46,7 +46,7 @@ erDiagram
     MEMBERS ||--o{ SIGNUPS : creates
     CLASS_TYPES ||--o{ SESSIONS : defines
     SESSIONS ||--o{ SIGNUPS : receives
-    SIGNUPS ||--o{ NOTIFICATION_OUTBOX : triggers
+    SIGNUPS ||--o| NOTIFICATION_OUTBOX : triggers
 
     MEMBERS {
         int member_id PK

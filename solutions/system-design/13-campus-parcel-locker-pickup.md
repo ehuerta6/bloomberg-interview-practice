@@ -43,7 +43,7 @@ flowchart LR
     Controller[Locker controller]
     Notify[Campus notification provider]
     Staff -->|intake and store| App
-    Student -->|pickup code notification| Notify
+    Notify -->|pickup code notification| Student
     Kiosk -->|submit code| App
     App -->|package, locker, code state| DB
     App -->|idempotent open command| Controller

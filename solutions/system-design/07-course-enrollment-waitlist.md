@@ -53,6 +53,7 @@ erDiagram
     COURSE ||--o{ COMPLETED_COURSE : completed_as
     STUDENT ||--o{ ENROLLMENT : requests
     SECTION ||--o{ ENROLLMENT : has
+    SECTION ||--o{ WAITLIST_ENTRY : orders
     ENROLLMENT ||--o| WAITLIST_ENTRY : queues
 
     STUDENT {
