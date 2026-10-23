@@ -1,10 +1,29 @@
 # AI-Assisted Software Engineering Interview Practice
 
-65 practical exercises focused on pull request reviews, debugging, testing, navigating unfamiliar Python codebases, and system design.
+65 independent practice exercises: 25 pull request reviews, 25 multi-file debugging tickets,
+and 15 system design prompts. These are educational exercises, not official Bloomberg interview
+questions.
 
-Round 1 asks you to review a proposed change against its requirements and tests. Round 2 asks you to trace a reported bug through a small multi-file codebase.
+Round 1 asks you to review a proposed change against its requirements and tests. Round 2 asks you
+to trace a reported bug through a small multi-file codebase. System Design problems practice
+whiteboard discussion using **Clarify → Interactions → Data → Design → Improve**. Problems 01–02
+come from Noel's Coding Interview Club (CIC) workshop; 03–15 are additional practice material.
 
-System Design problems practice whiteboard discussion using **Clarify → Interactions → Data → Design → Improve**. Problems 01–02 originate in Noel's Coding Interview Club (CIC) workshop; 03–15 are additional practice material. These are educational practice problems, not official Bloomberg interview questions.
+## Start here
+
+- [Open the practice site](https://ehuerta6.github.io/bloomberg-interview-practice/).
+- Browse the [Round 1 and Round 2 Markdown assignments](problems/) or [System Design prompts](system-design/).
+  The tables below link to all 65 source files.
+- Practice in `round-1/` or `round-2/`; compare your work with the separate references in
+  `solutions/` when you are ready. System Design prompts and references are in `system-design/`
+  and `solutions/system-design/`.
+- To export one coding starter and its tests with the shared practice instructions, run
+  `python3 scripts/export-exercise.py round-1-01` (or an ID from `round-1-01` through
+  `round-1-25` or `round-2-01` through `round-2-25`). The ZIP is written to
+  `.local-context/exports/`; it omits the assignment and reference solution. See the
+  [exporter](scripts/export-exercise.py).
+- When using an AI assistant, follow the [practice-agent guidance](AGENTS.md): use it for
+  explanations and hints, and make and explain your own changes.
 
 ## Round 1 — Pull Request Reviews
 
