@@ -29,6 +29,10 @@ Students at a university need to find quiet rooms for group study. The library h
 
 Design the search and booking flow, the data model for rooms, facilities, student reservations, and staff blocks, and a safe way to confirm a booking when two students request the same room at once. Explain why search alone cannot guarantee a successful reservation. Include ownership checks for cancellation and discuss how availability is presented if the data changes between search and confirmation.
 
+## Example to Work Through
+
+A student searches for a room from 2:00 to 3:00 PM, while another reservation for that room runs from 3:00 to 4:00 PM. Explain whether the intervals conflict, then describe the response if a different student confirms the 2:00 to 3:00 PM booking after the first student's search results were shown.
+
 ## Interviewer Follow-Ups
 
 - Two requests overlap by only five minutes. How does the system determine whether they conflict?

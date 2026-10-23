@@ -6,7 +6,7 @@
 
 The campus mailroom receives student parcels throughout the day. Staff currently call students to collect them, which interrupts class and creates a queue. The school wants staff to place a package in a locker and send the intended student a one-time pickup code.
 
-Design an application for one campus mailroom and one locker bank. Treat a locker as occupied until staff confirms the parcel was collected or removes it; an expired code by itself does not make a physically occupied locker available.
+Design an application for one campus mailroom and one locker bank. Treat a locker as occupied until the parcel is collected through a valid pickup flow or staff removes it; an expired code by itself does not make a physically occupied locker available.
 
 ## Functional Requirements
 
@@ -28,6 +28,10 @@ Design an application for one campus mailroom and one locker bank. Treat a locke
 ## Your Task
 
 Design the staff intake and student pickup flows, including data entities and state transitions. Show how a locker is assigned without being assigned to two packages, how a code is validated and consumed once, and how the application coordinates the database with the physical locker controller. Include an operational approach for a failed notification or unlock command.
+
+## Example to Work Through
+
+A package remains inside a locker after its pickup code expires. The student submits the old code, then staff issue a replacement code. Describe the package and locker state after each action and what the kiosk should report.
 
 ## Interviewer Follow-Ups
 

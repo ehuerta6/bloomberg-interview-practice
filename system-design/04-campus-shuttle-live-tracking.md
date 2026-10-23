@@ -29,6 +29,10 @@ Students use several campus shuttle routes and want to see where each shuttle is
 
 Design the driver update and student lookup interactions. Model routes, ordered stops, vehicles, and current location data. Walk through how a new location becomes a displayed position and ETA, including what happens when a device reconnects and submits an older observation. Explain how you would keep the design simple while making freshness visible.
 
+## Example to Work Through
+
+A student sees a vehicle position observed at 10:02 AM. After the device reconnects, it submits a point observed at 10:01 AM. Describe what the student should see, including how the interface communicates the age of the position.
+
 ## Interviewer Follow-Ups
 
 - A shuttle loses connectivity for several minutes, then uploads a backlog of GPS points. Which points should affect the current view?

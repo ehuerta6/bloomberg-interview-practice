@@ -45,6 +45,8 @@
 </ul>
 <h2 id="heading-your-task">Your Task</h2>
 <p>Design the system for the stated scope. Show the main components, the tables and relationships, and the authorization checks for reading and editing a board. Walk through an editor changing a task's status, including how the current task and activity history stay consistent. Explain how membership removal affects an in-flight request and how concurrent edits are handled.</p>
+<h2 id="heading-example-to-work-through">Example to Work Through</h2>
+<p>Two editors load the same task. One changes its status; then the other submits an edit based on the earlier view. Describe what the second editor should learn and what task and activity history should remain visible.</p>
 <h2 id="heading-interviewer-follow-ups">Interviewer Follow-Ups</h2>
 <ul>
 <li>The team wants to see changes without refreshing. What would you add, and how would you recover a client that disconnects?</li>

@@ -27,6 +27,10 @@ A campus wants a simple marketplace where students can sell used textbooks, calc
 
 Design the smallest system that supports these workflows. Explain the data model and ownership rules, how active listings are found, how a conversation is associated with a listing, and how the system prevents one student from editing another student's listing or reading a conversation they do not participate in. Walk through creating a listing and contacting its seller.
 
+## Example to Work Through
+
+A buyer opens an active listing just as its seller marks the item sold. Describe the outcomes if the sale is recorded before the buyer starts a conversation, and if the conversation is recorded first. Explain what remains available to the buyer and seller afterward.
+
 ## Interviewer Follow-Ups
 
 - Two buyers open a listing just as the seller marks it sold. Which operations should still succeed?

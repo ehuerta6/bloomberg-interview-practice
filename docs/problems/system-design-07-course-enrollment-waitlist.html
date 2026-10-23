@@ -22,7 +22,7 @@
 <h1 id="heading-problem-07--course-enrollment--waitlist">Problem 07 — Course Enrollment &amp; Waitlist</h1>
 <p><strong>Difficulty:</strong> Medium</p>
 <h2 id="heading-scenario">Scenario</h2>
-<p>A university department needs a service for students to find course sections and request enrollment. A section has a fixed number of seats, a meeting schedule, and a course. Some courses require prerequisite courses. When a section is full, eligible students may join its waitlist. Students can drop an enrollment, and the next eligible waitlisted student should be offered the seat.</p>
+<p>A university department needs a service for students to find course sections and request enrollment. A section has a fixed number of seats, a meeting schedule, and a course. Some courses require prerequisite courses. When a section is full, eligible students may join its waitlist. Students can drop an enrollment, and the next eligible waitlisted student should be enrolled in the seat.</p>
 <h2 id="heading-functional-requirements">Functional Requirements</h2>
 <ul>
 <li>Students can view course sections, meeting times, prerequisites, remaining seats, and their own enrollment state.</li>
@@ -41,6 +41,8 @@
 </ul>
 <h2 id="heading-your-task">Your Task</h2>
 <p>Design the enrollment workflow, including course/section relationships, prerequisite representation, schedule conflict checks, seat allocation, and waitlist promotion. Identify the invariant that prevents over-enrollment and explain how you preserve FIFO order while skipping ineligible waitlisted students.</p>
+<h2 id="heading-example-to-work-through">Example to Work Through</h2>
+<p>A section has one seat and a student is already waiting. The enrolled student drops after the waitlisted student has added another section that overlaps in time. Describe how the system decides who can take the open seat and what happens if nobody in the queue is eligible.</p>
 <h2 id="heading-interviewer-follow-ups">Interviewer Follow-Ups</h2>
 <ul>
 <li>Two students request the final seat at the same time. How does the system decide who gets it?</li>

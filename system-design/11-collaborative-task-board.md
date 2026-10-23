@@ -31,6 +31,10 @@ Design a small web application for multiple teams. A board belongs to one team, 
 
 Design the system for the stated scope. Show the main components, the tables and relationships, and the authorization checks for reading and editing a board. Walk through an editor changing a task's status, including how the current task and activity history stay consistent. Explain how membership removal affects an in-flight request and how concurrent edits are handled.
 
+## Example to Work Through
+
+Two editors load the same task. One changes its status; then the other submits an edit based on the earlier view. Describe what the second editor should learn and what task and activity history should remain visible.
+
 ## Interviewer Follow-Ups
 
 - The team wants to see changes without refreshing. What would you add, and how would you recover a client that disconnects?

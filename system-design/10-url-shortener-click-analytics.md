@@ -26,6 +26,10 @@ A campus organization wants to create compact links for event flyers and see bas
 
 Design creation, redirect, expiration, disablement, and reporting. Explain the uniqueness guarantee, how a redirect checks time-sensitive state, how click events relate to links, and how analytics remain correct across day boundaries. Walk through a visitor redirect and identify the main consistency trade-off.
 
+## Example to Work Through
+
+An owner requests an alias that another link already uses. Later, a visitor follows that existing link just before midnight UTC. Describe the creation response and which UTC day should include the click.
+
 ## Interviewer Follow-Ups
 
 - The database is unavailable for analytics writes but link lookup still works. Should redirects continue, and what data might be lost?

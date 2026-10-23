@@ -4,7 +4,7 @@
 
 ## Scenario
 
-A university department needs a service for students to find course sections and request enrollment. A section has a fixed number of seats, a meeting schedule, and a course. Some courses require prerequisite courses. When a section is full, eligible students may join its waitlist. Students can drop an enrollment, and the next eligible waitlisted student should be offered the seat.
+A university department needs a service for students to find course sections and request enrollment. A section has a fixed number of seats, a meeting schedule, and a course. Some courses require prerequisite courses. When a section is full, eligible students may join its waitlist. Students can drop an enrollment, and the next eligible waitlisted student should be enrolled in the seat.
 
 ## Functional Requirements
 
@@ -25,6 +25,10 @@ A university department needs a service for students to find course sections and
 ## Your Task
 
 Design the enrollment workflow, including course/section relationships, prerequisite representation, schedule conflict checks, seat allocation, and waitlist promotion. Identify the invariant that prevents over-enrollment and explain how you preserve FIFO order while skipping ineligible waitlisted students.
+
+## Example to Work Through
+
+A section has one seat and a student is already waiting. The enrolled student drops after the waitlisted student has added another section that overlaps in time. Describe how the system decides who can take the open seat and what happens if nobody in the queue is eligible.
 
 ## Interviewer Follow-Ups
 

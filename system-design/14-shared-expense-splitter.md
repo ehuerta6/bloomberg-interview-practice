@@ -30,6 +30,10 @@ Design a small group expense application. It calculates obligations but does not
 
 Design the data model and the workflows for recording an expense, computing balances, and recording an off-app repayment allocated to specific outstanding shares. Explain the equal-split remainder rule and how a retried request avoids duplicate repayments. Walk through how an unsettled expense correction affects multiple participants without leaving a partially updated set of shares. State the invariants used to verify that group balances net to zero.
 
+## Example to Work Through
+
+Three students split a 10.00 expense equally, then one nonpayer records a 3.33 repayment to the payer against that student's share. Describe how you would allocate any leftover cent and update the balances. Under your chosen tie-break rule, state how much of that student's share remains after the repayment.
+
 ## Interviewer Follow-Ups
 
 - The group grows and recomputing balances from every record becomes slow. What is a safe first optimization?

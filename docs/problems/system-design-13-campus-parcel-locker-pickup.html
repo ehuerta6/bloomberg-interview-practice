@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Easy</p>
 <h2 id="heading-scenario">Scenario</h2>
 <p>The campus mailroom receives student parcels throughout the day. Staff currently call students to collect them, which interrupts class and creates a queue. The school wants staff to place a package in a locker and send the intended student a one-time pickup code.</p>
-<p>Design an application for one campus mailroom and one locker bank. Treat a locker as occupied until staff confirms the parcel was collected or removes it; an expired code by itself does not make a physically occupied locker available.</p>
+<p>Design an application for one campus mailroom and one locker bank. Treat a locker as occupied until the parcel is collected through a valid pickup flow or staff removes it; an expired code by itself does not make a physically occupied locker available.</p>
 <h2 id="heading-functional-requirements">Functional Requirements</h2>
 <ul>
 <li>Staff can record a package with a tracking reference and intended student, then assign it to a free locker.</li>
@@ -43,6 +43,8 @@
 </ul>
 <h2 id="heading-your-task">Your Task</h2>
 <p>Design the staff intake and student pickup flows, including data entities and state transitions. Show how a locker is assigned without being assigned to two packages, how a code is validated and consumed once, and how the application coordinates the database with the physical locker controller. Include an operational approach for a failed notification or unlock command.</p>
+<h2 id="heading-example-to-work-through">Example to Work Through</h2>
+<p>A package remains inside a locker after its pickup code expires. The student submits the old code, then staff issue a replacement code. Describe the package and locker state after each action and what the kiosk should report.</p>
 <h2 id="heading-interviewer-follow-ups">Interviewer Follow-Ups</h2>
 <ul>
 <li>Two staff members store parcels at the same time and only one locker is free. How is double assignment prevented?</li>

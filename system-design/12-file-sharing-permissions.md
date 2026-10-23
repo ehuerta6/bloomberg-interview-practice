@@ -4,7 +4,7 @@
 
 ## Scenario
 
-A campus research group needs a simple place to upload project files and share selected files with collaborators. Files may be large, so the application should not keep their bytes in its relational database. Some collaborators should only view a file; others may download it. Owners need to revoke access and must be able to tell who owns each file.
+A campus research group needs a simple place to upload project files and share selected files with collaborators. Files may be large, so the application should not keep their bytes in its relational database. Some collaborators should be able to view and download a file; others may also change its display name. Owners need to revoke access and must be able to tell who owns each file.
 
 Design a first version for authenticated campus users. Folders and real-time collaboration are not required.
 
@@ -14,7 +14,7 @@ Design a first version for authenticated campus users. Folders and real-time col
 - The system stores file bytes in private object storage and stores file metadata and the opaque storage key in the application database.
 - An owner can grant another user `viewer` or `editor` access to an individual file and can revoke that grant.
 - Viewers can read metadata and download. Editors can also update the display name, including through an editor share link. Only the owner can grant/revoke access or delete the file.
-- Every download and metadata change must check current authorization. Knowing a storage key or URL must not be sufficient to access a private object.
+- Every application-mediated download and metadata change must check current authorization. A storage key alone cannot grant access to a private object; a share link is a scoped bearer capability, and a signed download URL may remain usable until it expires.
 - A completed file cannot be overwritten by reusing an upload authorization issued for a pending upload.
 - The owner can create an optional share link with a selected `viewer` or `editor` permission and an expiration time. The owner can revoke it. A link that is expired, revoked, or tied to a deleted file grants no access.
 - Uploads have a maximum size and an allowed content-type list supplied by application configuration. Failed or abandoned uploads must not create a visible completed file record.
@@ -30,6 +30,10 @@ Design a first version for authenticated campus users. Folders and real-time col
 ## Your Task
 
 Design the upload, download, sharing, and revocation flows. Identify which data belongs in the relational database and which belongs in object storage. Explain how each request is authorized, including the difference between a user grant and a bearer share link. Walk through what happens if upload bytes succeed but finalization fails, and how access revocation affects previously issued download URLs.
+
+## Example to Work Through
+
+An owner uploads the bytes, but the application fails before the file is finalized. Describe what the owner and a viewer should be able to access. Then explain what a recipient can do with a previously issued short-lived download URL after the owner revokes the share.
 
 ## Interviewer Follow-Ups
 

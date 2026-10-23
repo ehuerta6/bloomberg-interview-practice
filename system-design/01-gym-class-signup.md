@@ -32,6 +32,10 @@ Adapted from Noel's CIC workshop. This is an educational exercise, not an offici
 
 Design the smallest correct system for the member and gym workflows. Explain the principal records and their relationships, how capacity and FIFO waitlist order are preserved when requests overlap, and how the system handles a cancellation if notification delivery fails. Walk through one registration and one cancellation from the member's action to the stored result.
 
+## Example to Work Through
+
+A session has capacity two, with two confirmed members and one member already waitlisted. One confirmed member cancels. Describe what each member sees and what the system records if the promotion notice cannot be delivered immediately.
+
 ## Interviewer Follow-Ups
 
 - Two members try to claim the final place at the same moment. What makes the outcome safe?

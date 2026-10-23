@@ -26,6 +26,10 @@ A local theater wants customers to browse showings, choose specific seats, tempo
 
 Design seat availability and the hold-to-payment-to-ticket lifecycle. Explain how the model prevents two concurrent customers from holding the same seat, how an entire multi-seat request succeeds or fails atomically, and how expiration and provider retries affect state. Trace one booking from seat selection through ticket retrieval.
 
+## Example to Work Through
+
+A customer requests seats A4 and A5 for a showing, but another customer has already held A5. Describe the result of the first customer's request. Then consider a payment success that arrives after the five-minute hold expires and the seats have become available again.
+
 ## Interviewer Follow-Ups
 
 - Payment succeeds at the provider just as the hold expires. How do you reconcile the provider result and seat ownership?

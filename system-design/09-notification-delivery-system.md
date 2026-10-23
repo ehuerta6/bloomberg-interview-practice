@@ -26,6 +26,10 @@ Several application features need to notify users about events such as a passwor
 
 Design event intake, preference evaluation, in-app persistence, channel-specific delivery tracking, and retry handling. Show how event idempotency works across retries and explain what state is written before and after calling the provider. Walk through a transient email failure followed by a retry.
 
+## Example to Work Through
+
+A user who is opted in to an eligible in-app category receives an event with the same stable identifier twice. Email delivery fails temporarily, then a later retry succeeds. Describe the user's in-app view and the delivery state the support team can inspect, including what “sent” says about the provider's response.
+
 ## Interviewer Follow-Ups
 
 - The provider accepts an email but the application times out before recording success. What happens on retry?

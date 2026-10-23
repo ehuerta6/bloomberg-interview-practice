@@ -41,6 +41,8 @@
 </ul>
 <h2 id="heading-your-task">Your Task</h2>
 <p>Design creation, redirect, expiration, disablement, and reporting. Explain the uniqueness guarantee, how a redirect checks time-sensitive state, how click events relate to links, and how analytics remain correct across day boundaries. Walk through a visitor redirect and identify the main consistency trade-off.</p>
+<h2 id="heading-example-to-work-through">Example to Work Through</h2>
+<p>An owner requests an alias that another link already uses. Later, a visitor follows that existing link just before midnight UTC. Describe the creation response and which UTC day should include the click.</p>
 <h2 id="heading-interviewer-follow-ups">Interviewer Follow-Ups</h2>
 <ul>
 <li>The database is unavailable for analytics writes but link lookup still works. Should redirects continue, and what data might be lost?</li>

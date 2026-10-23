@@ -31,6 +31,10 @@ Adapted from Noel's CIC workshop. This is an educational exercise, not an offici
 
 Design the student, staff, and payment flows. Identify the records and keys needed to preserve a placed order's item names/prices and to prevent stock overselling. Walk through checkout, payment outcome, staff status changes, and a cancellation request. Explain which state transitions are legal and what must be atomic.
 
+## Example to Work Through
+
+Only one portion of a menu item remains when two students submit orders for it. Walk through what each student sees, then describe the order and payment records if the provider accepts payment but the café service times out before recording the result.
+
 ## Interviewer Follow-Ups
 
 - The payment provider succeeds but the café service times out before saving the result. How can a retry avoid charging the student twice?

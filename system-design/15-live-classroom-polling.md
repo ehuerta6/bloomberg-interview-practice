@@ -29,6 +29,10 @@ Design the polling feature for a course platform with authenticated instructors 
 
 Design the instructor and student interactions, data model, authorization checks, and live result update path. Walk through a vote submission, including how duplicate clicks and vote changes are handled. Explain how the system prevents two active polls for the same course and what a reconnecting client does after missing updates.
 
+## Example to Work Through
+
+An enrolled student selects option A, changes the answer to option B while the poll is open, and then reconnects after missing a result update. Describe the student's current vote, the aggregate counts, and how the client gets back in sync.
+
 ## Interviewer Follow-Ups
 
 - An instructor wants anonymous voting while still limiting each enrolled student to one vote. What changes in the design and retention policy?

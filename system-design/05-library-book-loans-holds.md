@@ -29,6 +29,10 @@ A campus library wants students to search its catalog, borrow available books, r
 
 Design the catalog, copy, loan, and hold records and the checkout/return interactions. Trace a return when multiple students are waiting, including the pickup deadline and what happens if the first hold expires. Explain how concurrent checkout requests and duplicate return actions preserve copy and loan consistency.
 
+## Example to Work Through
+
+A title has two copies, both on loan, and two students are waiting for it. One copy is returned and assigned for pickup, but the first student's pickup period expires. Describe the state of that copy and the two holds at each step, including what the next student can see.
+
 ## Interviewer Follow-Ups
 
 - Two staff members attempt to check out the same final available copy at once. How do you prevent a double loan?
