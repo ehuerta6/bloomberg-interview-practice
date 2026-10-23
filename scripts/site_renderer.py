@@ -94,9 +94,9 @@ def render_markdown(markdown, source, root, pages, *, reveal_solutions=False):
             token.type = "html_block"
             token.content = '<pre class="mermaid" tabindex="0" role="region" aria-label="Mermaid diagram source">' + escape(token.content) + "</pre>\n"
     parser.renderer.rules["fence"] = lambda *args: parser.renderer.fence(*args).replace(
-        "<pre>", '<pre tabindex="0" role="region" aria-label="Code sample">', 1)
+        "<pre>", '<pre tabindex="0" role="group" aria-label="Code sample">', 1)
     parser.renderer.rules["code_block"] = lambda *args: parser.renderer.code_block(*args).replace(
-        "<pre>", '<pre tabindex="0" role="region" aria-label="Code sample">', 1)
+        "<pre>", '<pre tabindex="0" role="group" aria-label="Code sample">', 1)
     parser.renderer.rules["table_open"] = lambda *_: '<div class="table-scroll" tabindex="0" role="region" aria-label="Table"><table>\n'
     parser.renderer.rules["table_close"] = lambda *_: "</table></div>\n"
     if reveal_solutions:

@@ -38,7 +38,7 @@
 </ul>
 <h2 id="heading-contract-examples">Contract examples</h2>
 <p>For this input, with <code>weights={&quot;exam&quot;: 80, &quot;project&quot;: 20}</code> and <code>drop_lowest=0</code>:</p>
-<pre><code class="language-python">[{&quot;student&quot;: &quot;Ari&quot;, &quot;scores&quot;: {&quot;exam&quot;: [100], &quot;project&quot;: [0]}}]
+<pre tabindex="0" role="group" aria-label="Code sample"><code class="language-python">[{&quot;student&quot;: &quot;Ari&quot;, &quot;scores&quot;: {&quot;exam&quot;: [100], &quot;project&quot;: [0]}}]
 </code></pre>
 <p>The expected return is <code>{&quot;Ari&quot;: {&quot;count&quot;: 2, &quot;average&quot;: 80.0, &quot;letter&quot;: &quot;B&quot;}}</code>: the two category percentages contribute according to their weights.</p>
 <p>For <code>[{&quot;student&quot;: &quot;Cal&quot;, &quot;scores&quot;: {&quot;exam&quot;: [100, None, 90]}}]</code>, <code>weights={&quot;exam&quot;: 100}</code>, and the default drop count of 1, the expected summary for Cal is <code>{&quot;count&quot;: 3, &quot;average&quot;: 95.0, &quot;letter&quot;: &quot;A&quot;}</code>. The missing entry counts toward <code>count</code> even though it is dropped.</p>
