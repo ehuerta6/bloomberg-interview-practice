@@ -48,7 +48,7 @@ def confined(path, boundary):
 def check_reference(reference, source, site, root, pages):
     parts = urlsplit(reference)
     if reference.startswith(REPOSITORY + "/"):
-        match = re.fullmatch(r"/(?:ehuerta6)/(?:bloomberg-interview-practice)/(blob|tree|raw)/main/(.+)", parts.path)
+        match = re.fullmatch(r"/ehuerta6/bloomberg-interview-practice/(blob|tree|raw)/main/(.+)", parts.path)
         if not match:
             raise ValueError(f"unsupported repository reference: {reference}")
         target = confined(root / unquote(match[2]), root)
