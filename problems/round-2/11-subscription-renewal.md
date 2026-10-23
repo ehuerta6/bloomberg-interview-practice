@@ -2,28 +2,54 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain monthly membership billing. A subscription has a scheduled due date
+and a fee in cents. An invoice ID identifies one collection attempt; replaying
+an invoice returns its saved outcome. A later collection after a decline uses
+a new invoice ID. The gateway in this exercise is a configurable fake.
 
-Members are shown as current after a renewal charge was declined, and some renewal invoices appear to have been charged more than once.
+## Practice report
 
-### Scenario
+Create active subscription `sub-1` for 1200 cents, due `2026-10-01`. Configure
+the gateway to decline and call `renew("sub-1", "invoice-2", "2026-10-01")`.
 
-A monthly subscription reaches its due date. The billing worker may retry an invoice after a timeout, and a declined payment should remain visible to account support until a later successful collection.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Renewal result and saved invoice | `declined` | `declined` |
+| Subscription status | `active` | `past_due` |
+| Next due date | `2026-10-01` | `2026-10-01` |
+
+Support needs the subscription status to agree with the unpaid renewal.
 
 ## Acceptance Criteria
-- Each invoice identifier represents one charge attempt and replaying it does not charge twice.
-- Only a successful charge advances the renewal date; a decline preserves the due date and marks the subscription past due.
-- Invalid requests must leave persisted state unchanged.
 
-## State Invariants
+- Charge only a due subscription whose status is `active` or `past_due`.
+  Early or canceled-subscription requests return `not_due` without a charge;
+  an unknown subscription returns `missing` without creating an invoice.
+- A decline saves the invoice as `declined`, marks the subscription `past_due`,
+  and preserves its scheduled due date.
+- A successful charge saves a `paid` invoice, sets the subscription `active`,
+  and advances the scheduled due date by one month. Clamp the day to the last
+  valid day of the target month; January 31, 2026 advances to February 28, 2026.
+- Replaying a recorded paid or declined invoice returns that outcome without
+  another charge or date change. A newly identified attempt can collect after
+  a decline and restore the subscription to active.
+- Rejected early, canceled, or missing-subscription requests preserve stored
+  subscription and invoice state.
 
-Only a successful charge advances the renewal date; a decline preserves the due date and marks the subscription past due.
+## Out of Scope
+
+Use ISO date strings and the included gateway. Proration, payment-method
+management, invoice ownership across subscriptions, and real payment retries are
+outside this ticket.
 
 ## Investigation
 
-Trace the invoice id through the renewal service and gateway. Compare subscription state before and after declined, successful, early, and repeated renewal requests. Add regression coverage for the behavior you reproduce.
+Trace invoice outcomes, gateway calls, and subscription state on decline,
+success, replay, and an early request. Add focused tests that assert the due
+date and status together, including a new invoice after a decline and a
+month-end renewal.
 
 ## Starter Code
 

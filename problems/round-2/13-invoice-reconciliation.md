@@ -2,28 +2,52 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain invoice reconciliation for a finance tool. Reconciliation matches
+a payment notification to an invoice and updates its amount paid. A payment ID
+is the bank's reference for one remittance; repeating its notification must not
+count the funds twice. Amounts are in cents.
 
-An invoice is marked paid before all funds arrive, and duplicate bank notifications can make the recorded amount exceed the remittance.
+## Practice report
 
-### Scenario
+Create `inv-1` with total 10000 and paid amount 0. Apply
+`apply_payment("pay-3", "inv-1", 4000)` twice.
 
-A customer pays an invoice in installments. Bank notifications can be delivered more than once, and each payment reference must reconcile to one invoice and amount.
+| Observation after both notifications | Current starter | Expected |
+| --- | --- | --- |
+| Invoice paid amount | 8000 | 4000 |
+| Stored payment count for the invoice | 1 | 1 |
+| Invoice status | `partial` | `partial` |
+
+Compare the paid amount with the actual saved remittance, rather than relying
+only on the number of records.
 
 ## Acceptance Criteria
-- Partial payments accumulate until the invoice’s exact balance is settled.
-- A payment reference is applied at most once, and overpayments are rejected without changing invoice or payment records.
-- Invalid requests must leave persisted state unchanged.
 
-## State Invariants
+- Positive installments accumulate against the remaining invoice balance.
+  A smaller installment leaves `partial`; exact settlement changes it to `paid`.
+- Apply one payment reference at most once. An identical replay preserves the
+  paid amount and payment record and returns the current partial/paid outcome.
+- Reusing a reference for a different invoice or amount returns `conflict`
+  without replacing the original payment or changing either invoice.
+- Unknown invoices, nonpositive amounts, new payments against a paid invoice,
+  and overpayments are rejected without invoice or payment-record changes.
+- The paid amount cannot exceed the invoice total, including across multiple
+  notifications and retries.
 
-A payment reference is applied at most once, and overpayments are rejected without changing invoice or payment records.
+## Out of Scope
+
+Use the existing local store and payment amounts. Bank integration, currency
+conversion, automatic refunds, and expanding amount-type validation are outside
+this ticket.
 
 ## Investigation
 
-Trace bank reference lookup, invoice balance calculation, and payment persistence. Test partial settlement, duplicate notices, unknown invoices, and an amount larger than the remaining balance. Add regression coverage for the behavior you reproduce.
+Trace the duplicate report through the invoice and payment stores. Add focused
+tests for two installments that settle exactly, a replay, changed details under
+one reference, and an overpayment. Assert paid amounts and saved payment details
+after both accepted and rejected calls.
 
 ## Starter Code
 

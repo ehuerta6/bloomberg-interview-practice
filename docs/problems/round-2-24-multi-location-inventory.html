@@ -21,27 +21,65 @@
     <article class="prose" data-problem-id="round-2-24">
 <h1 id="heading-ticket-24--multi-location-inventory">Ticket #24 — Multi-Location Inventory</h1>
 <p><strong>Difficulty:</strong> Hard</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>Warehouse staff move goods between retail locations. Recent counts show phantom stock after repeated delivery scans and missing stock after cancelled shipments. The tool uses a local ledger and does not call shipping systems.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Trace a transfer through start, receive, repeat receive, and cancellation. Compare total stock across locations and inspect the transfer status at each step.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain stock transfers between shop locations. <strong>On-hand</strong> stock can be
+sold at a location. <strong>In-transit</strong> units have left the source but have not yet
+been received by the destination. The local ledger tracks each transfer ID
+through one terminal outcome: <code>received</code> or <code>cancelled</code>.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Start with 8 books at <code>east</code> and 2 at <code>west</code>. Call
+<code>start(&quot;t1&quot;, &quot;book&quot;, &quot;east&quot;, &quot;west&quot;, 3)</code>, then receive <code>t1</code> once.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation after receipt</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>East on-hand books</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>West on-hand books</td>
+<td>8</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Transfer state</td>
+<td><code>received</code></td>
+<td><code>received</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>On a fresh repository, start and cancel the same transfer instead. The expected
+final stock is the original 8 and 2, with the transfer marked <code>cancelled</code>.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Starting a transfer removes units from source stock and records one in-transit transfer.</li>
-<li>Receiving adds exactly the reserved units to destination stock once.</li>
-<li>Cancelling restores the source exactly once and prevents receipt.</li>
-<li>Invalid transfers change neither stock nor transfer history.</li>
-<li>Reject operations that do not match the transfer state.</li>
+<li>Starting a valid transfer removes units from source on-hand stock and records
+exactly one <code>in_transit</code> transfer. Destination on-hand stock is unchanged until receipt.</li>
+<li>Receipt adds the transfer's units to destination stock once and changes it to
+<code>received</code>. Cancellation instead restores source stock once and changes it to
+<code>cancelled</code> without a destination credit.</li>
+<li>Only an in-transit transfer can be received or cancelled. Repeated receipt,
+repeated cancellation, and crossing from one terminal outcome to the other
+are rejected without further effects.</li>
+<li>Reject missing IDs/SKU/locations, duplicate transfer IDs, same source and
+destination, invalid nonpositive/non-integer quantities, booleans, and
+insufficient source stock without changing stock or transfer history.</li>
+<li>Across all transfers of a SKU, on-hand units plus in-transit units are
+conserved. Each transfer has exactly one terminal outcome.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Across an in-transit transfer, total on-hand plus in-transit stock is conserved.</li>
-<li>Each transfer has exactly one terminal outcome.</li>
-<li>A terminal transfer cannot be received or cancelled again.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the in-memory ledger and supplied location names. Carrier tracking,
+shipping systems, damaged goods, and partial receipts are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Follow one transfer from start through receive, repeated receive, and cancellation attempts. Run a second transfer through cancellation before receipt. Reconcile source stock, destination stock, in-transit units, and transfer state after every transition.</p>
+<p>Trace start, receive, and cancellation through the two scenarios described
+above. Add assertions for both locations before and after each transition,
+terminal-state rejection, and conservation with several transfers in transit.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/24-multi-location-inventory">View starter code</a></p>
 <details class="solution-reveal">

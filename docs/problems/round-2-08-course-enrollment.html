@@ -21,28 +21,59 @@
     <article class="prose" data-problem-id="round-2-08">
 <h1 id="heading-ticket-08--course-enrollment">Ticket #08 — Course Enrollment</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A learner can enter an advanced course without completing its prerequisite.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Courses have prerequisites and limited seats. When a course is full, additional eligible learners wait in order; a dropped seat should be offered to the next learner.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain course enrollment for a learning portal. A prerequisite is a course
+the learner must have <strong>completed</strong>, not merely enrolled in. Enrolled learners
+use seats; waitlisted learners are eligible learners waiting for a seat to open.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Add <code>intro</code> with capacity 2 and <code>advanced</code> with capacity 1 and prerequisite
+<code>intro</code>. Learner <code>s1</code> has no completions. Call
+<code>enroll(&quot;s1&quot;, &quot;advanced&quot;, &quot;e1&quot;)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Service result</td>
+<td><code>&quot;enrolled&quot;</code></td>
+<td><code>&quot;prerequisite_missing&quot;</code></td>
+</tr>
+<tr>
+<td>Stored enrollment <code>e1</code></td>
+<td>An enrolled row</td>
+<td>No row</td>
+</tr>
+</tbody>
+</table></div>
+<p>After <code>intro</code> is marked complete for <code>s1</code>, the same enrollment request should
+succeed if a seat is available.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>A learner must complete every prerequisite before joining a course or its waitlist.</li>
-<li>Enrolled learners never exceed course capacity.</li>
-<li>Eligible learners join the waitlist when no seat is available.</li>
-<li>Waitlisted learners do not consume enrolled capacity.</li>
-<li>A learner cannot create duplicate active enrollment or waitlist entries.</li>
-<li>Dropping an active enrollment promotes the next waitlisted learner once.</li>
+<li>Every prerequisite must be complete before a learner joins either the course
+or its waitlist. A missing prerequisite must not create an enrollment row.</li>
+<li>Enrolled count never exceeds capacity. Eligible learners are enrolled when a
+place exists and waitlisted otherwise; waiting rows do not consume seats.</li>
+<li>A learner cannot have duplicate enrolled or waitlisted rows for one course,
+and an enrollment ID cannot replace another row.</li>
+<li>Dropping an active row marks it <code>dropped</code>. When an enrolled seat opens, the
+next waiting learner is promoted once without exceeding capacity. Repeating
+the drop fails and cannot promote another learner.</li>
+<li>Reject unknown courses and missing learner/enrollment IDs without changing
+the roster. Only recorded completions satisfy prerequisites.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Only completed courses satisfy prerequisites.</li>
-<li>Each learner has at most one active row per course.</li>
-<li>Waitlist promotion preserves capacity and does not promote the same row twice.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the repository's existing enrollment-ID ordering for waitlist selection.
+Changing that ordering, scheduling courses, tuition, and notifying learners are
+outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace prerequisite checks and enrollment states through a full-course scenario. Compare active enrollment counts with waitlisted rows before and after a drop, and verify student and course state after rejected requests.</p>
+<p>Trace the report, then compare enrolled and waitlisted rows in a full course
+before and after a drop. Add regression cases for missing/completed prerequisites,
+duplicate requests, and repeated drops. Assert stored statuses and enrolled counts.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/08-course-enrollment">View starter code</a></p>
 <details class="solution-reveal">

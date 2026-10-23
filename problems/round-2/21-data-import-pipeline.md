@@ -2,31 +2,56 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain an operations tool that receives a partner's already-decoded CSV
+rows as a list of dictionaries. Each partner ID identifies one stored customer
+record. The import should save valid independent rows and report errors by their
+1-based row number, so an operator can correct the input without losing good rows.
 
-An operations team imports a partner CSV through a small in-memory adapter. Bad rows must be reported without losing valid neighboring records, while duplicate partner IDs must never silently replace customer data.
+## Practice report
 
-### Scenario
+Start with an empty repository and post these rows through `ImportRoutes.post`:
 
-Trace a mixed batch containing valid rows, malformed values, repeated IDs, and an ID already in storage. Inspect accepted IDs, error row numbers, and the stored record after each import.
+```python
+[
+    {"id": "a", "email": "a@x.test", "amount": True},
+    {"id": "b", "email": "b@x.test", "amount": "4"},
+]
+```
+
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Accepted IDs | `["a", "b"]` | `["b"]` |
+| Error row numbers | `[]` | `[1]` |
+| Persisted records | `a` with amount 1; `b` with amount 4 | Only `b` with amount 4 |
+
+The boolean is malformed input; it must not become a financial amount.
 
 ## Acceptance Criteria
-- Return a row-level result for valid and invalid input rows.
-- Do not let a duplicate overwrite an accepted or preexisting record.
-- Continue after a bad row and commit valid independent rows.
-- Accept nonnegative integer amounts supplied as integers or base-10 numeric strings; reject booleans and floats.
-- Return 400 for a non-list request body.
 
-## State Invariants
-- A stored external ID maps to at most one record.
-- Within one batch, the first valid row for an ID wins.
-- Invalid or duplicate rows have no persistence effect.
+- Accept a nonnegative integer amount supplied as an integer or a base-10
+  integer string. Reject booleans, floats, negative amounts, missing fields,
+  blank trimmed IDs, and emails without `@`.
+- Trim IDs and emails and store emails in lowercase. Return accepted IDs and
+  errors in input order, with the original 1-based row number for each error.
+- An invalid row changes no record; continue to save valid independent rows.
+- Within one batch, the first valid row for an ID wins. Report later duplicates
+  without replacing it, and never overwrite a preexisting stored ID.
+- A non-list top-level body returns 400 without persistence effects. A list
+  with errors returns 207; a fully accepted list returns 201.
+
+## Out of Scope
+
+Work with parsed row dictionaries and the existing in-memory repository. Reading
+CSV bytes, file uploads, all-or-nothing batch transactions, and changing customer
+IDs are outside this ticket.
 
 ## Investigation
 
-Run a mixed import containing valid rows, malformed amounts, duplicate IDs within the batch, and IDs already stored. Compare row numbers and per-row outcomes, confirm valid independent rows persist, and inspect state after a non-list request body.
+Trace the two-row report through the route, parser, and store. Add mixed-batch
+cases with a float, bad email, duplicate ID, existing ID, and later valid row.
+Assert row numbers, normalized records, and preserved existing values.
 
 ## Starter Code
 

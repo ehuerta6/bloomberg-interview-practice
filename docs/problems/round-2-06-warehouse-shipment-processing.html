@@ -21,28 +21,83 @@
     <article class="prose" data-problem-id="round-2-06">
 <h1 id="heading-ticket-06--warehouse-shipment-processing">Ticket #06 — Warehouse Shipment Processing</h1>
 <p><strong>Difficulty:</strong> Hard</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A multi-item order that cannot ship in full leaves some stock unavailable to later orders.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>A warehouse fulfills orders containing several SKUs. Inventory may already be reserved for another order, and operations may permit shipping available lines while backordering the remainder.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain a warehouse's shipment service. A <strong>SKU</strong> is an identifier for one
+stock item, such as <code>sku-a</code>. <strong>Stock on hand</strong> is the quantity physically in the
+warehouse. <strong>Reserved</strong> units are held for orders and are still on hand but
+cannot be promised again. <strong>Available</strong> units equal on-hand minus reserved units.</p>
+<p><code>fulfill(order_id, lines, allow_partial=False)</code> receives a mapping from SKU to
+requested quantity. <strong>All-or-nothing</strong> means every requested unit ships or none
+ships. <strong>Partial fulfillment</strong> ships available units; a <strong>backorder</strong> records the
+requested units that could not ship.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Start with no reservations and stock <code>sku-a=4</code>, <code>sku-b=2</code>. Call
+<code>fulfill(&quot;o1&quot;, {&quot;sku-a&quot;: 3, &quot;sku-b&quot;: 3})</code> in that line order.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Point in the request</th>
+<th><code>sku-a</code></th>
+<th><code>sku-b</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>On hand before the request</td>
+<td>4</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Reserved before the request</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Requested, all-or-nothing</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Current starter after returning <code>backordered</code></td>
+<td>4 on hand; 3 reserved</td>
+<td>2 on hand; 0 reserved</td>
+</tr>
+<tr>
+<td>Expected after the failed attempt</td>
+<td>4 on hand; 0 reserved</td>
+<td>2 on hand; 0 reserved</td>
+</tr>
+</tbody>
+</table></div>
+<p>The unsuccessful order must not leave those 3 <code>sku-a</code> units unavailable to the
+next order. On a fresh copy of the same stock, allowing partial fulfillment
+instead should ship 3 <code>sku-a</code> and 2 <code>sku-b</code>, leave on-hand quantities 1 and 0,
+and record a backorder of 1 <code>sku-b</code>.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>An all-or-nothing order either reserves and ships every line or leaves stock unchanged.</li>
-<li>Existing reservations reduce the quantity available to new orders.</li>
-<li>A failed fulfillment releases every reservation made during that attempt.</li>
-<li>When partial fulfillment is allowed, only available units ship and the remainder is recorded as a backorder.</li>
-<li>Retrying a completed order does not deduct stock a second time.</li>
-<li>Invalid quantities are rejected before stock changes.</li>
+<li>An all-or-nothing order ships every line or leaves on-hand quantities and
+reservations as they were before the attempt. Its backorder covers the
+unshipped request.</li>
+<li>Existing reservations reduce availability and must survive another order's
+failed attempt. Reserved stock never exceeds on-hand stock.</li>
+<li>A failed attempt leaves no reservation created by that attempt behind.</li>
+<li>With partial fulfillment enabled, ship only available units and record each
+unshipped remainder. Shipped plus backordered units equal requested units.</li>
+<li>Retrying a shipped or partially shipped order returns <code>already_shipped</code>
+without deducting stock again.</li>
+<li>Reject empty requests and invalid quantities before stock changes. Quantities
+must satisfy the existing positive-integer contract; zero, negative, and
+non-integer quantities are rejected.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Reserved stock never exceeds on-hand stock.</li>
-<li>A failed all-or-nothing attempt leaves pre-existing stock and reservations unchanged.</li>
-<li>Shipped plus backordered quantities equal the requested quantities.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the supplied repository and recorded backorders. Purchasing replacement
+stock, automatically retrying backorders, shipping-carrier APIs, and database
+concurrency are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace a two-SKU order where the first line is available and a later line is short. Inspect stock, reservations, and shipment records before and after failure, then compare partial and complete fulfillment.</p>
+<p>Reproduce both modes from separate fresh repositories. Trace the service and
+warehouse records, then prove the stock and reservation invariants with tests
+for a shortage on a later line, pre-existing reservations, invalid quantities,
+and completed-order retries. Explain the state before and after each request.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/06-warehouse-shipment-processing">View starter code</a></p>
 <details class="solution-reveal">

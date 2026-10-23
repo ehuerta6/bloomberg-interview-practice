@@ -21,21 +21,61 @@
     <article class="prose" data-problem-id="round-2-16">
 <h1 id="heading-ticket-16--content-moderation-workflow">Ticket #16 — Content Moderation Workflow</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A post can be approved by its author, and two reviewers can make conflicting decisions while the history shows only the final state.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>New posts begin in a review queue. Reviewers may approve or reject pending content, while authors cannot review their own submissions.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain a discussion site's moderation queue. Submitted posts begin
+<code>pending</code>. A reviewer can approve a post for publication or reject it. The
+<strong>audit history</strong> is a saved record of who made an accepted decision and why;
+authors may not decide their own posts.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Submit <code>post-1</code> as <code>author-1</code>, then call
+<code>review(&quot;post-1&quot;, &quot;author-1&quot;, &quot;approve&quot;, &quot;self review&quot;)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Result</td>
+<td><code>published</code></td>
+<td><code>forbidden</code></td>
+</tr>
+<tr>
+<td>Stored post status</td>
+<td><code>published</code></td>
+<td><code>pending</code></td>
+</tr>
+<tr>
+<td>Audit events for the post</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table></div>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Only a pending post can receive one valid review decision.</li>
-<li>Authors cannot review their own posts; every accepted decision appends an actor, decision, and note to the audit history.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>Only <code>approve</code> and <code>reject</code> are valid decisions. Unknown posts and unsupported
+decisions return <code>invalid</code> without changing posts or audit history.</li>
+<li>Authors cannot review their own posts. A forbidden self-review preserves the
+pending post and adds no audit event.</li>
+<li>An accepted approval changes a pending post to <code>published</code>; an accepted
+rejection changes it to <code>rejected</code>.</li>
+<li>Each accepted decision appends exactly one audit event with post ID, actor,
+decision, and note.</li>
+<li>A post already decided cannot be decided again. A later review from another
+reviewer returns <code>conflict</code> without replacing its status or appending history.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>Authors cannot review their own posts; every accepted decision appends an actor, decision, and note to the audit history.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the existing caller-supplied reviewer identity and in-memory store. Account
+roles, automated content analysis, appeals, and concurrent database updates are
+outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace role checks and state transitions through the moderation service. Inspect both post state and audit events after forbidden, invalid, and repeated decisions. Add regression coverage for the behavior you reproduce.</p>
+<p>Trace the self-review report and compare the result with an independent
+reviewer's approval and rejection. Add tests that observe both post state and
+audit entries after valid, invalid, forbidden, and repeated decisions.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/16-content-moderation-workflow">View starter code</a></p>
 <details class="solution-reveal">

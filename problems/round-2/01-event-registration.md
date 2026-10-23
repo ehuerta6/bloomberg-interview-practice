@@ -2,29 +2,49 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain registration for a campus career night. An event has a fixed number
+of places. A registration links one student to one event; `active` registrations
+use places, while `cancelled` records remain as history.
 
-After a student cancels an event registration, another student may still be told that the event is full. Investigate the request path and determine why a cancelled registration continues to affect capacity.
+## Practice report
 
-### Relevant scenario
+Create `career-night` with capacity 1. Through `post_registration`, register
+student `s1` as `r1`, cancel `r1` through `delete_registration`, then submit
+student `s2` as `r2` for the same event.
 
-An event has a fixed capacity. Several students register, one registration is cancelled, and a new student tries to take the released place. Requests pass through route, service, repository, and model code.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Result of the final registration request | Status 409 | Status 201 |
+| Who occupies the single place afterward | Nobody; `r1` is cancelled | `s2`; `r1` stays cancelled |
+
+These status values come from the supplied route adapter; no web server is
+needed to reproduce the report.
 
 ## Acceptance Criteria
-- Active registrations consume capacity; cancelled registrations do not.
-- A student cannot hold duplicate active registrations for the same event.
-- Capacity is never exceeded, and cancelling an active registration frees its place.
-- Invalid or repeated cancellation attempts do not damage registration state.
 
-## State Invariants
-- Each registration has one status, and only active registrations count toward capacity.
-- Rejected requests leave the stored registrations unchanged.
+- Active registrations alone consume capacity, and their count never exceeds
+  the event's capacity. Cancelling one active registration frees one place.
+- A student cannot have two active registrations for the same event. A student
+  whose earlier registration was cancelled can register again with a new ID.
+- A registration ID cannot replace an existing record. Missing required request
+  fields or an unknown event are rejected without creating a registration.
+- Cancellation succeeds only for an existing active registration. An unknown or
+  repeated cancellation leaves every stored registration unchanged.
+- Every rejected registration leaves the stored registrations unchanged.
+
+## Out of Scope
+
+Keep the in-memory repository and route response shape. Event scheduling,
+payments, waitlists, and concurrent database transactions are outside this ticket.
 
 ## Investigation
 
-Trace registration creation and cancellation through the route, service, repository, and data model. Compare behavior with the tests and decide which assertions prove the capacity and state invariants. Make a focused fix and add regression coverage for the behavior you reproduce.
+Reproduce the cancellation sequence through the route adapter and follow the
+request through service, repository, and model code. Add focused regression
+assertions for returned statuses and stored registration state; explain how they
+prove that one place is released and cannot be occupied twice.
 
 ## Starter Code
 

@@ -21,27 +21,63 @@
     <article class="prose" data-problem-id="round-2-05">
 <h1 id="heading-ticket-05--refund-processing">Ticket #05 — Refund Processing</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A refund request can succeed for a payment that has not reached a refundable payment state.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Support submits refunds through an in-memory payment ledger. Requests can be retried after a slow response, and one captured payment can receive multiple partial refunds.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain a support tool for refunding payments. An <code>authorized</code> payment has
+approval to charge but has not been captured; a <code>captured</code> payment has collected
+funds. A partial refund returns some of those funds. Amounts use the integer
+units already stored in the payment ledger.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Add payment <code>p2</code> with amount 900 and state <code>authorized</code>. Request
+<code>refund(&quot;p2&quot;, &quot;rf2&quot;, 100)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Service result</td>
+<td><code>&quot;refunded&quot;</code></td>
+<td><code>&quot;rejected&quot;</code></td>
+</tr>
+<tr>
+<td>Refunded total</td>
+<td>100</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Payment state</td>
+<td><code>partially_refunded</code></td>
+<td><code>authorized</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>A refund ID identifies one refund request. An identical retry must have no
+additional effect; using that ID for different payment details is a conflict.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Only captured or partially refunded payments are eligible.</li>
-<li>Refund amounts must be positive and their total cannot exceed the captured amount.</li>
-<li>A repeated request with the same refund identifier and details has no additional effect.</li>
-<li>A refund identifier cannot be reused for different payment details.</li>
-<li>Successful refunds update both the refund ledger and payment state.</li>
+<li>New refunds are eligible only for <code>captured</code> or <code>partially_refunded</code> payments.
+Unknown payments and payments in other states are rejected.</li>
+<li>Amounts must be positive integers. Cumulative refunds cannot exceed the
+payment amount, including when several partial refunds are requested.</li>
+<li>A successful request records one refund and sets the payment to
+<code>partially_refunded</code> or, at exact full refund, <code>refunded</code>.</li>
+<li>An exact refund-ID replay returns <code>already_refunded</code> without another ledger
+effect. Reusing that ID for a different payment or amount is rejected.</li>
+<li>Rejected requests leave payment state and refund records unchanged. A fully
+refunded payment cannot accept a new refund.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>The sum of refunds for a payment never exceeds its captured amount.</li>
-<li>Rejected requests do not change the payment or refund ledger.</li>
-<li>A fully refunded payment cannot accept another refund.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the included ledger. Bank transfers, currency conversion, external refund
+providers, and asynchronous settlement are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace a refund from eligibility checks through ledger mutation. Compare captured and authorized payments, then retry identical and conflicting identifiers while inspecting both payment state and totals.</p>
+<p>Trace the report from payment lookup to the saved refund and payment state.
+Compare an uncaptured payment with a captured one, then test partial totals,
+exact settlement, over-refunds, and repeated IDs. Assert ledger contents as well
+as result strings.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/05-refund-processing">View starter code</a></p>
 <details class="solution-reveal">

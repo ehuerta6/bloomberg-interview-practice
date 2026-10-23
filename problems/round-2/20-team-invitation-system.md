@@ -2,32 +2,54 @@
 
 **Difficulty:** Easy
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain invitations to a shared team workspace. A pending invitation
+contains an email, a role (`viewer`, `editor`, or `admin`), and an inclusive
+expiration time. Acceptance creates membership with that role. A periodic sweep
+can mark old invitations expired, but direct acceptance must enforce the lifecycle too.
 
-A team admin invites contractors with viewer, editor, or admin access. The team sees an expired link accepted when its cleanup task was delayed, and wants lifecycle rules that do not depend on cleanup timing.
+## Practice report
 
-### Scenario
+Create invitation `i2` for `late@example.com` with `now=10` and lifetime `ttl=2`.
+Without running the sweep, call `accept("i2", 13)` through the route adapter.
 
-Compare a direct acceptance after expiry with the periodic expiration sweep. Review duplicate detection for pending invitations and membership creation.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Response status | 409 | 409 |
+| Invitation status after rejection | `pending` | `expired` |
+| Membership for that email | Absent | Absent |
+
+The reported defect is the saved lifecycle state after an expired acceptance
+attempt. For a separate fresh invitation with deadline 12, acceptance at 12 is valid.
 
 ## Acceptance Criteria
-- Validate email, role, identifier, and positive lifetime.
-- Grant team membership only after successful acceptance.
-- Reject acceptance at times after expires_at, even if no expiry sweep ran.
-- Prevent duplicate live invitations and duplicate membership.
-- Allow a new invitation after the prior invitation is expired or cancelled.
 
-## State Invariants
-- Only accepted invitations create membership.
-- An invitation can leave pending state only once.
-- An expired invitation never becomes accepted.
-- Each member has one assigned role from the allowed role set.
+- Require an unused nonempty invitation ID, an email containing `@`, an allowed
+  role, an integer creation time, and a positive integer lifetime. Invalid
+  invitations must not create records or membership.
+- Do not invite an existing member or create another live pending invitation
+  for the same email. A new invitation ID is allowed after expiry or cancellation.
+- Accept only a pending invitation at or before its inclusive expiration time.
+  Success sets it to `accepted` and creates membership with the invited role once.
+- An acceptance attempt after the deadline marks a pending invitation `expired`
+  and rejects the request without granting membership, even if no sweep ran.
+- Accepted, cancelled, expired, and unknown invitations cannot be accepted again.
+  Cancellation can change a pending invitation only once.
+- The expiration sweep changes only pending invitations whose deadline has
+  passed, returns newly expired IDs, and is safe to repeat.
+
+## Out of Scope
+
+Use the supplied time integers, email checks, and single-workspace repository.
+Email delivery, authentication, and replacing the email validator are outside
+this ticket.
 
 ## Investigation
 
-Trace a pending invitation through acceptance just before, exactly at, and after its expiration time, both with and without an expiration sweep. Check how duplicate pending invites, cancellation, role validation, and repeated acceptance affect membership.
+Trace the direct late-acceptance case and compare it with the sweep. Add tests
+before, at, and after the inclusive deadline, including duplicate invitations,
+cancellation, and repeated acceptance. Check both saved invitation state and membership.
 
 ## Starter Code
 

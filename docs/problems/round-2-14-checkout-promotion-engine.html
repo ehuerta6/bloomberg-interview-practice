@@ -21,21 +21,65 @@
     <article class="prose" data-problem-id="round-2-14">
 <h1 id="heading-ticket-14--checkout-promotion-engine">Ticket #14 — Checkout Promotion Engine</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>Some shoppers receive a discount for products the promotion excludes, and the displayed tax and final total do not agree with the cart.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>A cart can contain eligible and ineligible products. Promotions have minimum spend rules, while checkout calculates discount, tax, and the amount due in integer cents.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain price quotes for a campus shop. A cart line is <code>(sku, quantity, unit_price_cents)</code>; a SKU identifies one product. Promotions may apply to a set
+of eligible SKUs and require a minimum whole-cart subtotal. A quote returns
+<code>subtotal</code>, <code>discount</code>, <code>tax</code>, and <code>total</code>, all in cents.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Configure <code>SAVE10</code> as 10 percent off books, with a 5000-cent minimum. Quote one
+6000-cent <code>book</code> and one excluded 4000-cent <code>pen</code>, with tax rate 0.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cart subtotal</td>
+<td>10000</td>
+<td>10000</td>
+</tr>
+<tr>
+<td>Discount</td>
+<td>1000</td>
+<td>600</td>
+</tr>
+<tr>
+<td>Total</td>
+<td>9000</td>
+<td>9400</td>
+</tr>
+</tbody>
+</table></div>
+<p>The customer should receive the promotion only on eligible merchandise.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Promotion eligibility and minimum subtotal determine whether a discount applies.</li>
-<li>The discount cannot exceed the eligible amount; tax is calculated after the discount and the final total never becomes negative.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>Validate line quantities and prices: quantities must be positive and unit
+prices nonnegative; an invalid line raises <code>ValueError</code> without changing the
+promotion store.</li>
+<li>Determine minimum spend from the full cart subtotal. A missing/unknown code,
+insufficient spend, or a cart with no eligible products gives no discount.</li>
+<li>Percentage promotions apply to the eligible subtotal, using the existing
+whole-cent floor calculation. Fixed promotions cannot exceed that eligible
+subtotal; an empty eligible-SKU set means all products are eligible.</li>
+<li>Subtract the discount before calculating tax, retaining the existing
+<code>round(taxable_amount * tax_rate)</code> behavior. Total equals taxable amount plus tax
+and cannot become negative for the supplied valid promotion/tax inputs.</li>
+<li>Quotes do not modify the cart or saved promotions. A 6000-cent eligible cart
+with a 600-cent discount and tax rate 0.1 yields tax 540 and total 5940.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>The discount cannot exceed the eligible amount; tax is calculated after the discount and the final total never becomes negative.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the quote API, existing rounding, and configured promotion data. Promotion
+stacking, shipping charges, tax jurisdiction rules, and new rate-validation
+policies are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace line validation, promotion eligibility, and the order of subtotal, discount, and tax calculations. Compare mixed carts to carts containing only eligible items. Add regression coverage for the behavior you reproduce.</p>
+<p>Reproduce the mixed cart, then compare it with eligible-only and excluded-only
+carts. Add regression assertions for every quote field, minimum spend, and a
+fixed discount larger than the eligible value. Explain how the results satisfy
+the pricing contract without changing rounding behavior.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/14-checkout-promotion-engine">View starter code</a></p>
 <details class="solution-reveal">

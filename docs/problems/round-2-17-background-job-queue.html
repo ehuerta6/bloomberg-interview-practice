@@ -21,21 +21,67 @@
     <article class="prose" data-problem-id="round-2-17">
 <h1 id="heading-ticket-17--background-job-queue">Ticket #17 — Background Job Queue</h1>
 <p><strong>Difficulty:</strong> Hard</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>Two workers process the same job after a short delay, and expired work is not reliably reclaimed after a worker disappears.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Workers claim jobs using time-limited leases. A worker can crash, retry a failed job, or report completion after its lease expires.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain background work such as digest emails and image resizing. A
+<strong>lease</strong> gives one worker temporary ownership of a job. Another worker may
+reclaim the job after that lease expires if the attempt limit allows it.
+<code>now</code> is a supplied numeric time; no real waiting is needed in tests.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Enqueue <code>job-1</code>, then call <code>claim(&quot;worker-a&quot;, 100)</code> with a 30-second lease and
+maximum 3 attempts. Immediately call <code>claim(&quot;worker-b&quot;, 100)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation after the second claim</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Returned job</td>
+<td><code>job-1</code></td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td>Stored lease owner</td>
+<td><code>worker-b</code></td>
+<td><code>worker-a</code></td>
+</tr>
+<tr>
+<td>Attempt count</td>
+<td>2</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<p>These are sequential calls at the same supplied time; the report requires no
+thread scheduler to reproduce.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>A live lease has one owner and excludes other workers until it expires.</li>
-<li>Expired leases can be reclaimed, stale workers cannot complete or fail another worker’s lease, and retries stop at the configured attempt limit.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>A live lease excludes other workers. Each successful claim records one owner,
+increments attempts once, and sets a deadline using the configured lease duration.</li>
+<li>At the exact deadline the lease is expired. An eligible expired job can be
+reclaimed without losing attempt history.</li>
+<li>Only the current owner of an unexpired lease can complete or fail it. A stale
+worker or wrong worker gets <code>conflict</code> without changing the current lease.</li>
+<li>Completion makes a job <code>done</code>; repeated completion is harmless and a done
+job is never claimed again.</li>
+<li>A reported failure records the error and requeues the job until the attempt
+limit; the final failure is terminal. If the final worker disappears, the
+next claim after expiry marks the exhausted job <code>failed</code> without reclaiming it.</li>
+<li>Duplicate job IDs are rejected without replacement. Missing completion and
+invalid ownership requests follow the existing result contract without new jobs.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>Expired leases can be reclaimed, stale workers cannot complete or fail another worker’s lease, and retries stop at the configured attempt limit.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the supplied job store, payloads, and timestamp API. Running the actual job,
+database locking, distributed worker coordination, and new configuration
+validation are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace claim, lease expiry, completion, and failure transitions. Use a deterministic clock value to test concurrent claims, stale ownership, and retry exhaustion. Add regression coverage for the behavior you reproduce.</p>
+<p>Trace claim, completion, failure, and reclaim through stored owner, status,
+attempt count, and deadline. Add deterministic tests before and at expiry,
+a stale worker after reassignment, a reported retry, and a vanished final worker.
+Explain which state proves that only one lease is live.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/17-background-job-queue">View starter code</a></p>
 <details class="solution-reveal">

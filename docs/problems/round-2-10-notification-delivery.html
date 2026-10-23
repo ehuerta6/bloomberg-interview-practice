@@ -21,21 +21,66 @@
     <article class="prose" data-problem-id="round-2-10">
 <h1 id="heading-ticket-10--notification-delivery">Ticket #10 — Notification Delivery</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>The same event appears twice in a recipient’s inbox, while a temporary provider outage leaves some messages in an ambiguous state.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>An event producer retries after a timeout. Delivery attempts can fail transiently, and a later operator retry should resume a failed delivery without sending an already-confirmed notification again.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain notifications for completed reports. An event ID identifies one
+recipient/message pair. The producer may resend that event after an uncertain
+response. Deduplication means that replaying a successfully sent event must not
+contact the provider again. The supplied recording provider is an in-memory fake.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>With a provider that succeeds, call
+<code>deliver(&quot;evt-1&quot;, &quot;riley&quot;, &quot;Your report is ready&quot;)</code> twice.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provider calls</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Stored attempt count for <code>evt-1</code></td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Stored delivery status</td>
+<td><code>sent</code></td>
+<td><code>sent</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>A single stored row is insufficient evidence of one send; inspect provider
+calls as well as delivery records.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>A notification is keyed by event ID; repeated submissions of the same event do not produce another send after success.</li>
-<li>A delivery record is persisted before the external send attempt and records each attempt and terminal state.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>An exact replay after success returns the sent record without another send
+or attempt. Reusing an event ID for a different recipient or message raises
+<code>ValueError</code> without changing the original delivery or calling the provider.</li>
+<li>Persist the delivery's incremented attempt count and sending state before
+each provider call, then persist its outcome.</li>
+<li>With the default limit of 3, outcomes <code>[False, False, True]</code> end in <code>sent</code>
+after 3 attempts. Three failures leave a persisted <code>failed</code> record.</li>
+<li><code>retry(event_id)</code> may resume a failed record with another bounded set of
+attempts; attempt history accumulates. A successful later attempt can move
+it to <code>sent</code>.</li>
+<li>Retrying a sent record has no additional effect. Retrying an unknown event
+raises <code>KeyError</code> without creating a record.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>A delivery record is persisted before the external send attempt and records each attempt and terminal state.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the included store and provider fake. Real email/SMS services, backoff
+scheduling, crash recovery across processes, and new payload-validation rules
+are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace event submission, persistence, provider calls, and operator retry. Determine which record state should survive a retry and prove both transient and exhausted failure behavior. Add regression coverage for the behavior you reproduce.</p>
+<p>Trace submission and operator retry through the delivery store and provider.
+Add assertions for persisted attempts, status, and provider calls on success,
+replay, transient failure, and exhausted retries. Keep request identity and
+side effects consistent across those paths.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/10-notification-delivery">View starter code</a></p>
 <details class="solution-reveal">

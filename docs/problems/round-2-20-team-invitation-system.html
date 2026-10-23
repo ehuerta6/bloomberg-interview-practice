@@ -21,28 +21,66 @@
     <article class="prose" data-problem-id="round-2-20">
 <h1 id="heading-ticket-20--team-invitation-system">Ticket #20 — Team Invitation System</h1>
 <p><strong>Difficulty:</strong> Easy</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A team admin invites contractors with viewer, editor, or admin access. The team sees an expired link accepted when its cleanup task was delayed, and wants lifecycle rules that do not depend on cleanup timing.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Compare a direct acceptance after expiry with the periodic expiration sweep. Review duplicate detection for pending invitations and membership creation.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain invitations to a shared team workspace. A pending invitation
+contains an email, a role (<code>viewer</code>, <code>editor</code>, or <code>admin</code>), and an inclusive
+expiration time. Acceptance creates membership with that role. A periodic sweep
+can mark old invitations expired, but direct acceptance must enforce the lifecycle too.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Create invitation <code>i2</code> for <code>late@example.com</code> with <code>now=10</code> and lifetime <code>ttl=2</code>.
+Without running the sweep, call <code>accept(&quot;i2&quot;, 13)</code> through the route adapter.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Response status</td>
+<td>409</td>
+<td>409</td>
+</tr>
+<tr>
+<td>Invitation status after rejection</td>
+<td><code>pending</code></td>
+<td><code>expired</code></td>
+</tr>
+<tr>
+<td>Membership for that email</td>
+<td>Absent</td>
+<td>Absent</td>
+</tr>
+</tbody>
+</table></div>
+<p>The reported defect is the saved lifecycle state after an expired acceptance
+attempt. For a separate fresh invitation with deadline 12, acceptance at 12 is valid.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Validate email, role, identifier, and positive lifetime.</li>
-<li>Grant team membership only after successful acceptance.</li>
-<li>Reject acceptance at times after expires_at, even if no expiry sweep ran.</li>
-<li>Prevent duplicate live invitations and duplicate membership.</li>
-<li>Allow a new invitation after the prior invitation is expired or cancelled.</li>
+<li>Require an unused nonempty invitation ID, an email containing <code>@</code>, an allowed
+role, an integer creation time, and a positive integer lifetime. Invalid
+invitations must not create records or membership.</li>
+<li>Do not invite an existing member or create another live pending invitation
+for the same email. A new invitation ID is allowed after expiry or cancellation.</li>
+<li>Accept only a pending invitation at or before its inclusive expiration time.
+Success sets it to <code>accepted</code> and creates membership with the invited role once.</li>
+<li>An acceptance attempt after the deadline marks a pending invitation <code>expired</code>
+and rejects the request without granting membership, even if no sweep ran.</li>
+<li>Accepted, cancelled, expired, and unknown invitations cannot be accepted again.
+Cancellation can change a pending invitation only once.</li>
+<li>The expiration sweep changes only pending invitations whose deadline has
+passed, returns newly expired IDs, and is safe to repeat.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Only accepted invitations create membership.</li>
-<li>An invitation can leave pending state only once.</li>
-<li>An expired invitation never becomes accepted.</li>
-<li>Each member has one assigned role from the allowed role set.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the supplied time integers, email checks, and single-workspace repository.
+Email delivery, authentication, and replacing the email validator are outside
+this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace a pending invitation through acceptance just before, exactly at, and after its expiration time, both with and without an expiration sweep. Check how duplicate pending invites, cancellation, role validation, and repeated acceptance affect membership.</p>
+<p>Trace the direct late-acceptance case and compare it with the sweep. Add tests
+before, at, and after the inclusive deadline, including duplicate invitations,
+cancellation, and repeated acceptance. Check both saved invitation state and membership.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/20-team-invitation-system">View starter code</a></p>
 <details class="solution-reveal">

@@ -2,31 +2,52 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain a club merchandise checkout. `place_order(order_id, student_id,
+item, quantity)` requests one item type. A reservation temporarily holds units
+for that order; the included fake payment service records authorization calls
+and can be configured to approve or decline them.
 
-A customer reports that inventory becomes unavailable after an order fails during payment. Investigate the order flow across the route, order service, payment adapter, inventory, and repository.
+## Practice report
 
-### Relevant scenario
+Start with 5 `club-shirt` units and a payment service configured to decline.
+Submit order `o1` for student `s1`, requesting 2 shirts through the route adapter.
 
-A request reserves items, calls an in-memory fake payment adapter, and either completes or fails. The client may retry after an uncertain response, using the same order identifier.
+| Observation after the request | Current starter | Expected |
+| --- | --- | --- |
+| Route status and saved order state | 409; `failed` | 409; `failed` |
+| Available shirts | 3 | 5 |
+
+Also submit a successful order twice with the same ID. A client retry must
+return its completed result without another inventory deduction or payment call.
 
 ## Acceptance Criteria
-- Invalid orders fail without corrupting state.
-- Failed payment authorization does not permanently reduce available inventory.
-- A successful order does not deduct inventory more than once.
-- Retrying a completed order with the same identifier does not duplicate its effects.
-- Payment uses the included in-memory fake; no external service is needed.
 
-## State Invariants
-- Available inventory cannot become negative.
-- Each order identifier produces at most one completed order and one corresponding inventory deduction.
-- Failure and retry paths leave payment, order, and inventory state consistent.
+- Require nonempty string order, student, and item IDs and a positive integer
+  quantity; booleans and non-integer quantities are invalid. Missing route
+  fields return 400; rejected orders return 409 without inventory or payment effects.
+- Insufficient stock leaves quantities unchanged and makes no payment call.
+  Available inventory never becomes negative.
+- A declined payment leaves a failed order, restores available inventory, and
+  leaves no outstanding reservation from the attempt.
+- A successful order becomes `completed`, deducts its quantity once, and leaves
+  no outstanding reservation. An exact completed-order retry returns success
+  without another deduction or authorization.
+- A failed order can be tried again after the fake payment service recovers;
+  the final quantities must reflect only the successful purchase.
+
+## Out of Scope
+
+Use the supplied in-memory payment fake and repositories. Real card payments,
+shipping, multi-item baskets, and distributed transactions are outside this ticket.
 
 ## Investigation
 
-Follow one order from request validation through inventory and payment state changes. Identify what happens on success, failure, and retry. Check whether the tests assert the inventory invariant and would catch a regression. Make a focused fix and add tests for the state transitions you verify.
+Trace the declined and successful requests through the route, order service,
+inventory, payment fake, and repository. Add tests that compare quantities,
+reservations, payment call counts, and order state before and after failure and
+retry. Replace assertions that do not observe the request's effects.
 
 ## Starter Code
 

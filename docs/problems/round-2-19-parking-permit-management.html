@@ -21,27 +21,60 @@
     <article class="prose" data-problem-id="round-2-19">
 <h1 id="heading-ticket-19--parking-permit-management">Ticket #19 — Parking Permit Management</h1>
 <p><strong>Difficulty:</strong> Easy</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>Residents report being denied permits after neighbors’ permits have expired, while a few renewals shift dates backward. The city uses an in-memory permit ledger with inclusive calendar-day expiration.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Compare permit occupancy at the boundary day with the expiration sweep. Then renew permits before and after their expiry and inspect both the date and active state.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain a city's parking-permit ledger. Each zone has a quota of permits
+active on a requested day. Days are integers. A permit's <code>expires_day</code> is
+<strong>inclusive</strong>: a permit expiring on day 3 is valid on day 3 and expired on day 4,
+even if the expiration sweep has not updated its stored active flag yet.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Issue permit <code>a</code> in <code>north</code> on day 1 with duration 1. Its expiration is day 1.
+Skip the expiration sweep and request <code>renew(&quot;a&quot;, 2, 5)</code> through the route adapter.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Renewal status</td>
+<td>200</td>
+<td>409</td>
+</tr>
+<tr>
+<td>Stored expiration day</td>
+<td>6</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<p>The request must not revive a permit whose inclusive term has ended.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Enforce per-zone quotas against permits active on the requested day.</li>
-<li>Treat expires_day as inclusive.</li>
-<li>Renew an active permit without shortening its term.</li>
-<li>Do not renew expired or revoked permits.</li>
-<li>Make expiration processing safe to repeat.</li>
+<li>Issuance requires valid IDs, a known zone, integer day and positive integer
+duration, and a new permit ID. Rejected issuance consumes no quota.</li>
+<li>Zone quota counts only permits with an active flag and an expiration on or
+after the requested day. Inactive or expired permits free quota.</li>
+<li>A new term of duration <code>d</code> starting on day <code>t</code> expires on <code>t + d - 1</code>.</li>
+<li>An active, unexpired permit can be extended, including on its final valid day.
+Extension adds the requested duration after its existing term and never shortens
+it. For a permit ending day 3, renewal on day 2 for 2 days ends day 5.</li>
+<li>Reject renewal after expiry or when the permit is inactive, unknown, or the
+renewal input is invalid; preserve its original expiration and ledger state.</li>
+<li>The expiration sweep marks active permits expired only after their final
+valid day and returns newly changed IDs. Repeating it has no further effects.</li>
+<li>Issuance and renewal preserve the per-zone quota invariant.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>A permit is active through expires_day and inactive afterward.</li>
-<li>Active permits in a zone never exceed the quota on issuance or renewal.</li>
-<li>Renewal never reduces an active permit’s expiration.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep integer day numbering and the existing inactive flag for revocation.
+Calendar/time-zone conversion, payments, and a new revocation API are outside
+this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Compare quota checks on the inclusive expiration day and the following day. Trace a renewal that would shorten a term, a renewal after expiry, and a repeated expiration sweep; verify that failed operations leave the permit ledger unchanged.</p>
+<p>Reproduce renewal without the sweep, then compare the inclusive final day with
+the next day. Add tests for quota availability, term extension, invalid renewal,
+and a repeated sweep. Assert both returned results and unchanged state after rejection.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/19-parking-permit-management">View starter code</a></p>
 <details class="solution-reveal">

@@ -21,28 +21,57 @@
     <article class="prose" data-problem-id="round-2-07">
 <h1 id="heading-ticket-07--ticket-seat-holds">Ticket #07 — Ticket Seat Holds</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A seat remains unavailable to other buyers after its hold time has passed.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Buyers temporarily hold individual seats while they complete checkout. Holds expire after a short interval; a successful buyer can confirm an active hold.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain temporary seat reservations for event checkout. A hold gives one
+buyer a short opportunity to purchase one seat. Confirmation turns an unexpired
+hold into a booking; a confirmed seat must remain unavailable after the original
+hold deadline.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>At 12:00 on 2030-01-01, hold <code>A1</code> for <code>buyer-a</code> under <code>h1</code>, using the default
+five-minute lifetime. At exactly 12:05, call <code>hold(&quot;A1&quot;, &quot;buyer-b&quot;, &quot;h2&quot;)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New hold result</td>
+<td><code>False</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td>Owner stored for seat <code>A1</code></td>
+<td><code>buyer-a</code></td>
+<td><code>buyer-b</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Use the injected clock to reproduce this without sleeping.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>A seat has at most one active hold.</li>
-<li>An expired hold no longer blocks a new buyer.</li>
-<li>A hold identifier cannot be used to claim a second seat while its first hold is active.</li>
-<li>Only the owning buyer can confirm an unexpired hold.</li>
-<li>A confirmed seat remains unavailable to other buyers.</li>
-<li>Expiry behavior can be tested with a controllable clock.</li>
+<li>A seat has at most one live hold or confirmed booking. Before expiry, a
+competing buyer cannot take the seat.</li>
+<li>An unconfirmed hold expires at its deadline: it must stop blocking a new
+buyer at that instant and afterward.</li>
+<li>A live hold ID cannot be reused to claim a second seat. Rejected requests
+preserve existing seat and hold ownership.</li>
+<li>Only the owning buyer can confirm an unexpired, unconfirmed hold.</li>
+<li>Confirmation keeps the seat unavailable permanently for this exercise;
+passing the temporary hold deadline does not release a confirmed booking.</li>
+<li>Unknown seats, missing buyer/hold IDs, and unavailable confirmations fail
+without replacing an existing booking.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>No two active holds reserve the same seat.</li>
-<li>Rejected hold or confirmation attempts leave existing ownership unchanged.</li>
-<li>Confirmed holds do not expire through the temporary hold timeout.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the supplied seats and clock. Payments, booking cancellation, seat maps,
+and multiple-process locking are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Use a fixed clock to inspect the exact expiration boundary. Try a competing buyer, an expired hold, and reuse of a hold identifier while comparing both seats and hold ownership.</p>
+<p>Trace holding and confirmation around the deadline. Add tests immediately
+before and exactly at expiry, a competing buyer, hold-ID reuse, and confirmation
+by the wrong buyer. Assert the stored owner, not just the returned boolean.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/07-ticket-seat-holds">View starter code</a></p>
 <details class="solution-reveal">

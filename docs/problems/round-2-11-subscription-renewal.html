@@ -21,21 +21,66 @@
     <article class="prose" data-problem-id="round-2-11">
 <h1 id="heading-ticket-11--subscription-renewal">Ticket #11 — Subscription Renewal</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>Members are shown as current after a renewal charge was declined, and some renewal invoices appear to have been charged more than once.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>A monthly subscription reaches its due date. The billing worker may retry an invoice after a timeout, and a declined payment should remain visible to account support until a later successful collection.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain monthly membership billing. A subscription has a scheduled due date
+and a fee in cents. An invoice ID identifies one collection attempt; replaying
+an invoice returns its saved outcome. A later collection after a decline uses
+a new invoice ID. The gateway in this exercise is a configurable fake.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Create active subscription <code>sub-1</code> for 1200 cents, due <code>2026-10-01</code>. Configure
+the gateway to decline and call <code>renew(&quot;sub-1&quot;, &quot;invoice-2&quot;, &quot;2026-10-01&quot;)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Renewal result and saved invoice</td>
+<td><code>declined</code></td>
+<td><code>declined</code></td>
+</tr>
+<tr>
+<td>Subscription status</td>
+<td><code>active</code></td>
+<td><code>past_due</code></td>
+</tr>
+<tr>
+<td>Next due date</td>
+<td><code>2026-10-01</code></td>
+<td><code>2026-10-01</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Support needs the subscription status to agree with the unpaid renewal.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Each invoice identifier represents one charge attempt and replaying it does not charge twice.</li>
-<li>Only a successful charge advances the renewal date; a decline preserves the due date and marks the subscription past due.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>Charge only a due subscription whose status is <code>active</code> or <code>past_due</code>.
+Early or canceled-subscription requests return <code>not_due</code> without a charge;
+an unknown subscription returns <code>missing</code> without creating an invoice.</li>
+<li>A decline saves the invoice as <code>declined</code>, marks the subscription <code>past_due</code>,
+and preserves its scheduled due date.</li>
+<li>A successful charge saves a <code>paid</code> invoice, sets the subscription <code>active</code>,
+and advances the scheduled due date by one month. Clamp the day to the last
+valid day of the target month; January 31, 2026 advances to February 28, 2026.</li>
+<li>Replaying a recorded paid or declined invoice returns that outcome without
+another charge or date change. A newly identified attempt can collect after
+a decline and restore the subscription to active.</li>
+<li>Rejected early, canceled, or missing-subscription requests preserve stored
+subscription and invoice state.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>Only a successful charge advances the renewal date; a decline preserves the due date and marks the subscription past due.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use ISO date strings and the included gateway. Proration, payment-method
+management, invoice ownership across subscriptions, and real payment retries are
+outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace the invoice id through the renewal service and gateway. Compare subscription state before and after declined, successful, early, and repeated renewal requests. Add regression coverage for the behavior you reproduce.</p>
+<p>Trace invoice outcomes, gateway calls, and subscription state on decline,
+success, replay, and an early request. Add focused tests that assert the due
+date and status together, including a new invoice after a decline and a
+month-end renewal.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/11-subscription-renewal">View starter code</a></p>
 <details class="solution-reveal">

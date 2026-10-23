@@ -21,21 +21,58 @@
     <article class="prose" data-problem-id="round-2-15">
 <h1 id="heading-ticket-15--session-revocation">Ticket #15 — Session Revocation</h1>
 <p><strong>Difficulty:</strong> Easy</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A user logs out, but the same session token still opens protected pages; logging out on one device must not sign out all devices.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>A user has active sessions on a phone and laptop. Logout revokes one session, and repeated logout requests may arrive from a browser retry.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain sessions for a member portal. Each login creates a separate
+session ID for a device. Revocation ends that session's authorization while
+retaining its record and first logout time. Logging out a phone must leave the
+same user's laptop session usable.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Log in <code>alice</code> as <code>s-1</code> on a phone and <code>s-2</code> on a laptop. Call
+<code>logout(&quot;s-1&quot;, &quot;10:00&quot;)</code>, then check authorization for both IDs.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>is_authorized(&quot;s-1&quot;)</code></td>
+<td><code>True</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>is_authorized(&quot;s-2&quot;)</code></td>
+<td><code>True</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td>Saved <code>s-1.revoked_at</code></td>
+<td><code>&quot;10:00&quot;</code></td>
+<td><code>&quot;10:00&quot;</code></td>
+</tr>
+</tbody>
+</table></div>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>A revoked session is no longer authorized for protected access.</li>
-<li>Revocation is scoped to one session, persisted, and idempotent; another device’s session remains active.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>An existing session is authorized before logout and unauthorized afterward.
+Unknown session IDs are never authorized.</li>
+<li>Logout affects only the requested session and persists its first revocation
+time. A repeated logout succeeds without replacing that time or affecting
+another device.</li>
+<li>Logging out an unknown session returns <code>False</code> and creates no record.</li>
+<li>A duplicate login session ID raises <code>ValueError</code> without replacing the
+original user or device.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>Revocation is scoped to one session, persisted, and idempotent; another device’s session remains active.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the supplied session IDs and stored time strings. Session expiry, password
+checks, token cryptography, and a logout-all-devices feature are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace the stored session state and the authorization check. Compare access before logout, after logout, and after a repeated logout call. Add regression coverage for the behavior you reproduce.</p>
+<p>Trace login, logout, stored state, and authorization for the two-device report.
+Add assertions before logout, after logout, and after a repeated logout with a
+later time. Verify both devices and the original saved revocation time.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/15-session-revocation">View starter code</a></p>
 <details class="solution-reveal">

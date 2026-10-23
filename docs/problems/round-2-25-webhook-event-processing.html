@@ -21,28 +21,64 @@
     <article class="prose" data-problem-id="round-2-25">
 <h1 id="heading-ticket-25--webhook-event-processing">Ticket #25 — Webhook Event Processing</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A delivery partner retries webhook notifications and occasionally sends old notifications after newer ones. The order timeline must remain monotonic, and retries must not repeat state effects.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Deliver events in order, then replay one and send a delayed lower sequence. Inspect current status, processed IDs, and history. Also try a conflicting event with the same sequence and a new ID.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain an order-status receiver for a delivery partner. A <strong>webhook</strong> is
+an incoming event notification; partners may retry it or deliver it late.
+Event IDs identify notifications globally. A sequence number orders updates
+within one order; monotonic history means applied sequence numbers only increase.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Create order <code>o1</code>. Deliver event <code>e2</code> at sequence 2 with status <code>shipped</code>, then
+a different event <code>e1</code> at sequence 1 with status <code>paid</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation after the delayed event</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Result for <code>e1</code></td>
+<td><code>applied</code></td>
+<td><code>stale</code></td>
+</tr>
+<tr>
+<td>Current order status</td>
+<td><code>paid</code></td>
+<td><code>shipped</code></td>
+</tr>
+<tr>
+<td>Applied-history sequences</td>
+<td><code>[2, 1]</code></td>
+<td><code>[2]</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Both IDs must be remembered as processed, so retrying the stale notification
+returns <code>duplicate</code> without another state effect.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Apply a known event only once by event ID.</li>
-<li>Never let a stale or same-sequence event regress order state.</li>
-<li>Record stale event IDs so their retries remain duplicates.</li>
-<li>Reject malformed events and unknown orders without changing order state.</li>
-<li>Keep history for applied events in increasing sequence order.</li>
+<li>Validate nonempty event/order IDs, an integer sequence of at least 1 excluding
+booleans, and a supported status: <code>created</code>, <code>paid</code>, <code>shipped</code>, <code>delivered</code>, or
+<code>cancelled</code>. Malformed events and unknown orders are rejected without side effects.</li>
+<li>Apply a valid event ID at most once globally, including across different
+orders. A repeated processed ID returns <code>duplicate</code> without changing state.</li>
+<li>For each order, apply only sequences strictly greater than its latest applied
+sequence. A new ID at a lower or equal sequence returns <code>stale</code>, preserving
+current status and history while remembering that ID as processed.</li>
+<li>Applied events update status and append <code>(sequence, event_id, status)</code> to
+history. History is strictly increasing and status matches its highest sequence.</li>
+<li>Different orders have independent sequence histories. Sequence ordering does
+not imply a new business rule restricting transitions between supported statuses.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>For each order, current status matches the highest applied sequence.</li>
-<li>An event ID produces at most one state effect.</li>
-<li>History is strictly increasing by sequence.</li>
-<li>Invalid events have no side effects.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the supplied route and repository. Partner authentication, network delivery,
+message queues, and a new order-status transition graph are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Deliver increasing event sequences, replay an already-seen event ID, then send a delayed lower sequence and a different event at the current sequence. Verify order status and history remain monotonic and that malformed or unknown-order events have no effects.</p>
+<p>Reproduce the delayed event, then test equal sequences under different IDs,
+exact retries, independent orders, and malformed requests. Assert status,
+applied history, and remembered IDs after each call, including a stale-event retry.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/25-webhook-event-processing">View starter code</a></p>
 <details class="solution-reveal">

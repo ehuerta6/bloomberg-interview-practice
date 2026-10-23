@@ -2,32 +2,49 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain a clinic's appointment tool. Each string time slot can hold one
+appointment. A patient may reschedule only their own appointment; a failed move
+must preserve the original booking so the patient still has a confirmed time.
 
-A patient trying to move an appointment into an occupied time can lose the original appointment.
+## Practice report
 
-### Scenario
+Store appointment `a1` for `patient-a` at `10:00` and `a2` for `patient-b` at
+`11:00`. Call `reschedule("a1", "patient-a", "11:00")`.
 
-A clinic has one appointment per time slot. Patients may reschedule only their own appointment, and a requested slot may have been taken already.
+| Observation after the request | Current starter | Expected |
+| --- | --- | --- |
+| Result | `"conflict"` | `"conflict"` |
+| `a1` time | `11:00` | `10:00` |
+| `a2` time | `11:00` | `11:00` |
+
+The rejection must preserve the complete schedule, including the patient's
+original slot and the other patient's appointment.
 
 ## Acceptance Criteria
-- Only the appointment owner can request a change.
-- A time already occupied by another appointment is rejected.
-- A rejected reschedule preserves the original appointment and all other appointments.
-- A successful reschedule frees the old slot and occupies the new slot.
-- Unknown appointment identifiers do not change the schedule.
-- Rescheduling to the same slot succeeds without creating a duplicate.
 
-## State Invariants
-- Every appointment occupies exactly one time slot.
-- A failed operation leaves the full schedule unchanged.
-- Ownership and conflict checks do not expose or alter another patient’s appointment.
+- Only an appointment's owner may move it. Unknown appointments, a different
+  patient, or an empty requested time return `not_found` without schedule changes.
+- A time occupied by another appointment returns `conflict` and leaves every
+  appointment unchanged.
+- A successful move returns `rescheduled`, frees the old slot, and places the
+  appointment in exactly one new slot.
+- Moving to the current slot succeeds without creating a duplicate.
+- If a patient has already moved successfully, a later rejected move preserves
+  that current booking, not an earlier time.
+
+## Out of Scope
+
+Use the supplied slot strings and in-memory repository. Calendar parsing,
+time zones, appointment duration, reminders, and clinical records are outside
+this ticket.
 
 ## Investigation
 
-Capture the schedule before a conflicting request and compare every appointment afterward. Trace the order of writes and checks, then inspect whether the tests prove ownership and rollback behavior.
+Trace ownership, conflict handling, and persisted appointment state for the
+report. Add tests for a free slot, the current slot, a conflict, and a conflict
+after a successful move. Compare the full schedule before and after failures.
 
 ## Starter Code
 

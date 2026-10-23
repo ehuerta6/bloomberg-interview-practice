@@ -21,25 +21,57 @@
     <article class="prose" data-problem-id="round-2-01">
 <h1 id="heading-ticket-01--event-registration">Ticket #01 — Event Registration</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>After a student cancels an event registration, another student may still be told that the event is full. Investigate the request path and determine why a cancelled registration continues to affect capacity.</p>
-<h3 id="heading-relevant-scenario">Relevant scenario</h3>
-<p>An event has a fixed capacity. Several students register, one registration is cancelled, and a new student tries to take the released place. Requests pass through route, service, repository, and model code.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain registration for a campus career night. An event has a fixed number
+of places. A registration links one student to one event; <code>active</code> registrations
+use places, while <code>cancelled</code> records remain as history.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Create <code>career-night</code> with capacity 1. Through <code>post_registration</code>, register
+student <code>s1</code> as <code>r1</code>, cancel <code>r1</code> through <code>delete_registration</code>, then submit
+student <code>s2</code> as <code>r2</code> for the same event.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Result of the final registration request</td>
+<td>Status 409</td>
+<td>Status 201</td>
+</tr>
+<tr>
+<td>Who occupies the single place afterward</td>
+<td>Nobody; <code>r1</code> is cancelled</td>
+<td><code>s2</code>; <code>r1</code> stays cancelled</td>
+</tr>
+</tbody>
+</table></div>
+<p>These status values come from the supplied route adapter; no web server is
+needed to reproduce the report.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Active registrations consume capacity; cancelled registrations do not.</li>
-<li>A student cannot hold duplicate active registrations for the same event.</li>
-<li>Capacity is never exceeded, and cancelling an active registration frees its place.</li>
-<li>Invalid or repeated cancellation attempts do not damage registration state.</li>
+<li>Active registrations alone consume capacity, and their count never exceeds
+the event's capacity. Cancelling one active registration frees one place.</li>
+<li>A student cannot have two active registrations for the same event. A student
+whose earlier registration was cancelled can register again with a new ID.</li>
+<li>A registration ID cannot replace an existing record. Missing required request
+fields or an unknown event are rejected without creating a registration.</li>
+<li>Cancellation succeeds only for an existing active registration. An unknown or
+repeated cancellation leaves every stored registration unchanged.</li>
+<li>Every rejected registration leaves the stored registrations unchanged.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Each registration has one status, and only active registrations count toward capacity.</li>
-<li>Rejected requests leave the stored registrations unchanged.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the in-memory repository and route response shape. Event scheduling,
+payments, waitlists, and concurrent database transactions are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace registration creation and cancellation through the route, service, repository, and data model. Compare behavior with the tests and decide which assertions prove the capacity and state invariants. Make a focused fix and add regression coverage for the behavior you reproduce.</p>
+<p>Reproduce the cancellation sequence through the route adapter and follow the
+request through service, repository, and model code. Add focused regression
+assertions for returned statuses and stored registration state; explain how they
+prove that one place is released and cannot be occupied twice.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/01-event-registration">View starter code</a></p>
 <details class="solution-reveal">

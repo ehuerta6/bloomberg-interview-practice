@@ -21,27 +21,59 @@
     <article class="prose" data-problem-id="round-2-02">
 <h1 id="heading-ticket-02--order-processing">Ticket #02 — Order Processing</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A customer reports that inventory becomes unavailable after an order fails during payment. Investigate the order flow across the route, order service, payment adapter, inventory, and repository.</p>
-<h3 id="heading-relevant-scenario">Relevant scenario</h3>
-<p>A request reserves items, calls an in-memory fake payment adapter, and either completes or fails. The client may retry after an uncertain response, using the same order identifier.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain a club merchandise checkout. <code>place_order(order_id, student_id, item, quantity)</code> requests one item type. A reservation temporarily holds units
+for that order; the included fake payment service records authorization calls
+and can be configured to approve or decline them.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Start with 5 <code>club-shirt</code> units and a payment service configured to decline.
+Submit order <code>o1</code> for student <code>s1</code>, requesting 2 shirts through the route adapter.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation after the request</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Route status and saved order state</td>
+<td>409; <code>failed</code></td>
+<td>409; <code>failed</code></td>
+</tr>
+<tr>
+<td>Available shirts</td>
+<td>3</td>
+<td>5</td>
+</tr>
+</tbody>
+</table></div>
+<p>Also submit a successful order twice with the same ID. A client retry must
+return its completed result without another inventory deduction or payment call.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Invalid orders fail without corrupting state.</li>
-<li>Failed payment authorization does not permanently reduce available inventory.</li>
-<li>A successful order does not deduct inventory more than once.</li>
-<li>Retrying a completed order with the same identifier does not duplicate its effects.</li>
-<li>Payment uses the included in-memory fake; no external service is needed.</li>
+<li>Require nonempty string order, student, and item IDs and a positive integer
+quantity; booleans and non-integer quantities are invalid. Missing route
+fields return 400; rejected orders return 409 without inventory or payment effects.</li>
+<li>Insufficient stock leaves quantities unchanged and makes no payment call.
+Available inventory never becomes negative.</li>
+<li>A declined payment leaves a failed order, restores available inventory, and
+leaves no outstanding reservation from the attempt.</li>
+<li>A successful order becomes <code>completed</code>, deducts its quantity once, and leaves
+no outstanding reservation. An exact completed-order retry returns success
+without another deduction or authorization.</li>
+<li>A failed order can be tried again after the fake payment service recovers;
+the final quantities must reflect only the successful purchase.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Available inventory cannot become negative.</li>
-<li>Each order identifier produces at most one completed order and one corresponding inventory deduction.</li>
-<li>Failure and retry paths leave payment, order, and inventory state consistent.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the supplied in-memory payment fake and repositories. Real card payments,
+shipping, multi-item baskets, and distributed transactions are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Follow one order from request validation through inventory and payment state changes. Identify what happens on success, failure, and retry. Check whether the tests assert the inventory invariant and would catch a regression. Make a focused fix and add tests for the state transitions you verify.</p>
+<p>Trace the declined and successful requests through the route, order service,
+inventory, payment fake, and repository. Add tests that compare quantities,
+reservations, payment call counts, and order state before and after failure and
+retry. Replace assertions that do not observe the request's effects.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/02-order-processing">View starter code</a></p>
 <details class="solution-reveal">

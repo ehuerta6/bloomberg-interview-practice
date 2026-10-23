@@ -2,31 +2,51 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain a support tool for refunding payments. An `authorized` payment has
+approval to charge but has not been captured; a `captured` payment has collected
+funds. A partial refund returns some of those funds. Amounts use the integer
+units already stored in the payment ledger.
 
-A refund request can succeed for a payment that has not reached a refundable payment state.
+## Practice report
 
-### Scenario
+Add payment `p2` with amount 900 and state `authorized`. Request
+`refund("p2", "rf2", 100)`.
 
-Support submits refunds through an in-memory payment ledger. Requests can be retried after a slow response, and one captured payment can receive multiple partial refunds.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Service result | `"refunded"` | `"rejected"` |
+| Refunded total | 100 | 0 |
+| Payment state | `partially_refunded` | `authorized` |
+
+A refund ID identifies one refund request. An identical retry must have no
+additional effect; using that ID for different payment details is a conflict.
 
 ## Acceptance Criteria
-- Only captured or partially refunded payments are eligible.
-- Refund amounts must be positive and their total cannot exceed the captured amount.
-- A repeated request with the same refund identifier and details has no additional effect.
-- A refund identifier cannot be reused for different payment details.
-- Successful refunds update both the refund ledger and payment state.
 
-## State Invariants
-- The sum of refunds for a payment never exceeds its captured amount.
-- Rejected requests do not change the payment or refund ledger.
-- A fully refunded payment cannot accept another refund.
+- New refunds are eligible only for `captured` or `partially_refunded` payments.
+  Unknown payments and payments in other states are rejected.
+- Amounts must be positive integers. Cumulative refunds cannot exceed the
+  payment amount, including when several partial refunds are requested.
+- A successful request records one refund and sets the payment to
+  `partially_refunded` or, at exact full refund, `refunded`.
+- An exact refund-ID replay returns `already_refunded` without another ledger
+  effect. Reusing that ID for a different payment or amount is rejected.
+- Rejected requests leave payment state and refund records unchanged. A fully
+  refunded payment cannot accept a new refund.
+
+## Out of Scope
+
+Use the included ledger. Bank transfers, currency conversion, external refund
+providers, and asynchronous settlement are outside this ticket.
 
 ## Investigation
 
-Trace a refund from eligibility checks through ledger mutation. Compare captured and authorized payments, then retry identical and conflicting identifiers while inspecting both payment state and totals.
+Trace the report from payment lookup to the saved refund and payment state.
+Compare an uncaptured payment with a captured one, then test partial totals,
+exact settlement, over-refunds, and repeated IDs. Assert ledger contents as well
+as result strings.
 
 ## Starter Code
 

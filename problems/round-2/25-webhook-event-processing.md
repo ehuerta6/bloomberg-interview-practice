@@ -2,32 +2,52 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain an order-status receiver for a delivery partner. A **webhook** is
+an incoming event notification; partners may retry it or deliver it late.
+Event IDs identify notifications globally. A sequence number orders updates
+within one order; monotonic history means applied sequence numbers only increase.
 
-A delivery partner retries webhook notifications and occasionally sends old notifications after newer ones. The order timeline must remain monotonic, and retries must not repeat state effects.
+## Practice report
 
-### Scenario
+Create order `o1`. Deliver event `e2` at sequence 2 with status `shipped`, then
+a different event `e1` at sequence 1 with status `paid`.
 
-Deliver events in order, then replay one and send a delayed lower sequence. Inspect current status, processed IDs, and history. Also try a conflicting event with the same sequence and a new ID.
+| Observation after the delayed event | Current starter | Expected |
+| --- | --- | --- |
+| Result for `e1` | `applied` | `stale` |
+| Current order status | `paid` | `shipped` |
+| Applied-history sequences | `[2, 1]` | `[2]` |
+
+Both IDs must be remembered as processed, so retrying the stale notification
+returns `duplicate` without another state effect.
 
 ## Acceptance Criteria
-- Apply a known event only once by event ID.
-- Never let a stale or same-sequence event regress order state.
-- Record stale event IDs so their retries remain duplicates.
-- Reject malformed events and unknown orders without changing order state.
-- Keep history for applied events in increasing sequence order.
 
-## State Invariants
-- For each order, current status matches the highest applied sequence.
-- An event ID produces at most one state effect.
-- History is strictly increasing by sequence.
-- Invalid events have no side effects.
+- Validate nonempty event/order IDs, an integer sequence of at least 1 excluding
+  booleans, and a supported status: `created`, `paid`, `shipped`, `delivered`, or
+  `cancelled`. Malformed events and unknown orders are rejected without side effects.
+- Apply a valid event ID at most once globally, including across different
+  orders. A repeated processed ID returns `duplicate` without changing state.
+- For each order, apply only sequences strictly greater than its latest applied
+  sequence. A new ID at a lower or equal sequence returns `stale`, preserving
+  current status and history while remembering that ID as processed.
+- Applied events update status and append `(sequence, event_id, status)` to
+  history. History is strictly increasing and status matches its highest sequence.
+- Different orders have independent sequence histories. Sequence ordering does
+  not imply a new business rule restricting transitions between supported statuses.
+
+## Out of Scope
+
+Keep the supplied route and repository. Partner authentication, network delivery,
+message queues, and a new order-status transition graph are outside this ticket.
 
 ## Investigation
 
-Deliver increasing event sequences, replay an already-seen event ID, then send a delayed lower sequence and a different event at the current sequence. Verify order status and history remain monotonic and that malformed or unknown-order events have no effects.
+Reproduce the delayed event, then test equal sequences under different IDs,
+exact retries, independent orders, and malformed requests. Assert status,
+applied history, and remembered IDs after each call, including a stale-event retry.
 
 ## Starter Code
 

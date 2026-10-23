@@ -2,31 +2,50 @@
 
 **Difficulty:** Easy
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain dispatch for a support desk with billing and technical teams.
+Tickets have integer priorities from 1 (least urgent) to 5 (most urgent).
+**FIFO** means submission order is preserved among equally urgent tickets.
+Agent load is the count of tickets currently assigned to that agent.
 
-The support desk receives tickets from billing and technical queues. The on-call lead reports that urgent tickets can remain queued behind routine requests.
+## Practice report
 
-### Scenario
+Create technical tickets `low` at priority 1, `urgent` at 5, and `mid` at 3 in
+that order. With all agent loads initially zero, call `assign_next("technical")`.
 
-Trace ticket creation order into the queue selection, then follow workload changes through assignment and reassignment. Compare the repository’s load counters with actual assigned tickets after each transition.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Ticket selected | `low` | `urgent` |
+| Assigned agent | `Cal` | `Cal` |
+
+The next selection should be `mid`, assigned to the less-loaded eligible agent.
 
 ## Acceptance Criteria
-- Reject malformed or duplicate tickets without state changes.
-- Treat priority 5 as most urgent and priority 1 as least urgent.
-- Preserve FIFO among equal-priority tickets.
-- Assign only open tickets to eligible category agents.
-- Keep workload counters equal to assigned-ticket counts after reassignment.
 
-## State Invariants
-- Every assigned ticket has exactly one eligible assignee.
-- For each agent, load equals the count of tickets assigned to that agent.
-- Assignment consumes the highest-priority open ticket; ties preserve submission order.
+- Reject malformed/duplicate ticket submissions without changing saved tickets
+  or loads. Priority is an integer from 1 through 5; booleans are invalid.
+- Select the highest-priority open ticket in the requested category. Equal
+  priorities preserve submission order, and an assigned ticket is not dispatched again.
+- Assign to an eligible agent with the lowest current load. Keep the supplied
+  agent-list order for equal loads. An empty category queue returns no ticket.
+- Each assigned ticket has exactly one eligible assignee. After assignment or
+  reassignment, every agent's load equals their assigned-ticket count.
+- Reassignment moves one unit of load from the old assignee to the new one.
+  Unknown/unassigned tickets and agents outside that ticket's category are rejected
+  without state changes.
+
+## Out of Scope
+
+Keep the configured teams and route response shapes. Agent availability,
+automatic escalation, ticket resolution, and changing the tie-breaking policy
+are outside this ticket.
 
 ## Investigation
 
-Follow a submitted ticket as multiple agents claim work, including a tie in priority and an agent who is not eligible for the ticket's category. After assignment and reassignment, compare each agent's load counter with the tickets actually assigned to that agent.
+Trace selection and assignment for the report, then test equal priorities,
+independent categories, and reassignment. Compare actual assigned tickets with
+load counters after each transition, including a rejected reassignment.
 
 ## Starter Code
 

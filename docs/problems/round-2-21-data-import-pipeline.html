@@ -21,27 +21,66 @@
     <article class="prose" data-problem-id="round-2-21">
 <h1 id="heading-ticket-21--data-import-pipeline">Ticket #21 — Data Import Pipeline</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>An operations team imports a partner CSV through a small in-memory adapter. Bad rows must be reported without losing valid neighboring records, while duplicate partner IDs must never silently replace customer data.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Trace a mixed batch containing valid rows, malformed values, repeated IDs, and an ID already in storage. Inspect accepted IDs, error row numbers, and the stored record after each import.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain an operations tool that receives a partner's already-decoded CSV
+rows as a list of dictionaries. Each partner ID identifies one stored customer
+record. The import should save valid independent rows and report errors by their
+1-based row number, so an operator can correct the input without losing good rows.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Start with an empty repository and post these rows through <code>ImportRoutes.post</code>:</p>
+<pre><code class="language-python">[
+    {&quot;id&quot;: &quot;a&quot;, &quot;email&quot;: &quot;a@x.test&quot;, &quot;amount&quot;: True},
+    {&quot;id&quot;: &quot;b&quot;, &quot;email&quot;: &quot;b@x.test&quot;, &quot;amount&quot;: &quot;4&quot;},
+]
+</code></pre>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Accepted IDs</td>
+<td><code>[&quot;a&quot;, &quot;b&quot;]</code></td>
+<td><code>[&quot;b&quot;]</code></td>
+</tr>
+<tr>
+<td>Error row numbers</td>
+<td><code>[]</code></td>
+<td><code>[1]</code></td>
+</tr>
+<tr>
+<td>Persisted records</td>
+<td><code>a</code> with amount 1; <code>b</code> with amount 4</td>
+<td>Only <code>b</code> with amount 4</td>
+</tr>
+</tbody>
+</table></div>
+<p>The boolean is malformed input; it must not become a financial amount.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Return a row-level result for valid and invalid input rows.</li>
-<li>Do not let a duplicate overwrite an accepted or preexisting record.</li>
-<li>Continue after a bad row and commit valid independent rows.</li>
-<li>Accept nonnegative integer amounts supplied as integers or base-10 numeric strings; reject booleans and floats.</li>
-<li>Return 400 for a non-list request body.</li>
+<li>Accept a nonnegative integer amount supplied as an integer or a base-10
+integer string. Reject booleans, floats, negative amounts, missing fields,
+blank trimmed IDs, and emails without <code>@</code>.</li>
+<li>Trim IDs and emails and store emails in lowercase. Return accepted IDs and
+errors in input order, with the original 1-based row number for each error.</li>
+<li>An invalid row changes no record; continue to save valid independent rows.</li>
+<li>Within one batch, the first valid row for an ID wins. Report later duplicates
+without replacing it, and never overwrite a preexisting stored ID.</li>
+<li>A non-list top-level body returns 400 without persistence effects. A list
+with errors returns 207; a fully accepted list returns 201.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>A stored external ID maps to at most one record.</li>
-<li>Within one batch, the first valid row for an ID wins.</li>
-<li>Invalid or duplicate rows have no persistence effect.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Work with parsed row dictionaries and the existing in-memory repository. Reading
+CSV bytes, file uploads, all-or-nothing batch transactions, and changing customer
+IDs are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Run a mixed import containing valid rows, malformed amounts, duplicate IDs within the batch, and IDs already stored. Compare row numbers and per-row outcomes, confirm valid independent rows persist, and inspect state after a non-list request body.</p>
+<p>Trace the two-row report through the route, parser, and store. Add mixed-batch
+cases with a float, bad email, duplicate ID, existing ID, and later valid row.
+Assert row numbers, normalized records, and preserved existing values.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/21-data-import-pipeline">View starter code</a></p>
 <details class="solution-reveal">

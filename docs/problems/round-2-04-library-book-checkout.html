@@ -21,27 +21,55 @@
     <article class="prose" data-problem-id="round-2-04">
 <h1 id="heading-ticket-04--library-book-checkout">Ticket #04 — Library Book Checkout</h1>
 <p><strong>Difficulty:</strong> Easy</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A book stays unavailable after a reader returns it, and readers with reservations do not get a reliable turn when a copy becomes free.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>A small branch has a limited number of copies. Readers can borrow a copy, return it, or join a reservation queue while all copies are on loan.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain checkout at a small library. A loan records one reader borrowing
+one copy. An active loan has not been returned. Readers can also reserve a book;
+the reservation queue gives its first reader priority over a walk-in checkout.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Add book <code>b1</code> with one copy. Check it out to <code>reader-a</code> as loan <code>l1</code>, then call
+<code>return_book(&quot;l1&quot;)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Return result</td>
+<td><code>True</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td>Available copies after return</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table></div>
+<p>To extend the case, queue <code>reader-b</code> and <code>reader-c</code> while the copy is borrowed.
+After the return, <code>reader-b</code> should be able to check out before either a walk-in
+or <code>reader-c</code>.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>The number of active loans cannot exceed the number of copies.</li>
-<li>A successful loan records the reader and book.</li>
-<li>A returned loan releases exactly one copy and cannot be returned twice.</li>
-<li>The next reader in line has priority over a walk-in checkout.</li>
-<li>A repeated or unknown loan identifier cannot overwrite an existing loan.</li>
+<li>Available copies equal total copies minus active loans. Active loans cannot
+exceed the number of copies, and a successful checkout records book and reader.</li>
+<li>A successful return releases exactly one copy. Unknown and repeated returns
+fail without changing other loans or the available-copy count.</li>
+<li>Checkout honors reservation order and consumes the first reservation only
+when that reader checks out. A blocked checkout leaves queue order unchanged.</li>
+<li>Unknown books cannot be reserved or checked out. Missing reader or loan IDs
+and reused loan IDs cannot create or replace a loan.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Available copies equal total copies minus active loans.</li>
-<li>A return changes one active loan to returned exactly once.</li>
-<li>A reservation queue retains its order until a reader checks out.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the supplied copy counts, in-memory storage, and reservation queue. Due
+dates, fines, notifications, and automatic checkout on return are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Follow the copy count across checkout and return. Inspect how active loans and the reservation queue are represented, and reproduce the reported sequence with one copy and two waiting readers.</p>
+<p>Reproduce the one-copy case and trace checkout, return, and reservation handling.
+Add assertions for the loan's stored state, available copies, and the next
+reader's checkout. Show that a repeated return cannot manufacture another copy.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/04-library-book-checkout">View starter code</a></p>
 <details class="solution-reveal">

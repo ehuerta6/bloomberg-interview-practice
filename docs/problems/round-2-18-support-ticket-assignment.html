@@ -21,27 +21,58 @@
     <article class="prose" data-problem-id="round-2-18">
 <h1 id="heading-ticket-18--support-ticket-assignment">Ticket #18 — Support Ticket Assignment</h1>
 <p><strong>Difficulty:</strong> Easy</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>The support desk receives tickets from billing and technical queues. The on-call lead reports that urgent tickets can remain queued behind routine requests.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Trace ticket creation order into the queue selection, then follow workload changes through assignment and reassignment. Compare the repository’s load counters with actual assigned tickets after each transition.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain dispatch for a support desk with billing and technical teams.
+Tickets have integer priorities from 1 (least urgent) to 5 (most urgent).
+<strong>FIFO</strong> means submission order is preserved among equally urgent tickets.
+Agent load is the count of tickets currently assigned to that agent.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Create technical tickets <code>low</code> at priority 1, <code>urgent</code> at 5, and <code>mid</code> at 3 in
+that order. With all agent loads initially zero, call <code>assign_next(&quot;technical&quot;)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ticket selected</td>
+<td><code>low</code></td>
+<td><code>urgent</code></td>
+</tr>
+<tr>
+<td>Assigned agent</td>
+<td><code>Cal</code></td>
+<td><code>Cal</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The next selection should be <code>mid</code>, assigned to the less-loaded eligible agent.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Reject malformed or duplicate tickets without state changes.</li>
-<li>Treat priority 5 as most urgent and priority 1 as least urgent.</li>
-<li>Preserve FIFO among equal-priority tickets.</li>
-<li>Assign only open tickets to eligible category agents.</li>
-<li>Keep workload counters equal to assigned-ticket counts after reassignment.</li>
+<li>Reject malformed/duplicate ticket submissions without changing saved tickets
+or loads. Priority is an integer from 1 through 5; booleans are invalid.</li>
+<li>Select the highest-priority open ticket in the requested category. Equal
+priorities preserve submission order, and an assigned ticket is not dispatched again.</li>
+<li>Assign to an eligible agent with the lowest current load. Keep the supplied
+agent-list order for equal loads. An empty category queue returns no ticket.</li>
+<li>Each assigned ticket has exactly one eligible assignee. After assignment or
+reassignment, every agent's load equals their assigned-ticket count.</li>
+<li>Reassignment moves one unit of load from the old assignee to the new one.
+Unknown/unassigned tickets and agents outside that ticket's category are rejected
+without state changes.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Every assigned ticket has exactly one eligible assignee.</li>
-<li>For each agent, load equals the count of tickets assigned to that agent.</li>
-<li>Assignment consumes the highest-priority open ticket; ties preserve submission order.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the configured teams and route response shapes. Agent availability,
+automatic escalation, ticket resolution, and changing the tie-breaking policy
+are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Follow a submitted ticket as multiple agents claim work, including a tie in priority and an agent who is not eligible for the ticket's category. After assignment and reassignment, compare each agent's load counter with the tickets actually assigned to that agent.</p>
+<p>Trace selection and assignment for the report, then test equal priorities,
+independent categories, and reassignment. Compare actual assigned tickets with
+load counters after each transition, including a rejected reassignment.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/18-support-ticket-assignment">View starter code</a></p>
 <details class="solution-reveal">

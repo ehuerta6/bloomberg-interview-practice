@@ -21,28 +21,61 @@
     <article class="prose" data-problem-id="round-2-09">
 <h1 id="heading-ticket-09--appointment-rescheduling">Ticket #09 — Appointment Rescheduling</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A patient trying to move an appointment into an occupied time can lose the original appointment.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>A clinic has one appointment per time slot. Patients may reschedule only their own appointment, and a requested slot may have been taken already.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain a clinic's appointment tool. Each string time slot can hold one
+appointment. A patient may reschedule only their own appointment; a failed move
+must preserve the original booking so the patient still has a confirmed time.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Store appointment <code>a1</code> for <code>patient-a</code> at <code>10:00</code> and <code>a2</code> for <code>patient-b</code> at
+<code>11:00</code>. Call <code>reschedule(&quot;a1&quot;, &quot;patient-a&quot;, &quot;11:00&quot;)</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation after the request</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Result</td>
+<td><code>&quot;conflict&quot;</code></td>
+<td><code>&quot;conflict&quot;</code></td>
+</tr>
+<tr>
+<td><code>a1</code> time</td>
+<td><code>11:00</code></td>
+<td><code>10:00</code></td>
+</tr>
+<tr>
+<td><code>a2</code> time</td>
+<td><code>11:00</code></td>
+<td><code>11:00</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The rejection must preserve the complete schedule, including the patient's
+original slot and the other patient's appointment.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Only the appointment owner can request a change.</li>
-<li>A time already occupied by another appointment is rejected.</li>
-<li>A rejected reschedule preserves the original appointment and all other appointments.</li>
-<li>A successful reschedule frees the old slot and occupies the new slot.</li>
-<li>Unknown appointment identifiers do not change the schedule.</li>
-<li>Rescheduling to the same slot succeeds without creating a duplicate.</li>
+<li>Only an appointment's owner may move it. Unknown appointments, a different
+patient, or an empty requested time return <code>not_found</code> without schedule changes.</li>
+<li>A time occupied by another appointment returns <code>conflict</code> and leaves every
+appointment unchanged.</li>
+<li>A successful move returns <code>rescheduled</code>, frees the old slot, and places the
+appointment in exactly one new slot.</li>
+<li>Moving to the current slot succeeds without creating a duplicate.</li>
+<li>If a patient has already moved successfully, a later rejected move preserves
+that current booking, not an earlier time.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>Every appointment occupies exactly one time slot.</li>
-<li>A failed operation leaves the full schedule unchanged.</li>
-<li>Ownership and conflict checks do not expose or alter another patient’s appointment.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the supplied slot strings and in-memory repository. Calendar parsing,
+time zones, appointment duration, reminders, and clinical records are outside
+this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Capture the schedule before a conflicting request and compare every appointment afterward. Trace the order of writes and checks, then inspect whether the tests prove ownership and rollback behavior.</p>
+<p>Trace ownership, conflict handling, and persisted appointment state for the
+report. Add tests for a free slot, the current slot, a conflict, and a conflict
+after a successful move. Compare the full schedule before and after failures.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/09-appointment-rescheduling">View starter code</a></p>
 <details class="solution-reveal">

@@ -2,28 +2,48 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain a discussion site's moderation queue. Submitted posts begin
+`pending`. A reviewer can approve a post for publication or reject it. The
+**audit history** is a saved record of who made an accepted decision and why;
+authors may not decide their own posts.
 
-A post can be approved by its author, and two reviewers can make conflicting decisions while the history shows only the final state.
+## Practice report
 
-### Scenario
+Submit `post-1` as `author-1`, then call
+`review("post-1", "author-1", "approve", "self review")`.
 
-New posts begin in a review queue. Reviewers may approve or reject pending content, while authors cannot review their own submissions.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Result | `published` | `forbidden` |
+| Stored post status | `published` | `pending` |
+| Audit events for the post | 1 | 0 |
 
 ## Acceptance Criteria
-- Only a pending post can receive one valid review decision.
-- Authors cannot review their own posts; every accepted decision appends an actor, decision, and note to the audit history.
-- Invalid requests must leave persisted state unchanged.
 
-## State Invariants
+- Only `approve` and `reject` are valid decisions. Unknown posts and unsupported
+  decisions return `invalid` without changing posts or audit history.
+- Authors cannot review their own posts. A forbidden self-review preserves the
+  pending post and adds no audit event.
+- An accepted approval changes a pending post to `published`; an accepted
+  rejection changes it to `rejected`.
+- Each accepted decision appends exactly one audit event with post ID, actor,
+  decision, and note.
+- A post already decided cannot be decided again. A later review from another
+  reviewer returns `conflict` without replacing its status or appending history.
 
-Authors cannot review their own posts; every accepted decision appends an actor, decision, and note to the audit history.
+## Out of Scope
+
+Use the existing caller-supplied reviewer identity and in-memory store. Account
+roles, automated content analysis, appeals, and concurrent database updates are
+outside this ticket.
 
 ## Investigation
 
-Trace role checks and state transitions through the moderation service. Inspect both post state and audit events after forbidden, invalid, and repeated decisions. Add regression coverage for the behavior you reproduce.
+Trace the self-review report and compare the result with an independent
+reviewer's approval and rejection. Add tests that observe both post state and
+audit entries after valid, invalid, forbidden, and repeated decisions.
 
 ## Starter Code
 

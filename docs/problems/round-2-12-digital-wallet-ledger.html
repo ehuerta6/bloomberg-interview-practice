@@ -21,21 +21,64 @@
     <article class="prose" data-problem-id="round-2-12">
 <h1 id="heading-ticket-12--digital-wallet-ledger">Ticket #12 — Digital Wallet Ledger</h1>
 <p><strong>Difficulty:</strong> Hard</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A wallet transfer is reflected twice in balances after a client retries, and the transaction history no longer balances.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Two users move funds between wallets. The API can receive a duplicate request after a timeout, and a transfer must appear as one debit and one matching credit in the ledger.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain transfers between two digital wallets. Amounts are in cents.
+The ledger is the saved history of movements: a debit is a negative entry in
+the source wallet, and the matching credit is a positive entry in the destination.
+A wallet balance is its opening funds plus all its entries.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Open <code>w-1</code> with 5000 cents and <code>w-2</code> with 1000 cents. Call
+<code>transfer(&quot;tx-2&quot;, &quot;w-1&quot;, &quot;w-2&quot;, 300)</code> twice, representing a client retry.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source balance</td>
+<td>4400</td>
+<td>4700</td>
+</tr>
+<tr>
+<td>Destination balance</td>
+<td>1600</td>
+<td>1300</td>
+</tr>
+<tr>
+<td>Entries for <code>tx-2</code></td>
+<td>4</td>
+<td>2</td>
+</tr>
+</tbody>
+</table></div>
+<p>The entries still sum to zero in the starter; the problem is the extra movement
+for one transaction ID.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Every posted transfer has exactly two entries with equal and opposite amounts.</li>
-<li>A rejected or repeated transfer leaves balances and ledger history unchanged; a wallet cannot be overdrawn.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>Each new posted transfer writes exactly one debit and one matching credit;
+those two amounts sum to zero and move the requested amount between wallets.</li>
+<li>A transfer needs a positive amount, distinct existing wallets, and sufficient
+source funds. A rejected transfer leaves both balances and all entries unchanged.</li>
+<li>An exact transaction-ID replay returns <code>posted</code> without moving funds or
+appending entries again.</li>
+<li>Reusing a transaction ID for a different source, destination, or amount returns
+<code>conflict</code> and preserves its original entries and wallet balances.</li>
+<li>No accepted new transfer overdraws the source wallet. Ledger history and
+derived balances must agree after each operation.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>A rejected or repeated transfer leaves balances and ledger history unchanged; a wallet cannot be overdrawn.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the local ledger and supplied numeric amounts. Bank settlement, fees,
+currency conversion, transaction authentication, and distributed storage are
+outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Follow a transfer from validation through both ledger entries. Inspect transaction-level totals as well as wallet balances after success, replay, and insufficient funds. Add regression coverage for the behavior you reproduce.</p>
+<p>Reproduce the duplicate request and inspect transaction entries alongside both
+balances. Add regression tests for exact replay, conflicting reuse, insufficient
+funds, and the same-wallet case. Explain why balanced entries alone do not prove
+that a transfer happened only once.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/12-digital-wallet-ledger">View starter code</a></p>
 <details class="solution-reveal">

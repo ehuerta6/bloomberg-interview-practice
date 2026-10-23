@@ -2,32 +2,51 @@
 
 **Difficulty:** Medium
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain course enrollment for a learning portal. A prerequisite is a course
+the learner must have **completed**, not merely enrolled in. Enrolled learners
+use seats; waitlisted learners are eligible learners waiting for a seat to open.
 
-A learner can enter an advanced course without completing its prerequisite.
+## Practice report
 
-### Scenario
+Add `intro` with capacity 2 and `advanced` with capacity 1 and prerequisite
+`intro`. Learner `s1` has no completions. Call
+`enroll("s1", "advanced", "e1")`.
 
-Courses have prerequisites and limited seats. When a course is full, additional eligible learners wait in order; a dropped seat should be offered to the next learner.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Service result | `"enrolled"` | `"prerequisite_missing"` |
+| Stored enrollment `e1` | An enrolled row | No row |
+
+After `intro` is marked complete for `s1`, the same enrollment request should
+succeed if a seat is available.
 
 ## Acceptance Criteria
-- A learner must complete every prerequisite before joining a course or its waitlist.
-- Enrolled learners never exceed course capacity.
-- Eligible learners join the waitlist when no seat is available.
-- Waitlisted learners do not consume enrolled capacity.
-- A learner cannot create duplicate active enrollment or waitlist entries.
-- Dropping an active enrollment promotes the next waitlisted learner once.
 
-## State Invariants
-- Only completed courses satisfy prerequisites.
-- Each learner has at most one active row per course.
-- Waitlist promotion preserves capacity and does not promote the same row twice.
+- Every prerequisite must be complete before a learner joins either the course
+  or its waitlist. A missing prerequisite must not create an enrollment row.
+- Enrolled count never exceeds capacity. Eligible learners are enrolled when a
+  place exists and waitlisted otherwise; waiting rows do not consume seats.
+- A learner cannot have duplicate enrolled or waitlisted rows for one course,
+  and an enrollment ID cannot replace another row.
+- Dropping an active row marks it `dropped`. When an enrolled seat opens, the
+  next waiting learner is promoted once without exceeding capacity. Repeating
+  the drop fails and cannot promote another learner.
+- Reject unknown courses and missing learner/enrollment IDs without changing
+  the roster. Only recorded completions satisfy prerequisites.
+
+## Out of Scope
+
+Keep the repository's existing enrollment-ID ordering for waitlist selection.
+Changing that ordering, scheduling courses, tuition, and notifying learners are
+outside this ticket.
 
 ## Investigation
 
-Trace prerequisite checks and enrollment states through a full-course scenario. Compare active enrollment counts with waitlisted rows before and after a drop, and verify student and course state after rejected requests.
+Trace the report, then compare enrolled and waitlisted rows in a full course
+before and after a drop. Add regression cases for missing/completed prerequisites,
+duplicate requests, and repeated drops. Assert stored statuses and enrolled counts.
 
 ## Starter Code
 

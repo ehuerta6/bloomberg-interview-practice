@@ -21,28 +21,65 @@
     <article class="prose" data-problem-id="round-2-23">
 <h1 id="heading-ticket-23--product-returns--exchanges">Ticket #23 — Product Returns &amp; Exchanges</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>A store accepts customer returns for refunds or size exchanges. A failed replacement lookup left returned stock available even though no exchange was recorded, and customers could exceed the quantity purchased by splitting requests.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>Exercise a refund and exchange from the same order line, then try exceeding the original purchased quantity. Force an exchange failure with no replacement stock and compare stock and return records before and after.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain a shop's returns desk. An order line records the purchased SKU
+(product identifier), quantity, and original unit price in cents. A refund
+returns money; an exchange returns the original item and consumes replacement
+stock. Return limits combine earlier refunds and exchanges for the same order line.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Order <code>o1</code> has line <code>l1</code>: 3 coats at 2500 cents each. Current stock is <code>coat=1</code>,
+<code>shirt=4</code>, with no <code>missing</code> replacement SKU. Request one coat exchange using
+<code>process(&quot;r1&quot;, &quot;o1&quot;, &quot;l1&quot;, 1, &quot;exchange&quot;, &quot;missing&quot;)</code> through the route adapter.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation after rejection</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Route status</td>
+<td>409</td>
+<td>409</td>
+</tr>
+<tr>
+<td>Stock</td>
+<td><code>coat=2</code>, <code>shirt=4</code></td>
+<td><code>coat=1</code>, <code>shirt=4</code></td>
+</tr>
+<tr>
+<td>Saved return cases</td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table></div>
+<p>A failed exchange must not make an additional coat available for sale.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Refund amount equals returned quantity times the original unit price.</li>
-<li>Refund and exchange return the original SKU to stock.</li>
-<li>Exchange consumes replacement stock only when available.</li>
-<li>Failed requests make no stock or ledger changes.</li>
-<li>Return limits account for earlier refunds and exchanges combined.</li>
+<li>Validate a new nonempty return ID, an existing order line, a positive integer
+quantity excluding booleans, and an action of <code>refund</code> or <code>exchange</code>.</li>
+<li>Returned quantity across earlier refunds and exchanges plus the new request
+cannot exceed the purchased quantity. Line IDs are scoped to their order.</li>
+<li>A refund restores the original SKU's quantity and returns exactly
+<code>quantity * original_unit_price</code> cents.</li>
+<li>An exchange requires a replacement SKU and enough replacement units. Success
+restores the original units, consumes the replacement units, returns zero
+refund cents, and records one completed return case.</li>
+<li>Any rejected request leaves stock and return records unchanged. Stock never
+becomes negative.</li>
+<li>A reused return ID is rejected with no second effect, including an exact replay.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<ul>
-<li>A line cannot have more units returned than purchased.</li>
-<li>Every completed return case corresponds to exactly one stock and financial effect.</li>
-<li>Stock counts never become negative.</li>
-<li>Replaying a return ID cannot apply effects twice.</li>
-</ul>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Keep the local inventory and returned <code>refund_cents</code> result. Real payment
+refunds, shipping, return eligibility dates, and exchange price differences are
+outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace a refund and an exchange against the same order line, then split additional returns until the purchased quantity would be exceeded. Force an unavailable replacement and replay a completed return ID; compare inventory, refund totals, and return records after each attempt.</p>
+<p>Reproduce the unavailable replacement, then compare a successful exchange and
+refund. Add tests for split returns reaching the purchase limit, replay, and the
+same line ID on separate orders. Assert inventory, case records, and refund amounts.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/23-product-returns-exchanges">View starter code</a></p>
 <details class="solution-reveal">

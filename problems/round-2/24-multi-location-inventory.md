@@ -2,31 +2,53 @@
 
 **Difficulty:** Hard
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain stock transfers between shop locations. **On-hand** stock can be
+sold at a location. **In-transit** units have left the source but have not yet
+been received by the destination. The local ledger tracks each transfer ID
+through one terminal outcome: `received` or `cancelled`.
 
-Warehouse staff move goods between retail locations. Recent counts show phantom stock after repeated delivery scans and missing stock after cancelled shipments. The tool uses a local ledger and does not call shipping systems.
+## Practice report
 
-### Scenario
+Start with 8 books at `east` and 2 at `west`. Call
+`start("t1", "book", "east", "west", 3)`, then receive `t1` once.
 
-Trace a transfer through start, receive, repeat receive, and cancellation. Compare total stock across locations and inspect the transfer status at each step.
+| Observation after receipt | Current starter | Expected |
+| --- | --- | --- |
+| East on-hand books | 5 | 5 |
+| West on-hand books | 8 | 5 |
+| Transfer state | `received` | `received` |
+
+On a fresh repository, start and cancel the same transfer instead. The expected
+final stock is the original 8 and 2, with the transfer marked `cancelled`.
 
 ## Acceptance Criteria
-- Starting a transfer removes units from source stock and records one in-transit transfer.
-- Receiving adds exactly the reserved units to destination stock once.
-- Cancelling restores the source exactly once and prevents receipt.
-- Invalid transfers change neither stock nor transfer history.
-- Reject operations that do not match the transfer state.
 
-## State Invariants
-- Across an in-transit transfer, total on-hand plus in-transit stock is conserved.
-- Each transfer has exactly one terminal outcome.
-- A terminal transfer cannot be received or cancelled again.
+- Starting a valid transfer removes units from source on-hand stock and records
+  exactly one `in_transit` transfer. Destination on-hand stock is unchanged until receipt.
+- Receipt adds the transfer's units to destination stock once and changes it to
+  `received`. Cancellation instead restores source stock once and changes it to
+  `cancelled` without a destination credit.
+- Only an in-transit transfer can be received or cancelled. Repeated receipt,
+  repeated cancellation, and crossing from one terminal outcome to the other
+  are rejected without further effects.
+- Reject missing IDs/SKU/locations, duplicate transfer IDs, same source and
+  destination, invalid nonpositive/non-integer quantities, booleans, and
+  insufficient source stock without changing stock or transfer history.
+- Across all transfers of a SKU, on-hand units plus in-transit units are
+  conserved. Each transfer has exactly one terminal outcome.
+
+## Out of Scope
+
+Use the in-memory ledger and supplied location names. Carrier tracking,
+shipping systems, damaged goods, and partial receipts are outside this ticket.
 
 ## Investigation
 
-Follow one transfer from start through receive, repeated receive, and cancellation attempts. Run a second transfer through cancellation before receipt. Reconcile source stock, destination stock, in-transit units, and transfer state after every transition.
+Trace start, receive, and cancellation through the two scenarios described
+above. Add assertions for both locations before and after each transition,
+terminal-state rejection, and conservation with several transfers in transit.
 
 ## Starter Code
 

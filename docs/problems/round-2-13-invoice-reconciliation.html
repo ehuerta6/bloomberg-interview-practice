@@ -21,21 +21,64 @@
     <article class="prose" data-problem-id="round-2-13">
 <h1 id="heading-ticket-13--invoice-reconciliation">Ticket #13 — Invoice Reconciliation</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<h2 id="heading-problem">Problem</h2>
-<h3 id="heading-reported-symptom">Reported symptom</h3>
-<p>An invoice is marked paid before all funds arrive, and duplicate bank notifications can make the recorded amount exceed the remittance.</p>
-<h3 id="heading-scenario">Scenario</h3>
-<p>A customer pays an invoice in installments. Bank notifications can be delivered more than once, and each payment reference must reconcile to one invoice and amount.</p>
+<h2 id="heading-context">Context</h2>
+<p>You maintain invoice reconciliation for a finance tool. Reconciliation matches
+a payment notification to an invoice and updates its amount paid. A payment ID
+is the bank's reference for one remittance; repeating its notification must not
+count the funds twice. Amounts are in cents.</p>
+<h2 id="heading-practice-report">Practice report</h2>
+<p>Create <code>inv-1</code> with total 10000 and paid amount 0. Apply
+<code>apply_payment(&quot;pay-3&quot;, &quot;inv-1&quot;, 4000)</code> twice.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Observation after both notifications</th>
+<th>Current starter</th>
+<th>Expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Invoice paid amount</td>
+<td>8000</td>
+<td>4000</td>
+</tr>
+<tr>
+<td>Stored payment count for the invoice</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Invoice status</td>
+<td><code>partial</code></td>
+<td><code>partial</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Compare the paid amount with the actual saved remittance, rather than relying
+only on the number of records.</p>
 <h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
 <ul>
-<li>Partial payments accumulate until the invoice’s exact balance is settled.</li>
-<li>A payment reference is applied at most once, and overpayments are rejected without changing invoice or payment records.</li>
-<li>Invalid requests must leave persisted state unchanged.</li>
+<li>Positive installments accumulate against the remaining invoice balance.
+A smaller installment leaves <code>partial</code>; exact settlement changes it to <code>paid</code>.</li>
+<li>Apply one payment reference at most once. An identical replay preserves the
+paid amount and payment record and returns the current partial/paid outcome.</li>
+<li>Reusing a reference for a different invoice or amount returns <code>conflict</code>
+without replacing the original payment or changing either invoice.</li>
+<li>Unknown invoices, nonpositive amounts, new payments against a paid invoice,
+and overpayments are rejected without invoice or payment-record changes.</li>
+<li>The paid amount cannot exceed the invoice total, including across multiple
+notifications and retries.</li>
 </ul>
-<h2 id="heading-state-invariants">State Invariants</h2>
-<p>A payment reference is applied at most once, and overpayments are rejected without changing invoice or payment records.</p>
+<h2 id="heading-out-of-scope">Out of Scope</h2>
+<p>Use the existing local store and payment amounts. Bank integration, currency
+conversion, automatic refunds, and expanding amount-type validation are outside
+this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace bank reference lookup, invoice balance calculation, and payment persistence. Test partial settlement, duplicate notices, unknown invoices, and an amount larger than the remaining balance. Add regression coverage for the behavior you reproduce.</p>
+<p>Trace the duplicate report through the invoice and payment stores. Add focused
+tests for two installments that settle exactly, a replay, changed details under
+one reference, and an overpayment. Assert paid amounts and saved payment details
+after both accepted and rejected calls.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/13-invoice-reconciliation">View starter code</a></p>
 <details class="solution-reveal">

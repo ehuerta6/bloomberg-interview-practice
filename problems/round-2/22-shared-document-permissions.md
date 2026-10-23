@@ -2,32 +2,53 @@
 
 **Difficulty:** Hard
 
-## Problem
+## Context
 
-### Reported symptom
+You maintain sharing for documents inside nested folders. A direct grant is on
+the document; an inherited grant comes from its folder or a parent folder.
+A viewer may read, an editor may read and edit, and the document owner may also
+share. Revocation denies a user access at a specified scope.
 
-A product team stores shared documents inside nested folders. A former contractor can still open a file through an inherited folder grant after a revocation. The team needs explicit precedence across ownership, direct sharing, nested inheritance, and revocation.
+## Practice report
 
-### Scenario
+Create folder `root`, its child `child`, and document `d` in `child`, owned by
+`owner`. Grant `sam` editor access on `root` and viewer access directly on `d`.
+Revoke `sam` on `d`, then ask for `role("d", "sam")` and read access.
 
-Create a root folder, child folder, and document. Add grants at different levels, then revoke the same user at the document and folder levels. Check what permission source wins each time.
+| Observation | Current starter | Expected |
+| --- | --- | --- |
+| Resolved role | `viewer` | `None` |
+| Read route status | 200 | 403 |
+
+The document revocation must hold despite the two existing grant sources.
 
 ## Acceptance Criteria
-- The document owner always has owner access and cannot be revoked.
-- The nearest folder grant wins when no document grant exists.
-- Document revocation denies direct and inherited grants until an explicit regrant.
-- Folder revocation blocks that user’s inherited access through that folder.
-- Unknown actions and document IDs are denied.
 
-## State Invariants
-- Owner is immutable and has full permissions.
-- A revoked user cannot inherit access through the revoked scope.
-- Role capabilities are monotonic: owner > editor > viewer.
-- Access resolution is deterministic regardless of grant insertion order.
+- The immutable document owner always resolves as `owner` and cannot be revoked.
+  Owner, editor, and viewer capabilities follow the read/edit/share levels above.
+- A document revocation denies direct and inherited grants until an explicit
+  document regrant clears it. Revocation must not change another user's access.
+- Otherwise, a document grant wins over inherited grants. Without a document
+  grant, use the nearest applicable folder grant while walking toward the root.
+- A folder revocation blocks inherited access through that scope. A direct
+  document grant can still provide access; it is distinct from inheritance.
+- Resolve by scope, independently of grant insertion order. Folder traversal
+  must terminate even if the supplied folder graph contains a cycle.
+- Unknown documents and unsupported actions are denied. Invalid grants and
+  attempts to revoke an owner do not change existing permissions.
+
+## Out of Scope
+
+Keep the existing grant/revoke APIs, role set, and folder graph. Login,
+organization-wide policies, new actions such as deletion, and redesigning folder
+storage are outside this ticket.
 
 ## Investigation
 
-Resolve access in a root folder, nested folder, and document while grants exist at several levels. Compare direct grants with nearest inherited grants, then revoke at the document and folder scopes; verify owner access remains stable and resolution does not depend on insertion order.
+Reproduce the revocation report and compare direct, nearest-folder, and
+parent-folder grants. Add tests for document and folder revocation, explicit
+regrant, owner protection, and unsupported actions. Assert both the resolved role and
+route result after each permission change.
 
 ## Starter Code
 
