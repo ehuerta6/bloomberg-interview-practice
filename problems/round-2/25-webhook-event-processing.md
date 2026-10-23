@@ -27,9 +27,11 @@ returns `duplicate` without another state effect.
 
 - Validate nonempty event/order IDs, an integer sequence of at least 1 excluding
   booleans, and a supported status: `created`, `paid`, `shipped`, `delivered`, or
-  `cancelled`. Malformed events and unknown orders are rejected without side effects.
+  `cancelled`. Malformed events are rejected without side effects. A new valid
+  event ID for an unknown order is also rejected without side effects.
 - Apply a valid event ID at most once globally, including across different
-  orders. A repeated processed ID returns `duplicate` without changing state.
+  orders. A well-formed request using a processed ID returns `duplicate` without
+  changing state.
 - For each order, apply only sequences strictly greater than its latest applied
   sequence. A new ID at a lower or equal sequence returns `stale`, preserving
   current status and history while remembering that ID as processed.

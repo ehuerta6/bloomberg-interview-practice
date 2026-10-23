@@ -29,8 +29,9 @@ only on the number of records.
   A smaller installment leaves `partial`; exact settlement changes it to `paid`.
 - Apply one payment reference at most once. An identical replay preserves the
   paid amount and payment record and returns the current partial/paid outcome.
-- Reusing a reference for a different invoice or amount returns `conflict`
-  without replacing the original payment or changing either invoice.
+- With an existing target invoice and a positive amount, reusing a reference
+  for different payment details returns `conflict` without replacing the original
+  payment or changing either invoice.
 - Unknown invoices, nonpositive amounts, new payments against a paid invoice,
   and overpayments are rejected without invoice or payment-record changes.
 - The paid amount cannot exceed the invoice total, including across multiple

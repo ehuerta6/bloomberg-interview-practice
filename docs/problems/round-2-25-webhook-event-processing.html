@@ -61,9 +61,11 @@ returns <code>duplicate</code> without another state effect.</p>
 <ul>
 <li>Validate nonempty event/order IDs, an integer sequence of at least 1 excluding
 booleans, and a supported status: <code>created</code>, <code>paid</code>, <code>shipped</code>, <code>delivered</code>, or
-<code>cancelled</code>. Malformed events and unknown orders are rejected without side effects.</li>
+<code>cancelled</code>. Malformed events are rejected without side effects. A new valid
+event ID for an unknown order is also rejected without side effects.</li>
 <li>Apply a valid event ID at most once globally, including across different
-orders. A repeated processed ID returns <code>duplicate</code> without changing state.</li>
+orders. A well-formed request using a processed ID returns <code>duplicate</code> without
+changing state.</li>
 <li>For each order, apply only sequences strictly greater than its latest applied
 sequence. A new ID at a lower or equal sequence returns <code>stale</code>, preserving
 current status and history while remembering that ID as processed.</li>
