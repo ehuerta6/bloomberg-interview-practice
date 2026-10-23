@@ -36,15 +36,17 @@ class SiteValidationTests(unittest.TestCase):
                                source_path=source, starter_path=starter, solution_path=solution)
                 problems.append(problem)
                 resource = REPOSITORY + ("/blob/main/" if category == "system-design" else "/tree/main/") + solution
-                body = f'<a href="{REPOSITORY}/blob/main/{source}">Source</a><a href="{resource}">Reference</a>'
+                safe = ' target="_blank" rel="noopener noreferrer"'
+                body = f'<a href="{REPOSITORY}/blob/main/{source}"{safe}>Source</a><a href="{resource}"{safe}>Reference</a>'
                 if starter:
-                    body += f'<a href="{REPOSITORY}/tree/main/{starter}">Starter</a>'
+                    starter_url = f'{REPOSITORY}/tree/main/{starter}'
+                    body += f'<a href="{starter_url}"{safe}>Starter</a><a href="{starter_url}"{safe}>Starter shortcut</a>'
                 self.write(f"docs/problems/{slug}.html",
-                           '<link href="../assets/site.css"><img src="../assets/cic-logo.png">'
+                           '<link rel="icon" type="image/png" href="../assets/cic-logo.png"><link href="../assets/site.css"><img src="../assets/cic-logo.png">'
                            f'<a href="../index.html#catalog">Catalog</a><article data-problem-id="{problem["id"]}" id="assignment">{body}</article>')
                 links.append(f'<a href="problems/{slug}.html">Problem</a>')
         self.write("scripts/problem-manifest.json", json.dumps({"problems": problems}))
-        self.write("docs/index.html", '<main id="catalog">' + "".join(links) + "</main>")
+        self.write("docs/index.html", '<link rel="icon" type="image/png" href="assets/cic-logo.png"><main id="catalog">' + "".join(links) + "</main>")
         self.page = self.site / "problems/round-1-01-fixture.html"
 
     def write(self, path, text):

@@ -17,7 +17,7 @@ CLOSING = '</div>\n</details>\n'
 class PageHTML(HTMLParser):
     def __init__(self, text):
         super().__init__()
-        self.links, self.references, self.disclosures = [], [], []
+        self.links, self.link_attrs, self.references, self.disclosures = [], [], [], []
         self.in_reference = False
         self.feed(text)
 
@@ -28,6 +28,7 @@ class PageHTML(HTMLParser):
             self.in_reference = True
         elif tag == "a":
             self.links.append(attrs["href"])
+            self.link_attrs.append(attrs)
             if "/solutions/" in attrs["href"]:
                 self.references.append((attrs["href"], self.in_reference))
 
@@ -56,7 +57,14 @@ class ProblemLayoutTests(unittest.TestCase):
                 self.assertIn(f'../index.html#{problem["category"]}', html.links)
                 self.assertIn('class="breadcrumbs"', result)
                 self.assertIn('class="prose"', result)
+                self.assertIn('class="problem-sidebar"', result)
+                self.assertIn('rel="icon" type="image/png" href="../assets/cic-logo.png"', result)
+                self.assertIn('class="table-of-contents"', result)
                 self.assertNotIn("<iframe", result)
+                for link in html.link_attrs:
+                    if link["href"].startswith("https://"):
+                        self.assertEqual(link.get("target"), "_blank")
+                        self.assertEqual(link.get("rel"), "noopener noreferrer")
 
     def test_disclosure_preserves_every_assignment_token_and_link(self):
         for problem in self.manifest["problems"]:

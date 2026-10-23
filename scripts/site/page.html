@@ -5,6 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>$title | CIC Interview Practice</title>
+  <link rel="icon" type="image/png" href="../assets/cic-logo.png">
   <link rel="stylesheet" href="../assets/site.css">
 ${mermaid_script}</head>
 <body>
@@ -13,15 +14,28 @@ ${mermaid_script}</head>
     <a class="site-brand" href="../index.html"><img src="../assets/cic-logo.png" width="48" height="48" alt="CIC"><span>Interview Practice</span></a>
     <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">All problems</a></nav>
   </header>
-  <main class="container" id="main-content" tabindex="-1">
+  <main class="container problem-page" id="main-content" tabindex="-1">
     <nav class="breadcrumbs" aria-label="Breadcrumb">
       <ol><li><a href="../index.html">All problems</a></li><li><a href="../index.html#$category_id">$category</a></li><li aria-current="page">Problem $number</li></ol>
     </nav>
-    <p class="eyebrow">$category · $difficulty</p>
-    <article class="prose" data-problem-id="$problem_id">
+    <div class="page-layout content-layout">
+      <aside class="problem-sidebar" aria-label="Problem navigation and resources">
+        <p class="eyebrow">$category · Problem $number</p>
+        <p><span class="tag difficulty-$difficulty_class">$difficulty</span></p>
+        <nav class="table-of-contents" aria-label="On this page">
+          <h2>On this page</h2>
+$toc
+        </nav>
+        <div class="sidebar-resources">
+          <h2>Resources</h2>
+          $starter_link
+          <a href="$source_url" target="_blank" rel="noopener noreferrer">Markdown source <span aria-hidden="true">↗</span></a>
+        </div>
+      </aside>
+      <article class="prose" data-problem-id="$problem_id">
 $body
-    </article>
-    <p class="meta"><a href="$source_url">View assignment Markdown source</a></p>
+      </article>
+    </div>
   </main>
 </body>
 </html>

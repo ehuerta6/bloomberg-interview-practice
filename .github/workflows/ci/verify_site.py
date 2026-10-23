@@ -22,6 +22,7 @@ class Page(HTMLParser):
         super().__init__()
         self.ids = []
         self.references = []
+        self.links = []
         self.problems = []
         self.feed(text)
         if len(self.ids) != len(set(self.ids)):
@@ -34,6 +35,8 @@ class Page(HTMLParser):
         for attribute in ("href", "src"):
             if attribute in attrs:
                 self.references.append(attrs[attribute])
+                if tag == "a" and attribute == "href":
+                    self.links.append((attrs[attribute], attrs))
         if "data-problem-id" in attrs:
             self.problems.append(attrs["data-problem-id"])
 
@@ -83,6 +86,8 @@ def validate_site(root):
         raise ValueError("generated problem pages must exactly match all 65 manifest entries")
     pages = {path: Page(path.read_text(encoding="utf-8")) for path in site.rglob("*.html")}
     catalog = pages[site / "index.html"]
+    if '<link rel="icon" type="image/png" href="assets/cic-logo.png">' not in (site / "index.html").read_text(encoding="utf-8"):
+        raise ValueError("catalog: missing CIC favicon")
     catalog_links = [link for link in catalog.references if link.startswith("problems/")]
     if Counter(catalog_links) != Counter(f"problems/{problem['slug']}.html" for problem in problems):
         raise ValueError("catalog must link to each of the 65 problem pages exactly once")
@@ -91,11 +96,17 @@ def validate_site(root):
         page = pages[path]
         if page.problems != [problem["id"]]:
             raise ValueError(f"{path.name}: wrong problem identity")
-        resources = [REPOSITORY + "/blob/main/" + problem["source_path"]]
-        resources.append(REPOSITORY + ("/blob/main/" if problem["category"] == "system-design" else "/tree/main/") + problem["solution_path"])
+        if '../assets/cic-logo.png' not in page.references or '<link rel="icon" type="image/png" href="../assets/cic-logo.png">' not in path.read_text(encoding="utf-8"):
+            raise ValueError(f"{path.name}: missing CIC favicon")
+        resources = {
+            REPOSITORY + "/blob/main/" + problem["source_path"]: 1,
+            REPOSITORY + ("/blob/main/" if problem["category"] == "system-design" else "/tree/main/") + problem["solution_path"]: 1,
+        }
         if problem["starter_path"]:
-            resources.append(REPOSITORY + "/tree/main/" + problem["starter_path"])
-        if any(page.references.count(resource) != 1 for resource in resources):
+            # The assignment retains its original starter link and the shared
+            # sidebar adds a second shortcut to the same starter directory.
+            resources[REPOSITORY + "/tree/main/" + problem["starter_path"]] = 2
+        if any(page.references.count(resource) != count for resource, count in resources.items()):
             raise ValueError(f"{path.name}: missing or duplicate manifest resource link")
         for asset in ("../assets/site.css", "../assets/cic-logo.png"):
             if asset not in page.references:
@@ -103,6 +114,9 @@ def validate_site(root):
     for path, page in pages.items():
         for reference in page.references:
             check_reference(reference, path, site, root, pages)
+        for href, attrs in page.links:
+            if urlsplit(href).scheme.lower() in ("http", "https") and (attrs.get("target") != "_blank" or attrs.get("rel") != "noopener noreferrer"):
+                raise ValueError(f"{path.name}: external link must open safely in a new tab: {href}")
     for css in site.rglob("*.css"):
         for match in re.finditer(r"url\(\s*(['\"]?)(.*?)\1\s*\)", css.read_text(encoding="utf-8")):
             check_reference(match[2], css, site, root, pages)
