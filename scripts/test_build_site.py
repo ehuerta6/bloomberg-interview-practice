@@ -48,6 +48,16 @@ class RendererTests(unittest.TestCase):
         self.assertIn('class="language-python"', result)
         self.assertIn("value &lt; 10", result)
 
+    def test_overflow_regions_and_code_samples_can_be_focused_and_have_names(self):
+        result = self.render("| A | B |\n|---|---|\n| x | y |\n\n```python\nprint(1)\n```\n\n    indented code\n\n```mermaid\nflowchart LR\nA --> B\n```")
+        scroll_regions = [(tag, attrs) for tag, attrs in HTML(result).elements
+                          if attrs.get("aria-label")]
+        self.assertEqual(len(scroll_regions), 4)
+        for tag, attrs in scroll_regions:
+            self.assertEqual(attrs["tabindex"], "0")
+        self.assertEqual([attrs.get("role") for _, attrs in scroll_regions],
+                         ["region", "group", "group", "region"])
+
     def test_raw_markup_and_code_are_escaped(self):
         result = self.render('<script>alert(1)</script>\n\n<img src=x onerror=alert(1)>\n\n```html\n</code><script>alert(1)</script>\n```')
         self.assertNotIn("script", [tag for tag, _ in HTML(result).elements])

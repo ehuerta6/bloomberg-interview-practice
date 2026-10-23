@@ -37,7 +37,7 @@
 </ul>
 <h2 id="heading-contract-examples">Contract examples</h2>
 <p>For this graph:</p>
-<pre><code class="language-python">{&quot;root&quot;: [&quot;z&quot;, &quot;a&quot;], &quot;z&quot;: [], &quot;a&quot;: [], &quot;mid&quot;: [&quot;a&quot;]}
+<pre tabindex="0" role="group" aria-label="Code sample"><code class="language-python">{&quot;root&quot;: [&quot;z&quot;, &quot;a&quot;], &quot;z&quot;: [], &quot;a&quot;: [], &quot;mid&quot;: [&quot;a&quot;]}
 </code></pre>
 <p>The expected installation list is <code>[&quot;a&quot;, &quot;mid&quot;, &quot;z&quot;, &quot;root&quot;]</code>. After <code>a</code> is included, <code>mid</code> becomes eligible and precedes <code>z</code> under the specified tie rule.</p>
 <p><code>{&quot;app&quot;: [&quot;core&quot;, &quot;core&quot;], &quot;core&quot;: []}</code> returns <code>[&quot;core&quot;, &quot;app&quot;]</code>. The cycle <code>{&quot;a&quot;: [&quot;b&quot;], &quot;b&quot;: [&quot;a&quot;]}</code> raises <code>ValueError</code>, and so does <code>{&quot;app&quot;: [&quot;missing&quot;]}</code> because <code>missing</code> has no package definition.</p>
