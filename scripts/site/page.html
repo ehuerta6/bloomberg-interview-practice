@@ -13,12 +13,15 @@ ${mermaid_script}</head>
     <a class="site-brand" href="../index.html"><img src="../assets/cic-logo.png" width="48" height="48" alt="CIC"><span>Interview Practice</span></a>
     <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">All problems</a></nav>
   </header>
-  <main class="container" id="main-content">
+  <main class="container" id="main-content" tabindex="-1">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol><li><a href="../index.html">All problems</a></li><li><a href="../index.html#$category_id">$category</a></li><li aria-current="page">Problem $number</li></ol>
+    </nav>
     <p class="eyebrow">$category · $difficulty</p>
     <article class="prose" data-problem-id="$problem_id">
 $body
     </article>
-    <p class="meta"><a href="$source_url">View Markdown source</a></p>
+    <p class="meta"><a href="$source_url">View assignment Markdown source</a></p>
   </main>
 </body>
 </html>

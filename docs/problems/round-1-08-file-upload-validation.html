@@ -13,7 +13,10 @@
     <a class="site-brand" href="../index.html"><img src="../assets/cic-logo.png" width="48" height="48" alt="CIC"><span>Interview Practice</span></a>
     <nav class="site-nav" aria-label="Main navigation"><a href="../index.html">All problems</a></nav>
   </header>
-  <main class="container" id="main-content">
+  <main class="container" id="main-content" tabindex="-1">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol><li><a href="../index.html">All problems</a></li><li><a href="../index.html#round-1">Round 1 · Code Review</a></li><li aria-current="page">Problem 08</li></ol>
+    </nav>
     <p class="eyebrow">Round 1 · Code Review · Easy</p>
     <article class="prose" data-problem-id="round-1-08">
 <h1 id="heading-pr-08--file-upload-validation">PR #08 — File Upload Validation</h1>
@@ -33,11 +36,16 @@
 <p>Review what the extension check actually establishes. Try path-like names, a supported suffix with an unrelated media type, and Python values that are technically integers but should not represent byte counts. Add tests for the accepted boundary and rejected metadata.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/08-file-upload-validation">View starter code</a></p>
+<details class="solution-reveal">
+<summary>Reveal reference solution link</summary>
+<div class="details-content">
 <h2 id="heading-reference-solution">Reference Solution</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/solutions/round-1/08-file-upload-validation">View solution</a></p>
+</div>
+</details>
 
     </article>
-    <p class="meta"><a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/problems/round-1/08-file-upload-validation.md">View Markdown source</a></p>
+    <p class="meta"><a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/problems/round-1/08-file-upload-validation.md">View assignment Markdown source</a></p>
   </main>
 </body>
 </html>

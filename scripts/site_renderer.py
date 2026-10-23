@@ -7,6 +7,7 @@ from string import Template
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 from markdown_it import MarkdownIt
+from markdown_it.token import Token
 
 
 REPOSITORY_URL = "https://github.com/ehuerta6/bloomberg-interview-practice"
@@ -57,7 +58,7 @@ def resolve_link(url, source, root, pages, image=False):
     return urlunsplit((result.scheme, result.netloc, result.path, parts.query, fragment))
 
 
-def render_markdown(markdown, source, root, pages):
+def render_markdown(markdown, source, root, pages, *, reveal_solutions=False):
     """Render CommonMark plus tables/strikethrough; raw HTML is always text."""
     root, source = Path(root).resolve(), Path(source)
     parser = MarkdownIt("commonmark", {"html": False}).enable(["table", "strikethrough"])
@@ -94,17 +95,35 @@ def render_markdown(markdown, source, root, pages):
             token.content = '<pre class="mermaid" aria-label="Mermaid diagram source">' + escape(token.content) + "</pre>\n"
     parser.renderer.rules["table_open"] = lambda *_: '<div class="table-scroll"><table>\n'
     parser.renderer.rules["table_close"] = lambda *_: "</table></div>\n"
+    if reveal_solutions:
+        # Wrap the parsed section so fenced examples cannot trigger a disclosure.
+        # Keep its original heading and links; solution files are never read.
+        boundaries = []
+        for index, token in enumerate(tokens):
+            if token.type == "heading_open" and token.tag == "h2" and tokens[index + 1].content == "Reference Solution":
+                end = next((position for position in range(index + 3, len(tokens))
+                            if tokens[position].type == "heading_open" and tokens[position].tag in ("h1", "h2")), len(tokens))
+                boundaries.append((index, end))
+        for start, end in reversed(boundaries):
+            opening = Token("html_block", "", 0)
+            opening.content = '<details class="solution-reveal">\n<summary>Reveal reference solution link</summary>\n<div class="details-content">\n'
+            closing = Token("html_block", "", 0)
+            closing.content = '</div>\n</details>\n'
+            tokens.insert(end, closing)
+            tokens.insert(start, opening)
     return parser.renderer.render(tokens, parser.options, {})
 
 
 def render_page(problem, root, pages):
     source = Path(problem["source_path"])
-    body = render_markdown((root / source).read_text(encoding="utf-8"), source, root, pages)
+    body = render_markdown((root / source).read_text(encoding="utf-8"), source, root, pages, reveal_solutions=True)
     values = {
         "title": problem["title"],
         "category": CATEGORY_LABELS[problem["category"]],
         "difficulty": problem["difficulty"],
         "problem_id": problem["id"],
+        "category_id": problem["category"],
+        "number": f'{problem["number"]:02d}',
         "source_url": repository_link(source.as_posix()),
     }
     values = {key: escape(value, quote=True) for key, value in values.items()}
