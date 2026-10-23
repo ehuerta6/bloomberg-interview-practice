@@ -21,12 +21,15 @@ def render_catalog(manifest):
         navigation.append(f'      <a href="#{category}">{label}</a>')
         cards = []
         for problem in problems:
+            difficulty = problem["difficulty"].lower()
             cards.append(
-                '        <li><article class="problem-card">\n'
-                f'          <p class="eyebrow">Problem {problem["number"]:02d}</p>\n'
-                f'          <h3><a href="problems/{quote(problem["slug"], safe="")}.html">{escape(problem["title"])}</a></h3>\n'
-                f'          <p><span class="tag">{escape(problem["difficulty"])}</span></p>\n'
-                '        </article></li>'
+                '        <li>\n'
+                f'          <a class="problem-card" href="problems/{quote(problem["slug"], safe="")}.html">\n'
+                f'            <span class="problem-number">{problem["number"]:02d}</span>\n'
+                f'            <span class="problem-title">{escape(problem["title"])}</span>\n'
+                f'            <span class="tag difficulty-{difficulty}">{escape(problem["difficulty"])}</span>\n'
+                '          </a>\n'
+                '        </li>'
             )
         sections.append(
             f'    <section aria-labelledby="{category}" data-category="{category}">\n'

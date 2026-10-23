@@ -73,7 +73,9 @@ class RendererTests(unittest.TestCase):
     def test_url_attribute_quotes_cannot_escape(self):
         result = self.render('[x](https://example.com/?q=%22%20onclick=%22alert%281%29 "a & b")')
         attrs = [attrs for tag, attrs in HTML(result).elements if tag == "a"][0]
-        self.assertEqual(set(attrs), {"href", "title"})
+        self.assertEqual(set(attrs), {"href", "title", "target", "rel"})
+        self.assertEqual(attrs["target"], "_blank")
+        self.assertEqual(attrs["rel"], "noopener noreferrer")
         self.assertEqual(attrs["title"], "a & b")
 
     def test_relative_starter_solution_and_cross_problem_links(self):
@@ -91,7 +93,10 @@ class RendererTests(unittest.TestCase):
 
     def test_external_url_query_and_fragment_are_preserved(self):
         result = self.render('[x](https://example.com/?a=1&b=2#part) [mail](mailto:hello@example.com)')
-        self.assertEqual(HTML(result).attributes("a", "href"), ["https://example.com/?a=1&b=2#part", "mailto:hello@example.com"])
+        links = [attrs for tag, attrs in HTML(result).elements if tag == "a"]
+        self.assertEqual([link["href"] for link in links], ["https://example.com/?a=1&b=2#part", "mailto:hello@example.com"])
+        self.assertEqual(links[0]["target"], "_blank")
+        self.assertNotIn("target", links[1])
 
     def test_anchors_are_prefixed_unique_and_linked(self):
         result = self.render("## Location\n\n## Location\n\n## Location-1\n\n[go](#location) [duplicate](#location-1)")

@@ -49,7 +49,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(self.result.count("25 problems"), 2)
         self.assertIn("15 problems", self.result)
         for difficulty, count in Counter(p["difficulty"] for p in self.manifest["problems"]).items():
-            self.assertEqual(self.result.count(f'<span class="tag">{difficulty}</span>'), count)
+            self.assertEqual(self.result.count(f'<span class="tag difficulty-{difficulty.lower()}">{difficulty}</span>'), count)
 
     def test_navigation_and_skip_targets_exist_without_scripts(self):
         fragments = [link[1:] for link in self.html.links if link.startswith("#")]
@@ -57,6 +57,7 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(len(self.html.ids), len(set(self.html.ids)))
         self.assertNotIn("script", self.html.tags)
         self.assertIn('href="assets/site.css"', self.result)
+        self.assertIn('rel="icon" type="image/png" href="assets/cic-logo.png"', self.result)
         self.assertIn('src="assets/cic-logo.png"', self.result)
 
     def test_catalog_uses_manifest_metadata_and_escapes_markup(self):

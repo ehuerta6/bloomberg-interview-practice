@@ -58,7 +58,7 @@ def resolve_link(url, source, root, pages, image=False):
     return urlunsplit((result.scheme, result.netloc, result.path, parts.query, fragment))
 
 
-def render_markdown(markdown, source, root, pages, *, reveal_solutions=False):
+def render_markdown(markdown, source, root, pages, *, reveal_solutions=False, headings_out=None):
     """Render CommonMark plus tables/strikethrough; raw HTML is always text."""
     root, source = Path(root).resolve(), Path(source)
     parser = MarkdownIt("commonmark", {"html": False}).enable(["table", "strikethrough"])
@@ -76,7 +76,11 @@ def render_markdown(markdown, source, root, pages, *, reveal_solutions=False):
             for attribute in ("href", "src"):
                 url = token.attrGet(attribute)
                 if url is not None:
-                    token.attrSet(attribute, resolve_link(url, source, root, pages, attribute == "src"))
+                    resolved = resolve_link(url, source, root, pages, attribute == "src")
+                    token.attrSet(attribute, resolved)
+                    if attribute == "href" and urlsplit(resolved).scheme.lower() in ("http", "https"):
+                        token.attrSet("target", "_blank")
+                        token.attrSet("rel", "noopener noreferrer")
             if token.children:
                 visit(token.children)
 
@@ -90,6 +94,10 @@ def render_markdown(markdown, source, root, pages, *, reveal_solutions=False):
                 slug = f"{base}-{count}"
             headings.add(slug)
             token.attrSet("id", slug)
+            if headings_out is not None:
+                inline = tokens[index + 1]
+                label = parser.renderer.renderInline(inline.children, parser.options, {})
+                headings_out.append((token.tag, slug, label))
         elif token.type == "fence" and token.info.strip().split(maxsplit=1)[:1] == ["mermaid"]:
             token.type = "html_block"
             token.content = '<pre class="mermaid" tabindex="0" role="region" aria-label="Mermaid diagram source">' + escape(token.content) + "</pre>\n"
@@ -120,18 +128,35 @@ def render_markdown(markdown, source, root, pages, *, reveal_solutions=False):
 
 def render_page(problem, root, pages):
     source = Path(problem["source_path"])
-    body = render_markdown((root / source).read_text(encoding="utf-8"), source, root, pages, reveal_solutions=True)
+    headings = []
+    body = render_markdown((root / source).read_text(encoding="utf-8"), source, root, pages,
+                           reveal_solutions=True, headings_out=headings)
+    toc_items = "\n".join(
+        f'          <li class="toc-{tag}"><a href="#{slug}">{label}</a></li>'
+        for tag, slug, label in headings if tag in ("h2", "h3")
+    )
+    toc = f"          <ul>\n{toc_items}\n          </ul>" if toc_items else "          <p class=\"meta\">No sections</p>"
+    starter = problem["starter_path"]
+    starter_link = (
+        f'<a href="{escape(repository_link(starter, directory=True), quote=True)}" target="_blank" rel="noopener noreferrer">Starter code <span aria-hidden="true">↗</span></a>'
+        if starter else '<span class="meta">No starter code</span>'
+    )
     values = {
         "title": problem["title"],
         "category": CATEGORY_LABELS[problem["category"]],
         "difficulty": problem["difficulty"],
+        "difficulty_class": problem["difficulty"].lower(),
         "problem_id": problem["id"],
         "category_id": problem["category"],
         "number": f'{problem["number"]:02d}',
         "source_url": repository_link(source.as_posix()),
+        "toc": toc,
+        "starter_link": starter_link,
     }
     values = {key: escape(value, quote=True) for key, value in values.items()}
     values["body"] = body
+    values["toc"] = toc
+    values["starter_link"] = starter_link
     values["mermaid_script"] = (
         '  <script type="module" src="../renderer/mermaid.mjs"></script>\n'
         if '<pre class="mermaid" ' in body else ""
