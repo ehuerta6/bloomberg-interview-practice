@@ -8,7 +8,7 @@ Validate and cap retry delays
 
 ## Summary
 
-A client library plans waits between attempts after temporary failures. Review whether the schedule respects its retry count, multiplier, and configured ceiling.
+A client library waits before retrying a request after a temporary failure. Increasing waits reduce repeated traffic, while a configured ceiling limits how long the caller waits between attempts. You are reviewing the helper that plans these delays; the initial request itself has no wait entry in the returned list.
 
 ## Input and output
 
@@ -22,10 +22,23 @@ A client library plans waits between attempts after temporary failures. Review w
 - A zero retry count returns an empty list.
 - Invalid retry counts or delay settings raise `ValueError`.
 
+## Contract examples
+
+All delay values use the same caller-chosen time unit, such as seconds.
+
+| Call | Expected return |
+| --- | --- |
+| `retry_delays(4, 1)` | `[1, 2, 4, 8]` |
+| `retry_delays(5, 2, max_delay=5)` | `[2, 4, 5, 5, 5]` |
+| `retry_delays(3, 2, max_delay=1)` | `[1, 1, 1]` |
+| `retry_delays(3, 0.25)` | `[0.25, 0.5, 1.0]` |
+| `retry_delays(0, 1)` | `[]` |
+
+`retry_delays(-1, 1)` and `retry_delays(3, 1, multiplier=0)` raise `ValueError`.
+
 ## Review task
 
-Trace the schedule before and after the cap engages. Check fractional inputs, zero retries, the cap below the base delay, and invalid booleans or negative values.
-
+Review the planner and tests against the number of retries, growth rule, and per-wait ceiling. Correct discrepancies and add assertions for fractional waits, a cap smaller than the base, zero retries, and invalid settings. Explain how the tests distinguish a valid empty plan from an invalid request.
 
 ## Starter Code
 

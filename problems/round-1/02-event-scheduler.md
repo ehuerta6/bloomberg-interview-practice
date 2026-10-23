@@ -6,7 +6,7 @@
 
 ## Summary
 
-This change adds an availability check for a new event against a collection of scheduled events.
+A club organizer wants to check whether a proposed event fits the schedule before booking it. You are reviewing `is_available(events, start, end)`, which returns a boolean for a list of existing `(start, end)` pairs. An availability check must leave booking state unchanged.
 
 ## Expected behavior
 - Each event is represented by a start and end time and covers the half-open interval `[start, end)`.
@@ -15,9 +15,21 @@ This change adds an availability check for a new event against a collection of s
 - An interval with `start >= end` is invalid and rejected.
 - Checking availability does not modify the existing event collection.
 
+## Contract examples
+
+With existing events `[(10, 12)]`, evaluate each candidate independently:
+
+| Candidate `(start, end)` | Expected return | Existing events afterward |
+| --- | --- | --- |
+| `(12, 14)` | `True` | `[(10, 12)]` |
+| `(11, 13)` | `False` | `[(10, 12)]` |
+| `(5, 5)` | `False` | `[(10, 12)]` |
+
+The interval notation `[10, 12)` includes time `10` and excludes time `12`; it does not reserve the next event's start.
+
 ## Review task
 
-Review the implementation and tests against these rules. Correct the implementation and any tests that do not accurately express the expected behavior. Add regression cases where the current suite is insufficient.
+Review whether the implementation and tests distinguish touching intervals from overlapping ones. Correct contract violations and misleading assertions, then add regression cases that verify both the availability result and the event collection after a check.
 
 ## Starter Code
 

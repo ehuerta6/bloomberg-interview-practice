@@ -6,7 +6,7 @@
 
 ## Summary
 
-Message delivery can retry an event when a worker times out. This change adds a ten-minute duplicate window so a retry does not send the same notification to a recipient repeatedly.
+A notification worker may retry an event when delivery processing times out. Recipients should still receive distinct events, while retries of a recently accepted notification should be suppressed. You are reviewing `NotificationDeduplicator.should_send(recipient, event_id, now)`, which returns a delivery decision and maintains the time of the last allowed delivery. The default duplicate window is ten minutes.
 
 ## Expected behavior
 - `should_send(recipient, event_id, now)` returns true for the first delivery and records its time. Both IDs must be nonblank strings and `now` must be timezone-aware.
@@ -15,9 +15,22 @@ Message delivery can retry an event when a worker times out. This change adds a 
 - A suppressed retry does not move the last-successful timestamp. An out-of-order attempt is suppressed without moving that timestamp backward.
 - The configured window must be positive.
 
+## Contract example
+
+Using a fresh deduplicator, process these timezone-aware times on the same day in order:
+
+| Recipient | Event | Time (UTC) | Expected return |
+| --- | --- | --- | --- |
+| `"u1"` | `"e1"` | `12:00` | `True` |
+| `"u2"` | `"e1"` | `12:01` | `True` |
+| `"u1"` | `"e1"` | `12:08` | `False` |
+| `"u1"` | `"e1"` | `12:10` | `True` |
+
+After the suppressed `12:08` attempt, the last successful time for `u1` and `e1` remains `12:00`. The `12:10` delivery establishes a new successful time.
+
 ## Review task
 
-Follow how keys and timestamps change after both accepted and suppressed attempts. Use a timeline with two recipients, a retry near the window boundary, and an out-of-order event to evaluate whether the state matches “last successful delivery.”
+Review how delivery decisions and stored times satisfy recipient isolation and the fixed window. Correct implementation or test discrepancies, then add deterministic cases for the exact boundary, suppressed retries, and out-of-order attempts. Explain the state that each timeline assertion proves.
 
 ## Starter Code
 

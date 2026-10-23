@@ -6,7 +6,7 @@
 
 ## Summary
 
-This change adds coupon and automatic-promotion handling to the checkout quote. The caller passes a subtotal in whole cents and receives the amount due.
+Checkout shows a customer the amount due before an order is placed. Employee pricing, a first-order offer, and a coupon can all be present on the request, but only the highest-priority eligible promotion applies. You are reviewing the PR that calculates this quote in whole cents.
 
 ## Expected behavior
 - `calculate_total(subtotal_cents, coupon_code=None, first_order=False, employee=False)` returns an integer amount in cents and rejects negative, non-integer, or boolean subtotals.
@@ -15,9 +15,22 @@ This change adds coupon and automatic-promotion handling to the checkout quote. 
 - Coupon codes ignore surrounding whitespace and letter case. An unknown nonblank code is rejected. A known coupon below its minimum gives no discount.
 - Discounts use whole-cent floor rounding and cannot reduce the amount due below zero.
 
+## Contract examples
+
+Each row is an independent quote. `10000` cents is $100.00.
+
+| Subtotal | Coupon | First order | Employee | Expected amount due |
+| ---: | --- | --- | --- | ---: |
+| 4999 | `"SAVE10"` | `False` | `False` | 4999 |
+| 5000 | `"SAVE10"` | `False` | `False` | 4500 |
+| 10000 | `"SAVE10"` | `True` | `True` | 8000 |
+| 2500 | `" take500 "` | `False` | `False` | 2000 |
+
+A quote for 100 cents with the unknown code `"NOT-A-COUPON"` raises `ValueError`.
+
 ## Review task
 
-Trace every combination of employee, first-order, and coupon inputs. Compare the order of the implementation branches with the promotion precedence, then inspect whether the tests prove promotions cannot be stacked. Correct misleading tests and add regression coverage for boundaries and invalid input.
+Compare the quote results and tests with the promotion priority and original-subtotal minimums. Correct misleading assertions and implementation defects, then add tests for competing promotions, threshold boundaries, whole-cent rounding, and invalid money input. Explain how the assertions establish that a quote applies only one promotion.
 
 ## Starter Code
 

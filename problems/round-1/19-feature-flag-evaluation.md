@@ -8,7 +8,7 @@ Evaluate feature rollouts consistently
 
 ## Summary
 
-A rollout service combines a global enable switch, explicit user lists, and deterministic percentage cohorts. Review whether precedence and rollout boundaries match the policy.
+A rollout service releases a feature to selected users before enabling it for everyone. A feature flag is the policy describing that release: a global switch, explicit exceptions, and an optional percentage of users. You are reviewing evaluation so a user receives the same decision on repeated calls and explicit exclusions keep their priority.
 
 ## Input and output
 
@@ -22,10 +22,23 @@ If rollout is used, the percentage must be numeric and between 0 and 100. A miss
 - Other users receive a stable bucket from 0 through 99 based on SHA-256 of their user ID string. Enable the user when the bucket is strictly less than `rollout_percent`.
 - A percentage of 0 enables no rollout users; 100 enables every user with an ID. Invalid percentages are rejected.
 
+## Contract examples
+
+Evaluate these policies for `user={"user_id": "u1"}`:
+
+| Flag fields | Expected return |
+| --- | --- |
+| `{"enabled": False, "allowlist": ["u1"]}` | `False` |
+| `{"enabled": True, "allowlist": ["u1"], "denylist": ["u1"]}` | `False` |
+| `{"enabled": True, "allowlist": ["u1"]}` | `True` |
+| `{"enabled": True, "rollout_percent": 0}` | `False` |
+| `{"enabled": True, "rollout_percent": 100}` | `True` |
+
+A percentage rollout assigns each identified user a repeatable bucket, numbered 0 through 99. A user without an ID is off even at 100 percent. An enabled flag with `rollout_percent="50"` is invalid: a numeric-looking string is not a numeric percentage.
+
 ## Review task
 
-Test precedence before rollout, exact bucket boundaries, stable results across calls, malformed percentages, and users without IDs.
-
+Compare the evaluator and its assertions with global disable, direct exclusions, direct inclusion, and rollout decisions. Correct discrepancies and add tests for the exact bucket boundary, repeated calls for one user, missing IDs, and invalid percentages. Explain which assertions establish precedence and which establish repeatability.
 
 ## Starter Code
 

@@ -24,7 +24,7 @@
 <h2 id="heading-pr-title">PR title</h2>
 <p>Evaluate feature rollouts consistently</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A rollout service combines a global enable switch, explicit user lists, and deterministic percentage cohorts. Review whether precedence and rollout boundaries match the policy.</p>
+<p>A rollout service releases a feature to selected users before enabling it for everyone. A feature flag is the policy describing that release: a global switch, explicit exceptions, and an optional percentage of users. You are reviewing evaluation so a user receives the same decision on repeated calls and explicit exclusions keep their priority.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>evaluate_flag(flag, user)</code> receives a flag dictionary with <code>enabled</code>, optional <code>allowlist</code>, optional <code>denylist</code>, and optional <code>rollout_percent</code> fields. The user dictionary supplies a stable <code>user_id</code>. The function returns a boolean.</p>
 <p>If rollout is used, the percentage must be numeric and between 0 and 100. A missing user ID is treated as off.</p>
@@ -35,8 +35,41 @@
 <li>Other users receive a stable bucket from 0 through 99 based on SHA-256 of their user ID string. Enable the user when the bucket is strictly less than <code>rollout_percent</code>.</li>
 <li>A percentage of 0 enables no rollout users; 100 enables every user with an ID. Invalid percentages are rejected.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<p>Evaluate these policies for <code>user={&quot;user_id&quot;: &quot;u1&quot;}</code>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Flag fields</th>
+<th>Expected return</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{&quot;enabled&quot;: False, &quot;allowlist&quot;: [&quot;u1&quot;]}</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>{&quot;enabled&quot;: True, &quot;allowlist&quot;: [&quot;u1&quot;], &quot;denylist&quot;: [&quot;u1&quot;]}</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>{&quot;enabled&quot;: True, &quot;allowlist&quot;: [&quot;u1&quot;]}</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>{&quot;enabled&quot;: True, &quot;rollout_percent&quot;: 0}</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>{&quot;enabled&quot;: True, &quot;rollout_percent&quot;: 100}</code></td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>A percentage rollout assigns each identified user a repeatable bucket, numbered 0 through 99. A user without an ID is off even at 100 percent. An enabled flag with <code>rollout_percent=&quot;50&quot;</code> is invalid: a numeric-looking string is not a numeric percentage.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Test precedence before rollout, exact bucket boundaries, stable results across calls, malformed percentages, and users without IDs.</p>
+<p>Compare the evaluator and its assertions with global disable, direct exclusions, direct inclusion, and rollout decisions. Correct discrepancies and add tests for the exact bucket boundary, repeated calls for one user, missing IDs, and invalid percentages. Explain which assertions establish precedence and which establish repeatability.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/19-feature-flag-evaluation">View starter code</a></p>
 <details class="solution-reveal">

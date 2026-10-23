@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Rank search results by normalized relevance</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A search endpoint ranks documents using query matches in titles and body text, then returns an optional top slice. Review normalization, relevance scoring, stable ties, and limits.</p>
+<p>A search endpoint must put documents with relevant titles ahead of weaker body-only matches while keeping equally relevant results predictable. You are reviewing the ranking PR, which returns document IDs and normalized scores so the caller can display a limited result list.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>rank_results(query, documents, limit=None)</code> accepts a query string and documents containing <code>id</code>, <code>title</code>, and <code>text</code>. It returns matching documents as <code>{id, score}</code> mappings.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -35,8 +35,24 @@
 <li><code>limit</code> is optional or a nonnegative integer; booleans are invalid. A zero limit or query with no tokens returns an empty list.</li>
 <li>Malformed query, document, or limit input raises <code>ValueError</code>.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Search for <code>&quot;PYTHON!&quot;</code> in these documents, in this order:</p>
+<pre><code class="language-python">[
+    {&quot;id&quot;: &quot;body&quot;, &quot;title&quot;: &quot;Notes&quot;, &quot;text&quot;: &quot;python guides&quot;},
+    {&quot;id&quot;: &quot;title&quot;, &quot;title&quot;: &quot;Python guides&quot;, &quot;text&quot;: &quot;language&quot;},
+    {&quot;id&quot;: &quot;mixed&quot;, &quot;title&quot;: &quot;Python&quot;, &quot;text&quot;: &quot;guides&quot;},
+]
+</code></pre>
+<p>Expected return:</p>
+<pre><code class="language-python">[
+    {&quot;id&quot;: &quot;title&quot;, &quot;score&quot;: 0.75},
+    {&quot;id&quot;: &quot;mixed&quot;, &quot;score&quot;: 0.75},
+    {&quot;id&quot;: &quot;body&quot;, &quot;score&quot;: 0.25},
+]
+</code></pre>
+<p>For this one-token query, a title match earns 3 of 4 possible points and a body-only match earns 1 of 4. <code>limit=1</code> returns only <code>title</code>. Repeating the query token as <code>&quot;PYTHON! python&quot;</code> does not change these scores.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Compare title-only, body-only, and mixed matches. Try punctuation and repeated query terms, then construct equal-scoring documents in a deliberate order and verify the limited output.</p>
+<p>Review the ranking and tests against normalized matching, distinct query terms, and stable score ties. Correct discrepancies and add cases that check numeric scores as well as document order, including a limited result list and a query without tokens. Explain why equal-scoring documents keep their input order.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/17-search-ranking">View starter code</a></p>
 <details class="solution-reveal">

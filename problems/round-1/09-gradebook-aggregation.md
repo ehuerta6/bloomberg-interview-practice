@@ -6,7 +6,7 @@
 
 ## Summary
 
-A course service combines assessment records across students and categories, applies category weights and a dropped-score policy, then returns one grade summary per student.
+A course publishes a final grade for each student from assessment records submitted in several batches. Exams and projects can have different weights, and the course may drop low scores within each category. You are reviewing the PR that combines those records into a grade summary while retaining the number of input entries for reporting.
 
 ## Input and output
 
@@ -21,9 +21,23 @@ A course service combines assessment records across students and categories, app
 - Round the final average to two decimal places. Assign letters from the unrounded average: A at 90, B at 80, C at 70, D at 60, and F below 60.
 - Reject malformed row/category/weight shapes, invalid scores, and invalid drop counts with `ValueError`.
 
+## Contract examples
+
+For this input, with `weights={"exam": 80, "project": 20}` and `drop_lowest=0`:
+
+```python
+[{"student": "Ari", "scores": {"exam": [100], "project": [0]}}]
+```
+
+The expected return is `{"Ari": {"count": 2, "average": 80.0, "letter": "B"}}`: the two category percentages contribute according to their weights.
+
+For `[{"student": "Cal", "scores": {"exam": [100, None, 90]}}]`, `weights={"exam": 100}`, and the default drop count of 1, the expected summary for Cal is `{"count": 3, "average": 95.0, "letter": "A"}`. The missing entry counts toward `count` even though it is dropped.
+
+An unrounded average of `89.995` displays as `90.0` but receives letter `"B"`.
+
 ## Review task
 
-Trace a student with multiple weighted categories and multiple input rows. Check per-category dropping, missing entries, empty-after-drop categories, total entry counts, rounding, and the letter-grade thresholds. Add focused tests for the contract's boundary cases.
+Review the aggregation and assertions against weighted grades, merged student identities, and the drop policy. Correct discrepancies and add cases that check all three summary fields, including missing submissions and a displayed average near a letter boundary. Explain how the tests distinguish the displayed number from the grade decision.
 
 ## Starter Code
 

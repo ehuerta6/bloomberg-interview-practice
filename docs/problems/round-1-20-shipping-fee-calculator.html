@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Calculate discounted, zone-based shipping fees</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A store is adding a new carrier and loyalty discounts to its parcel-pricing service. The change must select a weight band, apply shipping discounts, and honor carrier minimums while keeping currency arithmetic predictable.</p>
+<p>A store shows the shipping charge before checkout. The carrier prices parcels by destination and total weight, while the store offers shipping discounts and a free-shipping threshold. You are reviewing the pricing PR so the quote follows the carrier minimum and produces a predictable dollar amount rounded to cents.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>calculate_shipping(order, rates)</code> receives an order with <code>zone</code>, <code>subtotal</code>, <code>weight_kg</code>, and optional <code>shipping_discount_percent</code> fields. The discount defaults to zero. <code>rates</code> maps each zone to <code>base_fee</code>, <code>minimum_fee</code>, <code>free_over</code>, and an ordered <code>weight_brackets</code> list. Each band has an inclusive <code>up_to_kg</code> limit and <code>per_kg</code> rate; the final band uses <code>None</code> for an unbounded limit. The function returns a <code>Decimal</code> fee in dollars rounded to cents.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -35,8 +35,61 @@
 <li>Round only the final fee to two decimal places using half-up currency rounding.</li>
 <li>Do not mutate the order or rate table.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Use this rate table:</p>
+<pre><code class="language-python">{
+    &quot;local&quot;: {
+        &quot;base_fee&quot;: &quot;3.00&quot;,
+        &quot;minimum_fee&quot;: &quot;5.00&quot;,
+        &quot;free_over&quot;: &quot;75.00&quot;,
+        &quot;weight_brackets&quot;: [
+            {&quot;up_to_kg&quot;: &quot;2&quot;, &quot;per_kg&quot;: &quot;1.25&quot;},
+            {&quot;up_to_kg&quot;: &quot;5&quot;, &quot;per_kg&quot;: &quot;1.00&quot;},
+            {&quot;up_to_kg&quot;: None, &quot;per_kg&quot;: &quot;0.80&quot;},
+        ],
+    }
+}
+</code></pre>
+<p>Each row is an independent order in zone <code>&quot;local&quot;</code>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align:right">Subtotal in dollars</th>
+<th style="text-align:right">Weight in kg</th>
+<th style="text-align:right">Shipping discount</th>
+<th>Expected <code>Decimal</code> fee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right"><code>&quot;20&quot;</code></td>
+<td style="text-align:right"><code>&quot;2&quot;</code></td>
+<td style="text-align:right">0</td>
+<td><code>Decimal(&quot;5.50&quot;)</code></td>
+</tr>
+<tr>
+<td style="text-align:right"><code>&quot;20&quot;</code></td>
+<td style="text-align:right"><code>&quot;2.01&quot;</code></td>
+<td style="text-align:right">0</td>
+<td><code>Decimal(&quot;5.01&quot;)</code></td>
+</tr>
+<tr>
+<td style="text-align:right"><code>&quot;20&quot;</code></td>
+<td style="text-align:right"><code>&quot;1&quot;</code></td>
+<td style="text-align:right">50</td>
+<td><code>Decimal(&quot;5.00&quot;)</code></td>
+</tr>
+<tr>
+<td style="text-align:right"><code>&quot;75.00&quot;</code></td>
+<td style="text-align:right"><code>&quot;10&quot;</code></td>
+<td style="text-align:right">0</td>
+<td><code>Decimal(&quot;0.00&quot;)</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The 50 percent discount on the one-kilogram parcel would fall below the carrier minimum, so the fee is $5.00. An order at the free-shipping threshold pays zero even when a carrier minimum exists.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Trace an order through zone lookup, weight-band selection, the shipping discount, minimum fee, and free-shipping threshold. Compare just-below, exactly-at, and above-boundary cases. Include fractional weights, a half-cent rounding case, malformed rates, and inputs that reveal whether a free order is incorrectly charged a minimum.</p>
+<p>Review the quote and assertions against inclusive weight bands, discounts, the carrier minimum, and free shipping. Correct misleading expectations and implementation defects, then add cases on both sides of the boundaries and at a half-cent rounding point. Check the final fee and unchanged order/rate inputs, and explain the evidence for the pricing order.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/20-shipping-fee-calculator">View starter code</a></p>
 <details class="solution-reveal">

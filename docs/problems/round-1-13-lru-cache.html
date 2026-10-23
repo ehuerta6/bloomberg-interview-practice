@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Add a bounded least-recently-used cache</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A small service cache stores up to a configured number of key/value pairs. Review how reads and writes affect the order used for eviction.</p>
+<p>A service reuses recently requested key/value pairs to avoid repeated work, but it can retain only a fixed number. The least recently used (LRU) entry is the one that must leave when a new write exceeds that capacity. You are reviewing the cache PR, including how an existing value is used or replaced.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>LRUCache(capacity)</code> creates a cache. <code>put(key, value)</code> stores or updates a value, and <code>get(key, default=None)</code> returns a value or the default when the key is absent.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -35,8 +35,41 @@
 <li>A missing read returns the supplied default and does not change recency.</li>
 <li>Capacity zero stores no entries, and cached falsey values remain distinguishable from missing keys when a default is supplied.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Start with <code>cache = LRUCache(2)</code> and perform these operations in order:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Required observation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cache.put(&quot;a&quot;, 1)</code></td>
+<td><code>a</code> is stored</td>
+</tr>
+<tr>
+<td><code>cache.put(&quot;b&quot;, 2)</code></td>
+<td><code>a</code> and <code>b</code> are stored</td>
+</tr>
+<tr>
+<td><code>cache.get(&quot;a&quot;)</code></td>
+<td>Returns <code>1</code></td>
+</tr>
+<tr>
+<td><code>cache.put(&quot;c&quot;, 3)</code></td>
+<td><code>b</code> is evicted; <code>a</code> and <code>c</code> remain</td>
+</tr>
+<tr>
+<td><code>cache.get(&quot;b&quot;, -1)</code></td>
+<td>Returns <code>-1</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>A separate <code>LRUCache(0)</code> stores no value after a <code>put</code>. Storing <code>0</code> in a cache with room must return <code>0</code> on a later read, even when that read supplies another default.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Track key order after each operation. Test a read between two writes, updating an existing key, missing reads, capacity boundaries, and falsey values. Check both returned values and which key is evicted.</p>
+<p>Review the cache and tests against the meaning of a successful use, a replacement, and a miss. Correct discrepancies and add sequences that verify both returned values and the eventual eviction after reads or updates. Include capacity zero and cached values that Python treats as false, such as <code>0</code>, so a hit cannot be confused with a missing key.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/13-lru-cache">View starter code</a></p>
 <details class="solution-reveal">

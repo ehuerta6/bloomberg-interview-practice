@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Easy</p>
 <p><strong>PR title:</strong> Add student access code validation</p>
 <h2 id="heading-summary">Summary</h2>
-<p>This change adds a small validator for student access codes before they are accepted by the club registration flow.</p>
+<p>You are reviewing a PR for the club registration flow. Students enter an access code as text, and a leading zero is part of the code. The PR adds <code>is_valid_access_code(code)</code> so the form can accept a valid code or report a validation failure without raising an exception.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li>A valid code is a string containing exactly six ASCII digits (<code>0</code> through <code>9</code>).</li>
@@ -31,8 +31,36 @@
 <li>Every other value is invalid and returns <code>False</code>.</li>
 <li>Invalid strings are ordinary validation failures and do not raise an exception.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Input to <code>is_valid_access_code</code></th>
+<th>Expected return</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;001234&quot;</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>&quot;12a456&quot;</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>&quot;12345&quot;</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>123456</code> (an integer)</td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The table states the required contract results.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review the proposed implementation and tests against the contract. Correct the implementation and any tests that fail to express the expected behavior. Add regression cases and explain which cases give you confidence in the result.</p>
+<p>Compare the validator and its assertions with the six-character text contract. Correct discrepancies, add regression coverage for accepted and rejected inputs, and explain which assertions demonstrate that invalid input returns <code>False</code> without raising.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/01-code-validator">View starter code</a></p>
 <details class="solution-reveal">

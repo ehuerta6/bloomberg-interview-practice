@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Import normalized account records from CSV</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A service imports user records from a CSV export. Review how it reads rows, validates fields, and turns the source values into normalized account dictionaries.</p>
+<p>An account service imports user records from a CSV export. The export can contain quoted fields, mixed-case values, and blank lines, but each accepted row must identify one user and an explicit active state. You are reviewing the PR that turns this document into normalized account dictionaries before import.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>parse_users(text)</code> accepts CSV text with the header <code>user_id,email,active</code>. It returns a list of dictionaries with string IDs, normalized email strings, and boolean active flags.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -34,8 +34,21 @@
 <li>Accept only case-insensitive <code>true</code> and <code>false</code> for the active field, and return the corresponding Python boolean.</li>
 <li>Reject missing or incorrect headers, malformed CSV, invalid rows, and duplicate IDs with <code>ValueError</code>.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Input CSV:</p>
+<pre><code class="language-csv">user_id,email,active
+7,ADA@EXAMPLE.COM,true
+8,&quot;lee, jr@example.com&quot;,false
+</code></pre>
+<p>Expected return:</p>
+<pre><code class="language-python">[
+    {&quot;user_id&quot;: &quot;7&quot;, &quot;email&quot;: &quot;ada@example.com&quot;, &quot;active&quot;: True},
+    {&quot;user_id&quot;: &quot;8&quot;, &quot;email&quot;: &quot;lee, jr@example.com&quot;, &quot;active&quot;: False},
+]
+</code></pre>
+<p>The quoted comma belongs to the second email field. A second nonblank row with ID <code>&quot;7&quot;</code> makes the document invalid and raises <code>ValueError</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review parsing at both the document and field levels. Try quoted commas, whitespace, blank rows, malformed widths, duplicate identities, and each allowed active value. Add tests that check the parsed data, not just whether a call completes.</p>
+<p>Review the parser and its tests against the document and field contracts. Correct discrepancies, then add assertions for normalized output, both allowed active values, quoted fields, duplicate IDs, and malformed rows. Explain which tests establish acceptance of valid CSV and which establish rejection of an invalid document.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/10-csv-import-parser">View starter code</a></p>
 <details class="solution-reveal">

@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Hard</p>
 <p><strong>PR title:</strong> Enforce per-user request limits over a sliding window</p>
 <h2 id="heading-summary">Summary</h2>
-<p>An API gateway needs to allow a bounded number of requests per user over a rolling interval. Review state isolation, timestamp ordering, and the exact window boundary.</p>
+<p>An API gateway gives each user a limited number of accepted requests during a recent time interval. One user's traffic must not spend another user's allowance, and a rejected request must not delay the next available slot. You are reviewing a limiter that receives numeric timestamps from its caller, making the admission decisions repeatable.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>RequestRateLimiter(limit, window_seconds)</code> creates a limiter. <code>allow(user_id, timestamp)</code> returns whether the request is accepted. The limit is a positive integer and the window is a positive finite duration.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -34,8 +34,47 @@
 <li>Rejected attempts do not consume a slot or extend the window.</li>
 <li>Per-user timestamps must be finite and nondecreasing. Invalid configuration or request input raises <code>ValueError</code>.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>For <code>limiter = RequestRateLimiter(limit=2, window_seconds=10)</code>, process these calls in order:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>User</th>
+<th style="text-align:right">Timestamp</th>
+<th>Expected <code>allow</code> result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;a&quot;</code></td>
+<td style="text-align:right">0</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>&quot;a&quot;</code></td>
+<td style="text-align:right">1</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>&quot;b&quot;</code></td>
+<td style="text-align:right">2</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>&quot;a&quot;</code></td>
+<td style="text-align:right">2</td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>&quot;a&quot;</code></td>
+<td style="text-align:right">10</td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>At time 10, user a's request at time 0 is outside <code>(0, 10]</code>, while the accepted request at time 1 remains active. The rejected attempt at time 2 does not use a slot.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Interleave requests from two users and trace the active timestamps at each call. Exercise requests just before, exactly at, and just after the cutoff, including a rejected request between accepted ones.</p>
+<p>Review the admission results and test assertions against each user's accepted-request history. Correct discrepancies and add deterministic sequences for the exact cutoff, repeated rejections, and invalid or decreasing timestamps. Explain how the tests show both independent user allowances and the time when an allowance becomes available again.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/14-request-rate-limiter">View starter code</a></p>
 <details class="solution-reveal">

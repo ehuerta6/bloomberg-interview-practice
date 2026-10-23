@@ -8,7 +8,7 @@ Enforce access rule precedence
 
 ## Summary
 
-A document service combines role grants, direct user overrides, and resource ownership. Incorrect precedence can expose protected data, so review every path that grants or denies access.
+A document service decides whether a user can read, write, or perform another named action on a resource. Roles provide shared grants, direct user rules provide exceptions, and ownership grants a limited read permission. You are reviewing the permission PR so conflicting rules produce a predictable access decision. An access-control list (ACL) is the policy data supplied to this decision.
 
 ## Input and output
 
@@ -25,10 +25,30 @@ The resource key `"*"` matches any resource in direct rules or role grants.
 - Otherwise, any matching role grant allows the action. Role grants can target the resource or `"*"`.
 - An owner may read their resource; ownership does not grant write or other actions. Missing or unknown user IDs are denied.
 
+## Contract example
+
+Use this policy:
+
+```python
+{
+    "users": {"u1": {"allow": {"docs": ["write"]}, "deny": {"docs": ["write"]}}},
+    "roles": {"reader": {"*": ["read"]}},
+    "owners": {"private": ["u2"]},
+}
+```
+
+| User | Action | Resource | Expected return |
+| --- | --- | --- | --- |
+| `{"id": "u1", "roles": []}` | `"write"` | `"docs"` | `False` |
+| `{"id": "u1", "roles": ["reader"]}` | `"read"` | `"docs"` | `True` |
+| `{"id": "u2", "roles": []}` | `"read"` | `"private"` | `True` |
+| `{"id": "u2", "roles": []}` | `"write"` | `"private"` | `False` |
+
+The `"*"` resource key means the role's read grant applies to any resource. Owning a resource alone does not authorize editing it.
+
 ## Review task
 
-Construct conflicting direct and role rules. Verify deny precedence for resource-specific and wildcard rules, then test ownership, unknown users, and unsupported actions.
-
+Review permission decisions and tests for direct-rule conflicts, role grants, wildcard resources, and owner reads. Correct discrepancies and add cases where two policy sources disagree, as well as missing IDs and actions with no matching grant. Explain which rule determines each expected result.
 
 ## Starter Code
 

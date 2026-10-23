@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Suppress repeated notification events</p>
 <h2 id="heading-summary">Summary</h2>
-<p>Message delivery can retry an event when a worker times out. This change adds a ten-minute duplicate window so a retry does not send the same notification to a recipient repeatedly.</p>
+<p>A notification worker may retry an event when delivery processing times out. Recipients should still receive distinct events, while retries of a recently accepted notification should be suppressed. You are reviewing <code>NotificationDeduplicator.should_send(recipient, event_id, now)</code>, which returns a delivery decision and maintains the time of the last allowed delivery. The default duplicate window is ten minutes.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li><code>should_send(recipient, event_id, now)</code> returns true for the first delivery and records its time. Both IDs must be nonblank strings and <code>now</code> must be timezone-aware.</li>
@@ -32,8 +32,47 @@
 <li>A suppressed retry does not move the last-successful timestamp. An out-of-order attempt is suppressed without moving that timestamp backward.</li>
 <li>The configured window must be positive.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Using a fresh deduplicator, process these timezone-aware times on the same day in order:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Recipient</th>
+<th>Event</th>
+<th>Time (UTC)</th>
+<th>Expected return</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;u1&quot;</code></td>
+<td><code>&quot;e1&quot;</code></td>
+<td><code>12:00</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>&quot;u2&quot;</code></td>
+<td><code>&quot;e1&quot;</code></td>
+<td><code>12:01</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>&quot;u1&quot;</code></td>
+<td><code>&quot;e1&quot;</code></td>
+<td><code>12:08</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>&quot;u1&quot;</code></td>
+<td><code>&quot;e1&quot;</code></td>
+<td><code>12:10</code></td>
+<td><code>True</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>After the suppressed <code>12:08</code> attempt, the last successful time for <code>u1</code> and <code>e1</code> remains <code>12:00</code>. The <code>12:10</code> delivery establishes a new successful time.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Follow how keys and timestamps change after both accepted and suppressed attempts. Use a timeline with two recipients, a retry near the window boundary, and an out-of-order event to evaluate whether the state matches “last successful delivery.”</p>
+<p>Review how delivery decisions and stored times satisfy recipient isolation and the fixed window. Correct implementation or test discrepancies, then add deterministic cases for the exact boundary, suppressed retries, and out-of-order attempts. Explain the state that each timeline assertion proves.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/07-notification-deduplication">View starter code</a></p>
 <details class="solution-reveal">

@@ -24,7 +24,7 @@
 <h2 id="heading-pr-title">PR title</h2>
 <p>Validate and cap retry delays</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A client library plans waits between attempts after temporary failures. Review whether the schedule respects its retry count, multiplier, and configured ceiling.</p>
+<p>A client library waits before retrying a request after a temporary failure. Increasing waits reduce repeated traffic, while a configured ceiling limits how long the caller waits between attempts. You are reviewing the helper that plans these delays; the initial request itself has no wait entry in the returned list.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>retry_delays(max_retries, base_delay, multiplier=2, max_delay=None)</code> returns a list with one wait duration per retry after the initial request.</p>
 <p><code>max_retries</code> is a nonnegative integer. Delay settings must be numeric and nonnegative, and <code>multiplier</code> must be at least 1. Booleans are not accepted as integers or numeric settings.</p>
@@ -35,8 +35,41 @@
 <li>A zero retry count returns an empty list.</li>
 <li>Invalid retry counts or delay settings raise <code>ValueError</code>.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<p>All delay values use the same caller-chosen time unit, such as seconds.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Call</th>
+<th>Expected return</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>retry_delays(4, 1)</code></td>
+<td><code>[1, 2, 4, 8]</code></td>
+</tr>
+<tr>
+<td><code>retry_delays(5, 2, max_delay=5)</code></td>
+<td><code>[2, 4, 5, 5, 5]</code></td>
+</tr>
+<tr>
+<td><code>retry_delays(3, 2, max_delay=1)</code></td>
+<td><code>[1, 1, 1]</code></td>
+</tr>
+<tr>
+<td><code>retry_delays(3, 0.25)</code></td>
+<td><code>[0.25, 0.5, 1.0]</code></td>
+</tr>
+<tr>
+<td><code>retry_delays(0, 1)</code></td>
+<td><code>[]</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><code>retry_delays(-1, 1)</code> and <code>retry_delays(3, 1, multiplier=0)</code> raise <code>ValueError</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Trace the schedule before and after the cap engages. Check fractional inputs, zero retries, the cap below the base delay, and invalid booleans or negative values.</p>
+<p>Review the planner and tests against the number of retries, growth rule, and per-wait ceiling. Correct discrepancies and add assertions for fractional waits, a cap smaller than the base, zero retries, and invalid settings. Explain how the tests distinguish a valid empty plan from an invalid request.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/21-retry-backoff-planner">View starter code</a></p>
 <details class="solution-reveal">

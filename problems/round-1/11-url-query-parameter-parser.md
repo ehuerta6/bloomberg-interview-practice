@@ -6,7 +6,7 @@
 
 ## Summary
 
-A lightweight router needs a predictable mapping from URL query parameters to values. Review the helper and its behavior for repeated, blank, and encoded parameters.
+A request router uses query parameters to search and filter a page. A user can select several tags, leave a filter blank, or enter text containing spaces. You are reviewing `parse_query` so these requests reach the handler with the intended values rather than losing repeated selections or encoded text.
 
 ## Input and output
 
@@ -19,9 +19,24 @@ A lightweight router needs a predictable mapping from URL query parameters to va
 - Split a pair at its first equals sign, so later equals signs belong to the value.
 - Ignore empty segments and return an empty mapping for an empty query.
 
+## Contract example
+
+For `parse_query("?q=red+fox&tag=a&tag=b&flag&redirect=a=b")`, the expected return is:
+
+```python
+{
+    "q": ["red fox"],
+    "tag": ["a", "b"],
+    "flag": [""],
+    "redirect": ["a=b"],
+}
+```
+
+`parse_query("%74ag=one&empty=&q=red%20fox")` returns `{"tag": ["one"], "empty": [""], "q": ["red fox"]}`. Both the key and the value may contain percent-encoded text.
+
 ## Review task
 
-Compare the helper with familiar browser query strings. Exercise repeated keys, blank values, spaces, percent escapes in both keys and values, and values containing equals signs. Add a small test for each distinct parsing rule.
+Review the helper and its assertions against the decoded mapping contract. Correct discrepancies and add focused tests for repeated selections, blank values, encoded keys and values, and a value containing an equals sign. Explain how the tests verify value order as well as content.
 
 ## Starter Code
 

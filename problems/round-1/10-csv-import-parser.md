@@ -6,7 +6,7 @@
 
 ## Summary
 
-A service imports user records from a CSV export. Review how it reads rows, validates fields, and turns the source values into normalized account dictionaries.
+An account service imports user records from a CSV export. The export can contain quoted fields, mixed-case values, and blank lines, but each accepted row must identify one user and an explicit active state. You are reviewing the PR that turns this document into normalized account dictionaries before import.
 
 ## Input and output
 
@@ -19,9 +19,30 @@ A service imports user records from a CSV export. Review how it reads rows, vali
 - Accept only case-insensitive `true` and `false` for the active field, and return the corresponding Python boolean.
 - Reject missing or incorrect headers, malformed CSV, invalid rows, and duplicate IDs with `ValueError`.
 
+## Contract example
+
+Input CSV:
+
+```csv
+user_id,email,active
+7,ADA@EXAMPLE.COM,true
+8,"lee, jr@example.com",false
+```
+
+Expected return:
+
+```python
+[
+    {"user_id": "7", "email": "ada@example.com", "active": True},
+    {"user_id": "8", "email": "lee, jr@example.com", "active": False},
+]
+```
+
+The quoted comma belongs to the second email field. A second nonblank row with ID `"7"` makes the document invalid and raises `ValueError`.
+
 ## Review task
 
-Review parsing at both the document and field levels. Try quoted commas, whitespace, blank rows, malformed widths, duplicate identities, and each allowed active value. Add tests that check the parsed data, not just whether a call completes.
+Review the parser and its tests against the document and field contracts. Correct discrepancies, then add assertions for normalized output, both allowed active values, quoted fields, duplicate IDs, and malformed rows. Explain which tests establish acceptance of valid CSV and which establish rejection of an invalid document.
 
 ## Starter Code
 

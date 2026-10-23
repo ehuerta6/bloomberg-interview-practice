@@ -6,7 +6,7 @@
 
 ## Summary
 
-An event team needs to assign each party to an available block in a venue. Review the allocator against its prioritization, adjacency, accessibility, and deterministic selection rules.
+An event team must seat each party together while respecting priority and accessible-seat requests. A party that cannot fit must be reported rather than split across rows. You are reviewing the allocation PR; the venue map is a caller-owned snapshot, and the function returns a seating proposal without changing it.
 
 ## Input and output
 
@@ -20,9 +20,29 @@ An event team needs to assign each party to an available block in a venue. Revie
 - Keep the supplied venue data unchanged. Report every unseated group in processing order.
 - Reject malformed rows or groups, nonpositive or boolean sizes, and repeated group IDs with `ValueError`.
 
+## Contract example
+
+The venue has these rows in insertion order. Each listed seat is available and has `accessible=False`:
+
+| Row key | Seat numbers |
+| --- | --- |
+| `"A"` | `1, 2, 3, 4` |
+| `"B"` | `1, 2` |
+
+Each seat is represented as `{"number": n, "accessible": False, "available": True}`. For `groups=[{"group_id": "g", "size": 2}]`, the expected result is:
+
+```python
+{
+    "assigned": {"g": [{"row": "B", "seat": 1}, {"row": "B", "seat": 2}]},
+    "unassigned": [],
+}
+```
+
+Row B leaves no unused available seats after the placement, while row A would leave two. The input seats must still be marked available after the call. In a separate venue with only two available seats, a size-2 group at priority 5 is seated before a size-1 group at priority 1, even when the smaller group appears first in `groups`.
+
 ## Review task
 
-Build small venue layouts that force competing choices. Trace the order of requests and candidate blocks, then test accessibility across the full block, occupied seats, ties, impossible groups, and input immutability.
+Review whether the allocation and assertions satisfy request priority, whole-party placement, and the specified row choice. Add layouts that distinguish accessible from mixed blocks, occupied from free seats, and equal choices from impossible requests. Check the returned assignments, unassigned order, and unchanged venue snapshot, then explain the evidence for each constraint.
 
 ## Starter Code
 

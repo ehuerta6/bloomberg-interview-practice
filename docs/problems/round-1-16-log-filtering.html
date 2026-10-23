@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Easy</p>
 <p><strong>PR title:</strong> Filter structured logs by severity and time range</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A log viewer needs to filter structured entries by a minimum severity and optional timestamp bounds. Review severity ordering, boundary inclusion, and resilience to malformed records.</p>
+<p>An operator uses a log viewer to inspect messages at a chosen severity within a time range. The stored list may also contain malformed records; those records should not prevent the operator from seeing valid matching entries. You are reviewing the filtering PR and its interpretation of the selected boundaries.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>filter_logs(entries, minimum_severity=&quot;INFO&quot;, start_time=None, end_time=None)</code> accepts a list of entries with numeric <code>timestamp</code> and a <code>severity</code>. It returns valid matching entries in their input order.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -34,8 +34,18 @@
 <li>Ignore malformed entries, including missing fields, non-finite or nonnumeric timestamps, and unknown severity names.</li>
 <li>Reject invalid filter arguments with <code>ValueError</code> and preserve the order of the valid matching entries.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Input entries:</p>
+<pre><code class="language-python">[
+    {&quot;timestamp&quot;: 1, &quot;severity&quot;: &quot;DEBUG&quot;, &quot;message&quot;: &quot;start&quot;},
+    {&quot;timestamp&quot;: 2, &quot;severity&quot;: &quot;INFO&quot;, &quot;message&quot;: &quot;ready&quot;},
+    {&quot;timestamp&quot;: 3, &quot;severity&quot;: &quot;WARNING&quot;, &quot;message&quot;: &quot;slow&quot;},
+    {&quot;timestamp&quot;: 4, &quot;severity&quot;: &quot;ERROR&quot;, &quot;message&quot;: &quot;failed&quot;},
+]
+</code></pre>
+<p>With minimum severity <code>&quot;INFO&quot;</code>, <code>start_time=2</code>, and <code>end_time=3</code>, return the original <code>ready</code> entry followed by the original <code>slow</code> entry. Both endpoints belong to the range. Appending <code>{&quot;message&quot;: &quot;missing fields&quot;}</code> to this input must leave that result unchanged. An unknown minimum severity such as <code>&quot;TRACE&quot;</code> is an invalid filter and raises <code>ValueError</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Build a few entries at each severity and exactly on both time bounds. Add malformed entries to the same list and confirm filtering continues while the valid results stay ordered.</p>
+<p>Review the filter and assertions against severity order, inclusive time bounds, and the distinction between a bad record and a bad filter. Correct discrepancies and add cases with mixed valid and malformed entries, omitted bounds, and entries exactly on each supplied bound. Check the returned entries and their order.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/16-log-filtering">View starter code</a></p>
 <details class="solution-reveal">

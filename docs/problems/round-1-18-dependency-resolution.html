@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Hard</p>
 <p><strong>PR title:</strong> Resolve package dependencies into installation order</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A package installer receives a graph of prerequisites and needs a deterministic sequence that places every dependency before the package that uses it. Review ordering, graph validation, and cycle handling.</p>
+<p>A package installer needs a repeatable installation plan from a set of prerequisites. A package may be installed only after every package it depends on, and an invalid or cyclic graph must stop planning rather than produce an incomplete plan. You are reviewing the dependency-resolution PR. Lexicographic order here means ordinary string ordering among the package names that are ready at a given step.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>resolve_dependencies(graph)</code> accepts a mapping from nonblank package names to collections of dependencies. Every dependency must also be defined as a package key. It returns a list of package names in installation order.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -35,8 +35,14 @@
 <li>If the graph contains a cycle, raise <code>ValueError</code> instead of returning a partial order.</li>
 <li>An empty graph returns an empty list.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<p>For this graph:</p>
+<pre><code class="language-python">{&quot;root&quot;: [&quot;z&quot;, &quot;a&quot;], &quot;z&quot;: [], &quot;a&quot;: [], &quot;mid&quot;: [&quot;a&quot;]}
+</code></pre>
+<p>The expected installation list is <code>[&quot;a&quot;, &quot;mid&quot;, &quot;z&quot;, &quot;root&quot;]</code>. After <code>a</code> is included, <code>mid</code> becomes eligible and precedes <code>z</code> under the specified tie rule.</p>
+<p><code>{&quot;app&quot;: [&quot;core&quot;, &quot;core&quot;], &quot;core&quot;: []}</code> returns <code>[&quot;core&quot;, &quot;app&quot;]</code>. The cycle <code>{&quot;a&quot;: [&quot;b&quot;], &quot;b&quot;: [&quot;a&quot;]}</code> raises <code>ValueError</code>, and so does <code>{&quot;app&quot;: [&quot;missing&quot;]}</code> because <code>missing</code> has no package definition.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Trace a chain, a shared prerequisite, and several simultaneously ready packages. Then test duplicate edges, missing package definitions, a self-cycle, and a multi-node cycle.</p>
+<p>Review the resolver and assertions against prerequisite order, one occurrence per package, and deterministic selection when several packages are ready. Correct discrepancies and add cases for a shared prerequisite, repeated edges, missing definitions, and cycles. Explain how tests distinguish a valid complete plan from a partial or invalid result.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/18-dependency-resolution">View starter code</a></p>
 <details class="solution-reveal">

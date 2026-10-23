@@ -24,7 +24,7 @@
 <h2 id="heading-pr-title">PR title</h2>
 <p>Expire reservations at their deadline</p>
 <h2 id="heading-summary">Summary</h2>
-<p>An inventory hold should be released when its deadline is reached. Review how the service transitions pending reservations while preserving active and completed records.</p>
+<p>An inventory service places items on hold while a customer completes a reservation. A cleanup call must mark pending holds as expired once their deadline arrives, while leaving confirmed or already-expired records alone. You are reviewing the expiration PR; the function returns updated copies for its caller to use and a list of transitions made in this call.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>expire_reservations(reservations, now)</code> accepts reservation dictionaries with <code>reservation_id</code>, <code>status</code>, and an ISO 8601 <code>expires_at</code> timestamp. <code>now</code> is a <code>datetime</code>. It returns a dictionary with copied <code>reservations</code> and an <code>expired_ids</code> list of IDs transitioned during this call.</p>
 <h2 id="heading-expected-behavior-edge-cases-and-invariants">Expected behavior, edge cases, and invariants</h2>
@@ -34,8 +34,52 @@
 <li>List newly expired IDs in input order. Do not mutate input records.</li>
 <li>Reject malformed records and comparisons that mix timezone-aware and naive datetimes with <code>ValueError</code>.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Let <code>now=datetime(2025, 1, 1, 12, 0, 0)</code>. The timestamps in this example have no timezone offset, matching <code>now</code>.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Input ID</th>
+<th>Initial status</th>
+<th><code>expires_at</code></th>
+<th>Returned status</th>
+<th>In <code>expired_ids</code>?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;r1&quot;</code></td>
+<td><code>&quot;pending&quot;</code></td>
+<td><code>&quot;2025-01-01T11:59:00&quot;</code></td>
+<td><code>&quot;expired&quot;</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>&quot;r2&quot;</code></td>
+<td><code>&quot;pending&quot;</code></td>
+<td><code>&quot;2025-01-01T12:00:00&quot;</code></td>
+<td><code>&quot;expired&quot;</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>&quot;r3&quot;</code></td>
+<td><code>&quot;pending&quot;</code></td>
+<td><code>&quot;2025-01-01T12:01:00&quot;</code></td>
+<td><code>&quot;pending&quot;</code></td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>&quot;r4&quot;</code></td>
+<td><code>&quot;confirmed&quot;</code></td>
+<td><code>&quot;2025-01-01T11:00:00&quot;</code></td>
+<td><code>&quot;confirmed&quot;</code></td>
+<td>No</td>
+</tr>
+</tbody>
+</table></div>
+<p>For these records in this order, <code>expired_ids</code> is <code>[&quot;r1&quot;, &quot;r2&quot;]</code>. The input records keep their original statuses. Calling again with the returned records at the same <code>now</code> reports no new expirations.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Check the exact-deadline boundary, future reservations, confirmed and already-expired records, input immutability, ID ordering, and timezone compatibility.</p>
+<p>Review the transition results and assertions against the deadline, eligible status, and copied-output contract. Correct discrepancies and add cases for the exact deadline, a repeated call, input isolation, and incompatible timezone styles. Explain how the tests distinguish a newly expired hold from a record that was already complete.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/23-reservation-expiration">View starter code</a></p>
 <details class="solution-reveal">

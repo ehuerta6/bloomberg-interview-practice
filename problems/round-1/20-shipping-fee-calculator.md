@@ -6,7 +6,7 @@
 
 ## Summary
 
-A store is adding a new carrier and loyalty discounts to its parcel-pricing service. The change must select a weight band, apply shipping discounts, and honor carrier minimums while keeping currency arithmetic predictable.
+A store shows the shipping charge before checkout. The carrier prices parcels by destination and total weight, while the store offers shipping discounts and a free-shipping threshold. You are reviewing the pricing PR so the quote follows the carrier minimum and produces a predictable dollar amount rounded to cents.
 
 ## Input and output
 
@@ -20,9 +20,39 @@ A store is adding a new carrier and loyalty discounts to its parcel-pricing serv
 - Round only the final fee to two decimal places using half-up currency rounding.
 - Do not mutate the order or rate table.
 
+## Contract example
+
+Use this rate table:
+
+```python
+{
+    "local": {
+        "base_fee": "3.00",
+        "minimum_fee": "5.00",
+        "free_over": "75.00",
+        "weight_brackets": [
+            {"up_to_kg": "2", "per_kg": "1.25"},
+            {"up_to_kg": "5", "per_kg": "1.00"},
+            {"up_to_kg": None, "per_kg": "0.80"},
+        ],
+    }
+}
+```
+
+Each row is an independent order in zone `"local"`:
+
+| Subtotal in dollars | Weight in kg | Shipping discount | Expected `Decimal` fee |
+| ---: | ---: | ---: | --- |
+| `"20"` | `"2"` | 0 | `Decimal("5.50")` |
+| `"20"` | `"2.01"` | 0 | `Decimal("5.01")` |
+| `"20"` | `"1"` | 50 | `Decimal("5.00")` |
+| `"75.00"` | `"10"` | 0 | `Decimal("0.00")` |
+
+The 50 percent discount on the one-kilogram parcel would fall below the carrier minimum, so the fee is $5.00. An order at the free-shipping threshold pays zero even when a carrier minimum exists.
+
 ## Review task
 
-Trace an order through zone lookup, weight-band selection, the shipping discount, minimum fee, and free-shipping threshold. Compare just-below, exactly-at, and above-boundary cases. Include fractional weights, a half-cent rounding case, malformed rates, and inputs that reveal whether a free order is incorrectly charged a minimum.
+Review the quote and assertions against inclusive weight bands, discounts, the carrier minimum, and free shipping. Correct misleading expectations and implementation defects, then add cases on both sides of the boundaries and at a half-cent rounding point. Check the final fee and unchanged order/rate inputs, and explain the evidence for the pricing order.
 
 ## Starter Code
 

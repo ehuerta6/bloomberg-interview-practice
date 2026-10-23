@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Track issued and revoked session tokens</p>
 <h2 id="heading-summary">Summary</h2>
-<p>The authentication service now keeps an in-memory registry of session tokens so request handling can reject expired or revoked credentials. The clock is passed in by the caller to make checks deterministic.</p>
+<p>A signed-in user's request carries a token ID. The authentication service needs an in-memory <code>TokenRegistry</code> to decide whether that credential can be used at the request's supplied time. You are reviewing issuance, revocation, and validity checks; callers supply the clock so tests and request handling can use the same time.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li><code>issue(token_id, issued_at, expires_at)</code> accepts a new nonblank ID only when both timestamps are timezone-aware and expiration follows issue time. Duplicate IDs are rejected.</li>
@@ -31,8 +31,37 @@
 <li>Revoking an issued token makes it invalid immediately. Revoking an unknown token returns false and does not create registry state.</li>
 <li>Time checks use the supplied <code>now</code>; they must not depend on the machine's wall clock.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Issue <code>&quot;s-1&quot;</code> at <code>2030-01-01 00:00:00 UTC</code>, expiring at <code>01:00:00 UTC</code> on the same day. For this known, unrevoked token:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Supplied <code>now</code></th>
+<th>Expected <code>is_valid(&quot;s-1&quot;, now)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>2029-12-31 23:59:59 UTC</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>2030-01-01 00:00:00 UTC</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>2030-01-01 00:30:00 UTC</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>2030-01-01 01:00:00 UTC</code></td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>After <code>revoke(&quot;s-1&quot;)</code> returns <code>True</code>, the token is invalid even at an otherwise valid time. Revoking <code>&quot;missing&quot;</code> returns <code>False</code> and adds no registry entry.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review the registry's state transitions and the validity interval. Test the instant before issue, the issue instant, and the exact expiration instant. Check whether revocation and duplicate IDs behave consistently without relying on the current time.</p>
+<p>Review the registry and tests against the validity interval and revocation rules. Add deterministic cases for the issue and expiration boundaries, repeated IDs, and rejected issuance. Explain which assertions check return values and which verify that rejected operations leave registry state intact.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/05-session-token-expiration">View starter code</a></p>
 <details class="solution-reveal">

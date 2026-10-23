@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Check event availability</p>
 <h2 id="heading-summary">Summary</h2>
-<p>This change adds an availability check for a new event against a collection of scheduled events.</p>
+<p>A club organizer wants to check whether a proposed event fits the schedule before booking it. You are reviewing <code>is_available(events, start, end)</code>, which returns a boolean for a list of existing <code>(start, end)</code> pairs. An availability check must leave booking state unchanged.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li>Each event is represented by a start and end time and covers the half-open interval <code>[start, end)</code>.</li>
@@ -32,8 +32,37 @@
 <li>An interval with <code>start &gt;= end</code> is invalid and rejected.</li>
 <li>Checking availability does not modify the existing event collection.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<p>With existing events <code>[(10, 12)]</code>, evaluate each candidate independently:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Candidate <code>(start, end)</code></th>
+<th>Expected return</th>
+<th>Existing events afterward</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>(12, 14)</code></td>
+<td><code>True</code></td>
+<td><code>[(10, 12)]</code></td>
+</tr>
+<tr>
+<td><code>(11, 13)</code></td>
+<td><code>False</code></td>
+<td><code>[(10, 12)]</code></td>
+</tr>
+<tr>
+<td><code>(5, 5)</code></td>
+<td><code>False</code></td>
+<td><code>[(10, 12)]</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The interval notation <code>[10, 12)</code> includes time <code>10</code> and excludes time <code>12</code>; it does not reserve the next event's start.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review the implementation and tests against these rules. Correct the implementation and any tests that do not accurately express the expected behavior. Add regression cases where the current suite is insufficient.</p>
+<p>Review whether the implementation and tests distinguish touching intervals from overlapping ones. Correct contract violations and misleading assertions, then add regression cases that verify both the availability result and the event collection after a check.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/02-event-scheduler">View starter code</a></p>
 <details class="solution-reveal">

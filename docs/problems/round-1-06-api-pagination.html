@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Hard</p>
 <p><strong>PR title:</strong> Add stable keyset pagination to the records endpoint</p>
 <h2 id="heading-summary">Summary</h2>
-<p>The endpoint returns a bounded page of records from a changing data source. Records have a unique string <code>id</code>, integer <code>created_at</code>, and optional integer <code>version</code>. Shards can overlap, and a record used to create a previous-page cursor may be deleted before the next request.</p>
+<p>A records endpoint must let a client continue browsing as records change between requests. Each record has a unique string <code>id</code>, integer <code>created_at</code>, and optional integer <code>version</code>. Results from separate data partitions can overlap, so the same ID may occur more than once. You are reviewing the pagination PR, including the rule for continuing after a record has been deleted. A cursor is a position in the ordered results, represented by <code>(created_at, id)</code>.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li><code>paginate(records, cursor=None, limit=2)</code> returns <code>(page, next_cursor)</code>. The limit is a positive integer, not a boolean.</li>
@@ -32,8 +32,18 @@
 <li>The next cursor is the final row's key only when additional rows remain. An empty or final page returns <code>None</code>.</li>
 <li>A cursor remains useful even if its original record is no longer present.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>The input records are:</p>
+<pre><code class="language-python">[
+    {&quot;id&quot;: &quot;b&quot;, &quot;created_at&quot;: 10, &quot;version&quot;: 1},
+    {&quot;id&quot;: &quot;a&quot;, &quot;created_at&quot;: 10, &quot;version&quot;: 1},
+    {&quot;id&quot;: &quot;c&quot;, &quot;created_at&quot;: 20, &quot;version&quot;: 1},
+]
+</code></pre>
+<p>With <code>limit=2</code>, the first call returns records <code>a</code>, <code>b</code> in that order and cursor <code>(10, &quot;b&quot;)</code>. A call with that cursor returns only <code>c</code> and cursor <code>None</code>. If record <code>b</code> has been removed before the second call, the expected second page is still only <code>c</code>.</p>
+<p>If an additional row for <code>a</code> has <code>created_at=5</code> and <code>version=2</code>, a full page contains <code>a</code> version 2, <code>b</code> version 1, then <code>c</code> version 1.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Trace two pages across tied timestamps, duplicate IDs, and a deleted cursor row. Check whether pagination depends on locating a previous record in the current snapshot and whether all sort columns are represented in the cursor.</p>
+<p>Review the implementation and assertions against the page contents, ordering, and continuation contract. Add regression coverage for equal timestamps, duplicate versions, a deleted boundary record, invalid limits, and the final page. Explain why the results demonstrate that records are neither repeated nor skipped at a page boundary.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/06-api-pagination">View starter code</a></p>
 <details class="solution-reveal">

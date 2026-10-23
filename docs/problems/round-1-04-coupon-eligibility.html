@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Apply checkout promotions</p>
 <h2 id="heading-summary">Summary</h2>
-<p>This change adds coupon and automatic-promotion handling to the checkout quote. The caller passes a subtotal in whole cents and receives the amount due.</p>
+<p>Checkout shows a customer the amount due before an order is placed. Employee pricing, a first-order offer, and a coupon can all be present on the request, but only the highest-priority eligible promotion applies. You are reviewing the PR that calculates this quote in whole cents.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li><code>calculate_total(subtotal_cents, coupon_code=None, first_order=False, employee=False)</code> returns an integer amount in cents and rejects negative, non-integer, or boolean subtotals.</li>
@@ -32,8 +32,52 @@
 <li>Coupon codes ignore surrounding whitespace and letter case. An unknown nonblank code is rejected. A known coupon below its minimum gives no discount.</li>
 <li>Discounts use whole-cent floor rounding and cannot reduce the amount due below zero.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<p>Each row is an independent quote. <code>10000</code> cents is $100.00.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th style="text-align:right">Subtotal</th>
+<th>Coupon</th>
+<th>First order</th>
+<th>Employee</th>
+<th style="text-align:right">Expected amount due</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">4999</td>
+<td><code>&quot;SAVE10&quot;</code></td>
+<td><code>False</code></td>
+<td><code>False</code></td>
+<td style="text-align:right">4999</td>
+</tr>
+<tr>
+<td style="text-align:right">5000</td>
+<td><code>&quot;SAVE10&quot;</code></td>
+<td><code>False</code></td>
+<td><code>False</code></td>
+<td style="text-align:right">4500</td>
+</tr>
+<tr>
+<td style="text-align:right">10000</td>
+<td><code>&quot;SAVE10&quot;</code></td>
+<td><code>True</code></td>
+<td><code>True</code></td>
+<td style="text-align:right">8000</td>
+</tr>
+<tr>
+<td style="text-align:right">2500</td>
+<td><code>&quot; take500 &quot;</code></td>
+<td><code>False</code></td>
+<td><code>False</code></td>
+<td style="text-align:right">2000</td>
+</tr>
+</tbody>
+</table></div>
+<p>A quote for 100 cents with the unknown code <code>&quot;NOT-A-COUPON&quot;</code> raises <code>ValueError</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Trace every combination of employee, first-order, and coupon inputs. Compare the order of the implementation branches with the promotion precedence, then inspect whether the tests prove promotions cannot be stacked. Correct misleading tests and add regression coverage for boundaries and invalid input.</p>
+<p>Compare the quote results and tests with the promotion priority and original-subtotal minimums. Correct misleading assertions and implementation defects, then add tests for competing promotions, threshold boundaries, whole-cent rounding, and invalid money input. Explain how the assertions establish that a quote applies only one promotion.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/04-coupon-eligibility">View starter code</a></p>
 <details class="solution-reveal">

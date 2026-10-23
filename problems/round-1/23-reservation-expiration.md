@@ -8,7 +8,7 @@ Expire reservations at their deadline
 
 ## Summary
 
-An inventory hold should be released when its deadline is reached. Review how the service transitions pending reservations while preserving active and completed records.
+An inventory service places items on hold while a customer completes a reservation. A cleanup call must mark pending holds as expired once their deadline arrives, while leaving confirmed or already-expired records alone. You are reviewing the expiration PR; the function returns updated copies for its caller to use and a list of transitions made in this call.
 
 ## Input and output
 
@@ -20,10 +20,22 @@ An inventory hold should be released when its deadline is reached. Review how th
 - List newly expired IDs in input order. Do not mutate input records.
 - Reject malformed records and comparisons that mix timezone-aware and naive datetimes with `ValueError`.
 
+## Contract example
+
+Let `now=datetime(2025, 1, 1, 12, 0, 0)`. The timestamps in this example have no timezone offset, matching `now`.
+
+| Input ID | Initial status | `expires_at` | Returned status | In `expired_ids`? |
+| --- | --- | --- | --- | --- |
+| `"r1"` | `"pending"` | `"2025-01-01T11:59:00"` | `"expired"` | Yes |
+| `"r2"` | `"pending"` | `"2025-01-01T12:00:00"` | `"expired"` | Yes |
+| `"r3"` | `"pending"` | `"2025-01-01T12:01:00"` | `"pending"` | No |
+| `"r4"` | `"confirmed"` | `"2025-01-01T11:00:00"` | `"confirmed"` | No |
+
+For these records in this order, `expired_ids` is `["r1", "r2"]`. The input records keep their original statuses. Calling again with the returned records at the same `now` reports no new expirations.
+
 ## Review task
 
-Check the exact-deadline boundary, future reservations, confirmed and already-expired records, input immutability, ID ordering, and timezone compatibility.
-
+Review the transition results and assertions against the deadline, eligible status, and copied-output contract. Correct discrepancies and add cases for the exact deadline, a repeated call, input isolation, and incompatible timezone styles. Explain how the tests distinguish a newly expired hold from a record that was already complete.
 
 ## Starter Code
 

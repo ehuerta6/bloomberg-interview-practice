@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Easy</p>
 <p><strong>PR title:</strong> Manage Cappy's snack inventory</p>
 <h2 id="heading-summary">Summary</h2>
-<p>This change adds basic restocking and reservation operations for the Coding Interview Club's snack inventory.</p>
+<p>Cappy keeps snacks for Coding Interview Club meetings. A member may reserve snacks only when enough are available, and a failed request must leave the stock available to others. You are reviewing the <code>SnackInventory</code> class and its <code>restock(snack, quantity)</code> and <code>reserve(snack, quantity)</code> operations, each of which returns a success boolean.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li>Quantities are nonnegative integers; invalid quantities are rejected consistently.</li>
@@ -32,8 +32,37 @@
 <li>A reservation that cannot be fulfilled leaves inventory unchanged.</li>
 <li>Invalid operations must not corrupt inventory state.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Start with <code>SnackInventory({&quot;bars&quot;: 2})</code> and perform these operations in order:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Expected return</th>
+<th style="text-align:right">Stock of <code>bars</code> afterward</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>restock(&quot;bars&quot;, 3)</code></td>
+<td><code>True</code></td>
+<td style="text-align:right">5</td>
+</tr>
+<tr>
+<td><code>reserve(&quot;bars&quot;, 2)</code></td>
+<td><code>True</code></td>
+<td style="text-align:right">3</td>
+</tr>
+<tr>
+<td><code>reserve(&quot;bars&quot;, 4)</code></td>
+<td><code>False</code></td>
+<td style="text-align:right">3</td>
+</tr>
+</tbody>
+</table></div>
+<p>A fractional restock such as <code>1.5</code> is invalid and leaves the existing stock unchanged.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review the implementation and tests against the inventory rules. Correct the implementation and any misleading or incomplete tests, then add regression coverage for state changes and invalid input.</p>
+<p>Review each operation's return value and inventory state against the reservation contract. Correct inconsistent assertions as well as implementation defects. Add regression cases that distinguish a completed reservation, insufficient stock, and invalid quantities, with state assertions after rejected operations.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/03-snack-inventory">View starter code</a></p>
 <details class="solution-reveal">

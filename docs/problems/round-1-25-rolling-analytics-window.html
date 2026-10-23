@@ -24,7 +24,7 @@
 <h2 id="heading-pr-title">PR title</h2>
 <p>Sum events inside a rolling window</p>
 <h2 id="heading-summary">Summary</h2>
-<p>An analytics endpoint reports a metric over a trailing duration. Review whether interval endpoints, future events, and malformed inputs are handled consistently.</p>
+<p>An analytics page displays the total change in a metric during a recent interval. Corrections may have negative values, and events beyond the reference time must not contribute yet. You are reviewing the rolling-total PR so the endpoint uses a supplied time and an explicit duration rather than an assumed current clock.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>rolling_total(events, now, window_seconds)</code> accepts event dictionaries with an ISO 8601 <code>timestamp</code> and numeric <code>value</code>, a reference <code>datetime</code>, and a nonnegative window duration in seconds. It returns the sum of included event values.</p>
 <h2 id="heading-expected-behavior-edge-cases-and-invariants">Expected behavior, edge cases, and invariants</h2>
@@ -34,8 +34,47 @@
 <li>Reject invalid timestamps or event values and negative, boolean, or nonnumeric window lengths with <code>ValueError</code>.</li>
 <li>Event timestamps and <code>now</code> must both be timezone-aware or both naive.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Let <code>now=datetime(2025, 1, 1, 12, 0, 0)</code> and <code>window_seconds=180</code>. Use these events in a list, with no timezone offsets:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Timestamp</th>
+<th style="text-align:right">Value</th>
+<th>Included?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;2025-01-01T11:56:59&quot;</code></td>
+<td style="text-align:right">7</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>&quot;2025-01-01T11:57:00&quot;</code></td>
+<td style="text-align:right">7</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>&quot;2025-01-01T11:59:00&quot;</code></td>
+<td style="text-align:right">-3</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>&quot;2025-01-01T12:00:00&quot;</code></td>
+<td style="text-align:right">4</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>&quot;2025-01-01T12:00:01&quot;</code></td>
+<td style="text-align:right">9</td>
+<td>No</td>
+</tr>
+</tbody>
+</table></div>
+<p>The expected total is <code>8</code> (<code>7 - 3 + 4</code>). With the same input and <code>window_seconds=0</code>, only the event exactly at <code>now</code> is included, giving <code>4</code>. An empty input list returns <code>0</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Test events at both endpoints and just outside the interval. Include negative values, zero-length windows, malformed values, and timezone mismatches.</p>
+<p>Review the aggregation and assertions against both inclusive endpoints, future exclusion, and numeric values. Correct discrepancies and add cases for a zero-duration interval, malformed records, invalid window settings, and timezone mismatches. Explain how the tests verify the total and the required rejection behavior separately.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/25-rolling-analytics-window">View starter code</a></p>
 <details class="solution-reveal">

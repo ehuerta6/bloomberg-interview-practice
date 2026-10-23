@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Easy</p>
 <p><strong>PR title:</strong> Validate document upload metadata</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A small profile service accepts PDF documents and PNG images. This change validates the filename, declared media type, and byte size before passing upload metadata to storage.</p>
+<p>A profile service accepts PDF documents and PNG images. Before metadata reaches storage, it needs a filename, declared media type, and byte count that agree with the upload policy. You are reviewing <code>validate_upload(filename, content_type, size_bytes)</code>; this task validates metadata, not the contents of the uploaded file.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
 <li><code>validate_upload(filename, content_type, size_bytes)</code> returns a metadata dictionary or raises <code>ValueError</code>.</li>
@@ -32,8 +32,49 @@
 <li>Size must be a non-boolean integer from 1 through 5,000,000 bytes inclusive.</li>
 <li>Return the original filename, normalized media type, and original byte count.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<p><code>validate_upload(&quot;chart.PNG&quot;, &quot; IMAGE/PNG &quot;, 300)</code> returns:</p>
+<pre><code class="language-python">{&quot;filename&quot;: &quot;chart.PNG&quot;, &quot;content_type&quot;: &quot;image/png&quot;, &quot;size_bytes&quot;: 300}
+</code></pre>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Filename</th>
+<th>Media type</th>
+<th style="text-align:right">Bytes</th>
+<th>Expected outcome</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;large.pdf&quot;</code></td>
+<td><code>&quot;application/pdf&quot;</code></td>
+<td style="text-align:right">5000000</td>
+<td>Metadata accepted</td>
+</tr>
+<tr>
+<td><code>&quot;large.pdf&quot;</code></td>
+<td><code>&quot;application/pdf&quot;</code></td>
+<td style="text-align:right">5000001</td>
+<td><code>ValueError</code></td>
+</tr>
+<tr>
+<td><code>&quot;photo.png&quot;</code></td>
+<td><code>&quot;application/pdf&quot;</code></td>
+<td style="text-align:right">10</td>
+<td><code>ValueError</code></td>
+</tr>
+<tr>
+<td><code>&quot;../private.pdf&quot;</code></td>
+<td><code>&quot;application/pdf&quot;</code></td>
+<td style="text-align:right">10</td>
+<td><code>ValueError</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>A leaf filename means a filename alone, without directory components.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review what the extension check actually establishes. Try path-like names, a supported suffix with an unrelated media type, and Python values that are technically integers but should not represent byte counts. Add tests for the accepted boundary and rejected metadata.</p>
+<p>Compare the implementation and tests with the filename, media-type, and size contract. Correct discrepancies and add regression cases that check the full returned metadata on success and rejection at both size boundaries. Include invalid metadata types without assuming that a permitted extension proves the file's contents.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/08-file-upload-validation">View starter code</a></p>
 <details class="solution-reveal">

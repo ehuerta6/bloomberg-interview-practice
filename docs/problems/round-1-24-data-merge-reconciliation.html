@@ -24,7 +24,7 @@
 <h2 id="heading-pr-title">PR title</h2>
 <p>Reconcile customer snapshots and tags</p>
 <h2 id="heading-summary">Summary</h2>
-<p>Two import feeds provide customer snapshots while tags accumulate independently. Review how timestamps select ordinary fields and how metadata survives reconciliation.</p>
+<p>A customer directory receives snapshots from two import feeds. A snapshot is a record of fields at its <code>updated_at</code> time, but customer tags collected by either feed must survive even when an older snapshot arrives. You are reviewing reconciliation so consumers get current fields, accumulated tags, and a predictable customer order without changing either feed's data.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>merge_records(existing, incoming)</code> accepts ordered lists of customer dictionaries. Each record has <code>customer_id</code> and an ISO-sortable <code>updated_at</code> value; <code>tags</code> is optional. The function returns a new ordered list of records.</p>
 <h2 id="heading-expected-behavior-edge-cases-and-invariants">Expected behavior, edge cases, and invariants</h2>
@@ -34,8 +34,19 @@
 <li>Tags form a stable union: existing tags first, then unseen incoming tags, regardless of which snapshot supplies the winning ordinary fields.</li>
 <li>Do not mutate inputs or share mutable tag lists with the result.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Existing records:</p>
+<pre><code class="language-python">[{&quot;customer_id&quot;: &quot;c1&quot;, &quot;name&quot;: &quot;Current&quot;, &quot;updated_at&quot;: &quot;2025-01-02&quot;, &quot;tags&quot;: [&quot;vip&quot;, &quot;beta&quot;]}]
+</code></pre>
+<p>Incoming records:</p>
+<pre><code class="language-python">[
+    {&quot;customer_id&quot;: &quot;c1&quot;, &quot;name&quot;: &quot;Older&quot;, &quot;updated_at&quot;: &quot;2025-01-01&quot;, &quot;tags&quot;: [&quot;beta&quot;, &quot;priority&quot;]},
+    {&quot;customer_id&quot;: &quot;c2&quot;, &quot;name&quot;: &quot;New&quot;, &quot;updated_at&quot;: &quot;2025-01-03&quot;, &quot;tags&quot;: []},
+]
+</code></pre>
+<p>Expected output order is <code>c1</code>, then <code>c2</code>. The returned <code>c1</code> retains name <code>&quot;Current&quot;</code> and timestamp <code>&quot;2025-01-02&quot;</code>, with tags <code>[&quot;vip&quot;, &quot;beta&quot;, &quot;priority&quot;]</code>. Changing that returned tag list afterward must not change either input list. If the incoming <code>c1</code> timestamp instead equals <code>&quot;2025-01-02&quot;</code>, its name <code>&quot;Older&quot;</code> wins the tie.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Compare newer, older, and tied snapshots. Exercise duplicate tags and verify both inputs and nested tag arrays remain isolated.</p>
+<p>Review field selection, tag retention, and assertions for newer, older, and tied snapshots. Correct discrepancies and add cases for customer order, repeated tags, and editing a returned tag list after the call. Explain which tests prove the selected field values and which prove isolation from caller-owned data.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/24-data-merge-reconciliation">View starter code</a></p>
 <details class="solution-reveal">

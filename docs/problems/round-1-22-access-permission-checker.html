@@ -24,7 +24,7 @@
 <h2 id="heading-pr-title">PR title</h2>
 <p>Enforce access rule precedence</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A document service combines role grants, direct user overrides, and resource ownership. Incorrect precedence can expose protected data, so review every path that grants or denies access.</p>
+<p>A document service decides whether a user can read, write, or perform another named action on a resource. Roles provide shared grants, direct user rules provide exceptions, and ownership grants a limited read permission. You are reviewing the permission PR so conflicting rules produce a predictable access decision. An access-control list (ACL) is the policy data supplied to this decision.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>has_permission(user, action, resource, acl)</code> returns a boolean. The user has an <code>id</code> and optional <code>roles</code> list. The ACL has:</p>
 <ul>
@@ -40,8 +40,53 @@
 <li>Otherwise, any matching role grant allows the action. Role grants can target the resource or <code>&quot;*&quot;</code>.</li>
 <li>An owner may read their resource; ownership does not grant write or other actions. Missing or unknown user IDs are denied.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>Use this policy:</p>
+<pre><code class="language-python">{
+    &quot;users&quot;: {&quot;u1&quot;: {&quot;allow&quot;: {&quot;docs&quot;: [&quot;write&quot;]}, &quot;deny&quot;: {&quot;docs&quot;: [&quot;write&quot;]}}},
+    &quot;roles&quot;: {&quot;reader&quot;: {&quot;*&quot;: [&quot;read&quot;]}},
+    &quot;owners&quot;: {&quot;private&quot;: [&quot;u2&quot;]},
+}
+</code></pre>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>User</th>
+<th>Action</th>
+<th>Resource</th>
+<th>Expected return</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{&quot;id&quot;: &quot;u1&quot;, &quot;roles&quot;: []}</code></td>
+<td><code>&quot;write&quot;</code></td>
+<td><code>&quot;docs&quot;</code></td>
+<td><code>False</code></td>
+</tr>
+<tr>
+<td><code>{&quot;id&quot;: &quot;u1&quot;, &quot;roles&quot;: [&quot;reader&quot;]}</code></td>
+<td><code>&quot;read&quot;</code></td>
+<td><code>&quot;docs&quot;</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>{&quot;id&quot;: &quot;u2&quot;, &quot;roles&quot;: []}</code></td>
+<td><code>&quot;read&quot;</code></td>
+<td><code>&quot;private&quot;</code></td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>{&quot;id&quot;: &quot;u2&quot;, &quot;roles&quot;: []}</code></td>
+<td><code>&quot;write&quot;</code></td>
+<td><code>&quot;private&quot;</code></td>
+<td><code>False</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>The <code>&quot;*&quot;</code> resource key means the role's read grant applies to any resource. Owning a resource alone does not authorize editing it.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Construct conflicting direct and role rules. Verify deny precedence for resource-specific and wildcard rules, then test ownership, unknown users, and unsupported actions.</p>
+<p>Review permission decisions and tests for direct-rule conflicts, role grants, wildcard resources, and owner reads. Correct discrepancies and add cases where two policy sources disagree, as well as missing IDs and actions with no matching grant. Explain which rule determines each expected result.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/22-access-permission-checker">View starter code</a></p>
 <details class="solution-reveal">

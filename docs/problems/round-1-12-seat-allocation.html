@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Hard</p>
 <p><strong>PR title:</strong> Allocate prioritized groups to available seats</p>
 <h2 id="heading-summary">Summary</h2>
-<p>An event team needs to assign each party to an available block in a venue. Review the allocator against its prioritization, adjacency, accessibility, and deterministic selection rules.</p>
+<p>An event team must seat each party together while respecting priority and accessible-seat requests. A party that cannot fit must be reported rather than split across rows. You are reviewing the allocation PR; the venue map is a caller-owned snapshot, and the function returns a seating proposal without changing it.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>allocate_seats(rows, groups)</code> receives an insertion-ordered mapping of row names to seat dictionaries and a list of group requests. Each seat has a positive number, an accessibility flag, and an availability flag. Each group has an ID, positive size, optional numeric priority, and optional accessibility requirement. The result contains an assignment mapping and the IDs that could not be seated.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -35,8 +35,35 @@
 <li>Keep the supplied venue data unchanged. Report every unseated group in processing order.</li>
 <li>Reject malformed rows or groups, nonpositive or boolean sizes, and repeated group IDs with <code>ValueError</code>.</li>
 </ul>
+<h2 id="heading-contract-example">Contract example</h2>
+<p>The venue has these rows in insertion order. Each listed seat is available and has <code>accessible=False</code>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Row key</th>
+<th>Seat numbers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;A&quot;</code></td>
+<td><code>1, 2, 3, 4</code></td>
+</tr>
+<tr>
+<td><code>&quot;B&quot;</code></td>
+<td><code>1, 2</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Each seat is represented as <code>{&quot;number&quot;: n, &quot;accessible&quot;: False, &quot;available&quot;: True}</code>. For <code>groups=[{&quot;group_id&quot;: &quot;g&quot;, &quot;size&quot;: 2}]</code>, the expected result is:</p>
+<pre><code class="language-python">{
+    &quot;assigned&quot;: {&quot;g&quot;: [{&quot;row&quot;: &quot;B&quot;, &quot;seat&quot;: 1}, {&quot;row&quot;: &quot;B&quot;, &quot;seat&quot;: 2}]},
+    &quot;unassigned&quot;: [],
+}
+</code></pre>
+<p>Row B leaves no unused available seats after the placement, while row A would leave two. The input seats must still be marked available after the call. In a separate venue with only two available seats, a size-2 group at priority 5 is seated before a size-1 group at priority 1, even when the smaller group appears first in <code>groups</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Build small venue layouts that force competing choices. Trace the order of requests and candidate blocks, then test accessibility across the full block, occupied seats, ties, impossible groups, and input immutability.</p>
+<p>Review whether the allocation and assertions satisfy request priority, whole-party placement, and the specified row choice. Add layouts that distinguish accessible from mixed blocks, occupied from free seats, and equal choices from impossible requests. Check the returned assignments, unassigned order, and unchanged venue snapshot, then explain the evidence for each constraint.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/12-seat-allocation">View starter code</a></p>
 <details class="solution-reveal">

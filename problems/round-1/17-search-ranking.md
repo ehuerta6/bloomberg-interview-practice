@@ -6,7 +6,7 @@
 
 ## Summary
 
-A search endpoint ranks documents using query matches in titles and body text, then returns an optional top slice. Review normalization, relevance scoring, stable ties, and limits.
+A search endpoint must put documents with relevant titles ahead of weaker body-only matches while keeping equally relevant results predictable. You are reviewing the ranking PR, which returns document IDs and normalized scores so the caller can display a limited result list.
 
 ## Input and output
 
@@ -20,9 +20,33 @@ A search endpoint ranks documents using query matches in titles and body text, t
 - `limit` is optional or a nonnegative integer; booleans are invalid. A zero limit or query with no tokens returns an empty list.
 - Malformed query, document, or limit input raises `ValueError`.
 
+## Contract example
+
+Search for `"PYTHON!"` in these documents, in this order:
+
+```python
+[
+    {"id": "body", "title": "Notes", "text": "python guides"},
+    {"id": "title", "title": "Python guides", "text": "language"},
+    {"id": "mixed", "title": "Python", "text": "guides"},
+]
+```
+
+Expected return:
+
+```python
+[
+    {"id": "title", "score": 0.75},
+    {"id": "mixed", "score": 0.75},
+    {"id": "body", "score": 0.25},
+]
+```
+
+For this one-token query, a title match earns 3 of 4 possible points and a body-only match earns 1 of 4. `limit=1` returns only `title`. Repeating the query token as `"PYTHON! python"` does not change these scores.
+
 ## Review task
 
-Compare title-only, body-only, and mixed matches. Try punctuation and repeated query terms, then construct equal-scoring documents in a deliberate order and verify the limited output.
+Review the ranking and tests against normalized matching, distinct query terms, and stable score ties. Correct discrepancies and add cases that check numeric scores as well as document order, including a limited result list and a query without tokens. Explain why equal-scoring documents keep their input order.
 
 ## Starter Code
 

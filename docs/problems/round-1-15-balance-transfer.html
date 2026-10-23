@@ -23,7 +23,7 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Transfer integer-cent balances between accounts</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A wallet service moves funds between two accounts. Review the validation and state changes as one transaction so invalid or unsuccessful transfers do not leave partial updates.</p>
+<p>A wallet user transfers funds to another account. The service must either move the requested cents or leave every account unchanged; a failed transfer must not alter the balance shown to either user. You are reviewing the in-memory transfer PR and its tests for this complete state change.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>transfer(accounts, source, destination, amount_cents)</code> mutates a mutable account-to-balance mapping. It returns <code>True</code> after a successful transfer and <code>False</code> when the source lacks funds.</p>
 <h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
@@ -34,8 +34,41 @@
 <li>If the source has insufficient funds, return <code>False</code> and leave the complete mapping unchanged.</li>
 <li>On success, subtract from the source and add the same amount to the destination. The total balance remains constant.</li>
 </ul>
+<h2 id="heading-contract-examples">Contract examples</h2>
+<p>Each row begins with a fresh account mapping and transfers from <code>&quot;a&quot;</code> to <code>&quot;b&quot;</code>:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Initial accounts</th>
+<th style="text-align:right">Amount in cents</th>
+<th>Expected return</th>
+<th>Accounts afterward</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{&quot;a&quot;: 1000, &quot;b&quot;: 200}</code></td>
+<td style="text-align:right">250</td>
+<td><code>True</code></td>
+<td><code>{&quot;a&quot;: 750, &quot;b&quot;: 450}</code></td>
+</tr>
+<tr>
+<td><code>{&quot;a&quot;: 300, &quot;b&quot;: 0}</code></td>
+<td style="text-align:right">300</td>
+<td><code>True</code></td>
+<td><code>{&quot;a&quot;: 0, &quot;b&quot;: 300}</code></td>
+</tr>
+<tr>
+<td><code>{&quot;a&quot;: 50, &quot;b&quot;: 100}</code></td>
+<td style="text-align:right">80</td>
+<td><code>False</code></td>
+<td><code>{&quot;a&quot;: 50, &quot;b&quot;: 100}</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>An amount of <code>True</code> is invalid and raises <code>ValueError</code> without changing either balance. A successful transfer preserves the sum across all accounts, including accounts that did not participate.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Compare state before and after success, insufficient funds, and invalid input. Check the exact-balance case, same-account transfers, boolean amounts, and whether every unsuccessful call preserves all accounts.</p>
+<p>Compare return values and complete before/after mappings for successful, insufficient-funds, and invalid requests. Correct implementation or assertion discrepancies, then add regression cases for exact-balance transfers, invalid amounts and IDs, and conservation of the total. Explain how the state assertions rule out a partially applied transfer.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/15-balance-transfer">View starter code</a></p>
 <details class="solution-reveal">
