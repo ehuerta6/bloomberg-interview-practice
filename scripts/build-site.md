@@ -2,8 +2,8 @@
 
 The 65 problem Markdown files remain the maintained assignment sources. The
 site generator reads `scripts/problem-manifest.json`, validates it against the
-source bank, and renders one HTML page per manifest entry. Edit Markdown, then
-regenerate; do not edit generated HTML.
+source bank, and renders the homepage and one HTML page per manifest entry.
+Edit Markdown, then regenerate; do not edit generated HTML.
 
 Use Python 3.10 or later. Install the two pinned build dependencies in a virtual
 environment outside the checkout, then run from the repository root:
@@ -13,7 +13,7 @@ python3 -m venv /tmp/bloomberg-site-venv
 /tmp/bloomberg-site-venv/bin/python -m pip install -r scripts/build-site-requirements.txt
 /tmp/bloomberg-site-venv/bin/python scripts/build-site.py
 /tmp/bloomberg-site-venv/bin/python scripts/build-site.py --check
-/tmp/bloomberg-site-venv/bin/python -m unittest discover -s scripts -p 'test_build_site.py' -v
+/tmp/bloomberg-site-venv/bin/python -m unittest discover -s scripts -p 'test*site*.py' -v
 ```
 
 If the manifest is stale after metadata changes, first run
@@ -30,14 +30,17 @@ unowned HTML files in `docs/problems/` cause an error.
 ## Output contract
 
 - `docs/problems/<manifest slug>.html`: 25 Round 1, 25 Round 2, 15 System Design.
+- `docs/index.html`: the three-category catalog, generated from the same manifest
+  with `scripts/site/index.html` and `scripts/site_catalog.py`.
 - `docs/renderer/mermaid.mjs`: generated copy of `scripts/site/mermaid.mjs`.
 - Shared CSS and logo: `../assets/site.css`, `../assets/cic-logo.png` from each
   problem page. Shared assets are maintained separately and never overwritten.
-- Catalog navigation: `../index.html`, supplied by the catalog feature.
+- Catalog navigation: `../index.html` from problem pages; category anchors on the
+  homepage work without JavaScript and wrap on small screens.
 
-The generator owns only problem pages and the Mermaid module. It preserves
-catalog, export, and shared asset files. `scripts/site/page.html` is the common
-template; `scripts/site_renderer.py` renders Markdown. The manifest and all
+The generator owns the catalog, problem pages, and the Mermaid module. It
+preserves export and shared asset files. `scripts/site/page.html` is the common
+problem template; `scripts/site_renderer.py` renders Markdown. The manifest and all
 assignment, starter, and reference solution files remain untouched.
 
 CommonMark headings, paragraphs, lists, blockquotes, inline/fenced code, links,

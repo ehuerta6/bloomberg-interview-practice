@@ -155,12 +155,14 @@ class BuildTests(unittest.TestCase):
                 build.build_site(ROOT, output, check=True)
             self.assertEqual(self.snapshot(output), {})
             build.build_site(ROOT, output)
-            page = next((output / "problems").glob("*.html"))
-            page.write_text("stale")
-            before = self.snapshot(output)
-            with self.assertRaisesRegex(ValueError, "missing or stale"):
-                build.build_site(ROOT, output, check=True)
-            self.assertEqual(before, self.snapshot(output))
+            for page in (next((output / "problems").glob("*.html")), output / "index.html"):
+                with self.subTest(page=page.name):
+                    page.write_text("stale")
+                    before = self.snapshot(output)
+                    with self.assertRaisesRegex(ValueError, "missing or stale"):
+                        build.build_site(ROOT, output, check=True)
+                    self.assertEqual(before, self.snapshot(output))
+                    build.build_site(ROOT, output)
 
     def test_stale_owned_pages_removed_and_other_site_files_preserved(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -168,12 +170,13 @@ class BuildTests(unittest.TestCase):
             build.build_site(ROOT, output)
             stale = output / "problems/old-problem.html"
             stale.write_bytes(build.GENERATED_MARKER + b"\nold")
-            (output / "index.html").write_text("owned by catalog")
+            (output / "assets").mkdir()
+            (output / "assets/keep.css").write_text("owned by shared assets")
             with self.assertRaisesRegex(ValueError, "missing or stale"):
                 build.build_site(ROOT, output, check=True)
             build.build_site(ROOT, output)
             self.assertFalse(stale.exists())
-            self.assertEqual((output / "index.html").read_text(), "owned by catalog")
+            self.assertEqual((output / "assets/keep.css").read_text(), "owned by shared assets")
 
     def test_unowned_pages_are_never_deleted(self):
         with tempfile.TemporaryDirectory() as directory:
