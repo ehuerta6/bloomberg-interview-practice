@@ -12,6 +12,20 @@ CATEGORIES = (
     ("round-2", "Engineering Tickets", "Implement a feature from its requirements and reason about edge cases."),
     ("system-design", "System Designs", "Explore requirements, architecture, and the tradeoffs behind a design."),
 )
+NIGHTMARE_ASSIGNMENTS = (
+    (
+        "NIGHT-01",
+        "Duplicate Checkout",
+        "Engineering ticket · 45–60 minutes",
+        "https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/NIGHT-01.md",
+    ),
+    (
+        "NIGHT-02",
+        "Inventory Validation Review",
+        "Pull request review · 30–45 minutes",
+        "https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/NIGHT-02.md",
+    ),
+)
 
 
 def render_catalog(manifest):
@@ -39,8 +53,29 @@ def render_catalog(manifest):
             '      <p class="meta"><a href="#main-content">Back to top</a></p>\n'
             '    </section>'
         )
+    nightmare_cards = []
+    for challenge_id, title, details, assignment_url in NIGHTMARE_ASSIGNMENTS:
+        nightmare_cards.append(
+            '        <li>\n'
+            f'          <a class="problem-card" href="{escape(assignment_url, quote=True)}" target="_blank" rel="noopener noreferrer">\n'
+            f'            <span class="problem-number">{escape(challenge_id)}</span>\n'
+            f'            <span class="problem-title">{escape(title)} <span class="meta">{escape(details)}</span></span>\n'
+            '            <span class="tag tag-nightmare">Nightmare</span>\n'
+            '          </a>\n'
+            '        </li>'
+        )
+    nightmares = (
+        '    <section aria-labelledby="nightmares">\n'
+        '      <h2 id="nightmares" tabindex="-1">Nightmare Mode</h2>\n'
+        '      <p>Two timed, original CIC exercises for practicing AI-assisted engineering. These are not official Bloomberg interview questions.</p>\n'
+        '      <ul class="problem-grid">\n' + "\n".join(nightmare_cards) + '\n      </ul>\n'
+        '      <p class="meta"><a href="#main-content">Back to top</a></p>\n'
+        '    </section>'
+    )
+    navigation.append('      <a href="#nightmares">Nightmare Mode</a>')
     return Template(TEMPLATE.read_text(encoding="utf-8")).substitute(
         navigation="\n".join(navigation),
         total=len(manifest["problems"]),
         categories="\n".join(sections),
+        nightmares=nightmares,
     )

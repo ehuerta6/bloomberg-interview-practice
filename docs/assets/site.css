@@ -159,6 +159,7 @@ caption { margin-bottom: .5rem; text-align: left; font-weight: 600; }
 .difficulty-easy { background: #238652; }
 .difficulty-medium { background: #A66A0A; }
 .difficulty-hard { background: #B42318; }
+.tag-nightmare { border-color: #7e22ce; background: #f3e8ff; color: #4c1d95; }
 .problem-page { max-width: 70rem; }
 .page-layout { grid-template-columns: minmax(0, 1fr); align-items: start; gap: 1.25rem; }
 .problem-sidebar { position: static; max-height: none; overflow-y: auto; padding: .9rem; border: 1px solid var(--color-soft-line); border-radius: .25rem; background: var(--color-paper); font-size: .9rem; }
