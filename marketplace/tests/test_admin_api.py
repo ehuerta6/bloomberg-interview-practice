@@ -176,3 +176,19 @@ def test_admin_order_views_do_not_change_order_state(client, database):
     assert unsupported.status_code == 404
     assert listing[0]["status"] == "placed"
     assert client.get(f"/products/{PRODUCT}").json()["stock"] == 12
+
+
+def test_admin_can_read_one_order(client, database):
+    with closing(connect(database)) as connection, connection:
+        cursor = connection.execute(
+            "INSERT INTO orders (user_id, status, total_cents) VALUES (?, 'placed', 800)",
+            ("shopper-river",),
+        )
+        order_id = cursor.lastrowid
+
+    response = client.get(f"/admin/orders/{order_id}", headers=ADMIN)
+
+    assert response.status_code == 200
+    assert response.json()["id"] == order_id
+    assert response.json()["user_id"] == "shopper-river"
+    assert response.json()["total_cents"] == 800
