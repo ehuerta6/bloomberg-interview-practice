@@ -1,10 +1,13 @@
 from contextlib import closing
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier, BrokenBarrierError
 
 import pytest
 from fastapi.testclient import TestClient
 
 from app.db import connect, seed
 from app.main import app
+from app import cart
 
 
 @pytest.fixture
@@ -61,6 +64,42 @@ def test_shopper_can_add_change_and_remove_cart_quantities(client):
     removed = client.delete(f"/cart/items/{PRODUCT}", headers=SHOPPER)
     assert removed.status_code == 204
     assert client.get("/cart", headers=SHOPPER).json() == {"items": [], "total_cents": 0}
+
+
+def test_overlapping_adds_preserve_both_quantity_increments(client, database, monkeypatch):
+    client.post(
+        "/cart/items", headers=SHOPPER, json={"product_id": PRODUCT, "quantity": 1}
+    )
+    original_read = cart.read_cart_quantity
+    both_have_read = Barrier(2, timeout=3)
+
+    def synchronized_read(connection, cart_id, product_id):
+        quantity = original_read(connection, cart_id, product_id)
+        try:
+            both_have_read.wait()
+        except BrokenBarrierError:
+            pass
+        return quantity
+
+    monkeypatch.setattr(cart, "read_cart_quantity", synchronized_read)
+
+    def add_one():
+        with TestClient(app) as concurrent_client:
+            return concurrent_client.post(
+                "/cart/items", headers=SHOPPER,
+                json={"product_id": PRODUCT, "quantity": 1},
+            )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        responses = list(executor.map(lambda _: add_one(), range(2)))
+    with closing(connect(database)) as connection:
+        quantity = connection.execute(
+            """SELECT ci.quantity FROM cart_items ci JOIN carts c ON c.id = ci.cart_id
+               WHERE c.user_id = ? AND ci.product_id = ?""",
+            ("shopper-river", PRODUCT),
+        ).fetchone()[0]
+
+    assert ([response.status_code for response in responses], quantity) == ([200, 200], 3)
 
 
 @pytest.mark.parametrize("quantity", [0, -1, True])

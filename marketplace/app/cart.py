@@ -66,6 +66,16 @@ def get_or_create_cart_id(connection: sqlite3.Connection, user_id: str) -> int:
     return cursor.lastrowid
 
 
+def read_cart_quantity(
+    connection: sqlite3.Connection, cart_id: int, product_id: str
+) -> int | None:
+    current = connection.execute(
+        "SELECT quantity FROM cart_items WHERE cart_id = ? AND product_id = ?",
+        (cart_id, product_id),
+    ).fetchone()
+    return None if current is None else current["quantity"]
+
+
 def save_quantity(
     connection: sqlite3.Connection,
     user_id: str,
@@ -75,7 +85,6 @@ def save_quantity(
     add_to_existing: bool,
 ) -> None:
     with connection:
-        connection.execute("BEGIN IMMEDIATE")
         product = connection.execute(
             "SELECT stock FROM products WHERE id = ?", (product_id,)
         ).fetchone()
@@ -85,13 +94,10 @@ def save_quantity(
             )
 
         cart_id = get_or_create_cart_id(connection, user_id)
-        current = connection.execute(
-            "SELECT quantity FROM cart_items WHERE cart_id = ? AND product_id = ?",
-            (cart_id, product_id),
-        ).fetchone()
+        current_quantity = read_cart_quantity(connection, cart_id, product_id)
         desired_quantity = quantity
-        if add_to_existing and current is not None:
-            desired_quantity += current["quantity"]
+        if add_to_existing and current_quantity is not None:
+            desired_quantity += current_quantity
         if desired_quantity > product["stock"]:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
