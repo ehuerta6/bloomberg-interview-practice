@@ -1,10 +1,13 @@
 from contextlib import closing
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier, BrokenBarrierError
 
 from fastapi.testclient import TestClient
 import pytest
 
 from app.db import connect, seed
 from app.main import app
+from app import orders
 
 
 @pytest.fixture
@@ -81,6 +84,45 @@ def test_repeated_cancel_returns_conflict_without_restoring_stock_twice(client):
     assert repeated.status_code == 409
     assert client.get(f"/products/{BERRY}").json()["stock"] == 12
     assert client.get(f"/products/{DUCK}").json()["stock"] == 5
+
+
+def test_overlapping_cancellations_restore_inventory_once(client, database, monkeypatch):
+    order_id = place_order(client).json()["id"]
+    original_read = orders.read_order_status
+    both_have_read = Barrier(2, timeout=3)
+
+    def synchronized_read(connection, requested_order_id, user_id):
+        result = original_read(connection, requested_order_id, user_id)
+        try:
+            both_have_read.wait()
+        except BrokenBarrierError:
+            pass
+        return result
+
+    monkeypatch.setattr(orders, "read_order_status", synchronized_read)
+
+    def cancel_once():
+        with TestClient(app) as concurrent_client:
+            return concurrent_client.post(f"/orders/{order_id}/cancel", headers=SHOPPER)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        responses = list(executor.map(lambda _: cancel_once(), range(2)))
+    with closing(connect(database)) as connection:
+        persisted_status = connection.execute(
+            "SELECT status FROM orders WHERE id = ?", (order_id,)
+        ).fetchone()["status"]
+        stock = {
+            product_id: connection.execute(
+                "SELECT stock FROM products WHERE id = ?", (product_id,)
+            ).fetchone()[0]
+            for product_id in (BERRY, DUCK)
+        }
+
+    assert (
+        sorted(response.status_code for response in responses),
+        persisted_status,
+        stock,
+    ) == ([200, 409], "cancelled", {BERRY: 12, DUCK: 5})
 
 
 def test_other_shoppers_cannot_list_or_access_order(client, database):

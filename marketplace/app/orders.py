@@ -42,6 +42,14 @@ def shopper_order(
     return order_snapshot(connection, order_id)
 
 
+def read_order_status(
+    connection: sqlite3.Connection, order_id: int, user_id: str
+) -> sqlite3.Row | None:
+    return connection.execute(
+        "SELECT status FROM orders WHERE id = ? AND user_id = ?", (order_id, user_id)
+    ).fetchone()
+
+
 @router.get("/orders")
 def list_orders(
     user_id: str = Depends(require_shopper),
@@ -69,10 +77,7 @@ def cancel_order(
     connection: sqlite3.Connection = Depends(get_connection),
 ) -> dict[str, object]:
     with connection:
-        connection.execute("BEGIN IMMEDIATE")
-        owned = connection.execute(
-            "SELECT status FROM orders WHERE id = ? AND user_id = ?", (order_id, user_id)
-        ).fetchone()
+        owned = read_order_status(connection, order_id, user_id)
         if owned is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
         if owned["status"] != "placed":
@@ -83,14 +88,9 @@ def cancel_order(
 
         changed = connection.execute(
             """UPDATE orders SET status = 'cancelled'
-               WHERE id = ? AND user_id = ? AND status = 'placed'""",
+               WHERE id = ? AND user_id = ?""",
             (order_id, user_id),
         )
-        if changed.rowcount != 1:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Only placed orders can be cancelled",
-            )
 
         items = connection.execute(
             "SELECT product_id, quantity FROM order_items WHERE order_id = ?", (order_id,)
