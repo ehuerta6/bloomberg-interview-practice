@@ -51,7 +51,7 @@ def save_attempt(
     order_id: int | None = None,
 ) -> None:
     connection.execute(
-        """INSERT INTO checkout_attempts
+        """INSERT OR IGNORE INTO checkout_attempts
            (user_id, idempotency_key, payment_outcome, status_code, detail, order_id)
            VALUES (?, ?, ?, ?, ?, ?)""",
         (user_id, idempotency_key, payment_outcome, status_code, detail, order_id),
@@ -88,7 +88,6 @@ def checkout(
         )
 
     with connection:
-        connection.execute("BEGIN IMMEDIATE")
         previous = connection.execute(
             """SELECT payment_outcome, status_code, detail, order_id
                FROM checkout_attempts WHERE user_id = ? AND idempotency_key = ?""",
@@ -128,6 +127,7 @@ def checkout(
                WHERE ci.cart_id = ? ORDER BY p.id""",
             (cart["id"],),
         ).fetchall()
+        connection.execute("BEGIN IMMEDIATE")
         if not items:
             save_attempt(
                 connection,

@@ -1,11 +1,14 @@
 import asyncio
 from contextlib import closing
+import sqlite3
+from threading import Barrier
 
 import httpx
 import pytest
 from fastapi.testclient import TestClient
 
 from app.db import connect, reset, seed
+from app.dependencies import get_connection
 from app.main import app
 
 
@@ -229,8 +232,30 @@ def test_empty_cart_result_is_replayed_for_the_same_key(client, database):
 def test_concurrent_checkouts_with_same_key_create_only_one_order(client, database):
     add_to_cart(client, BERRY, 2)
 
+    barrier = Barrier(2)
+
+    class SynchronizedConnection(sqlite3.Connection):
+        def execute(self, sql, parameters=()):
+            if sql.strip().upper() == "BEGIN IMMEDIATE":
+                barrier.wait(timeout=5)
+            return super().execute(sql, parameters)
+
+    def synchronized_connection():
+        connection = sqlite3.connect(
+            database, check_same_thread=False, factory=SynchronizedConnection
+        )
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys = ON")
+        try:
+            yield connection
+        finally:
+            connection.close()
+
+    previous_connection_override = app.dependency_overrides.get(get_connection)
+    app.dependency_overrides[get_connection] = synchronized_connection
+
     async def submit_both():
-        transport = httpx.ASGITransport(app=app)
+        transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
         async with httpx.AsyncClient(transport=transport, base_url="http://test") as session:
             headers = {**SHOPPER, "Idempotency-Key": "concurrent-order"}
             request = {"payment_outcome": "success"}
@@ -239,7 +264,13 @@ def test_concurrent_checkouts_with_same_key_create_only_one_order(client, databa
                 session.post("/checkout", headers=headers, json=request),
             )
 
-    first, second = asyncio.run(submit_both())
+    try:
+        first, second = asyncio.run(submit_both())
+    finally:
+        if previous_connection_override is None:
+            app.dependency_overrides.pop(get_connection, None)
+        else:
+            app.dependency_overrides[get_connection] = previous_connection_override
 
     assert sorted([first.status_code, second.status_code]) == [200, 201]
     assert first.json()["id"] == second.json()["id"]
