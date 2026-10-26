@@ -25,6 +25,13 @@ come from Noel's Coding Interview Club (CIC) workshop; 03–15 are additional pr
 - When using an AI assistant, follow the [practice-agent guidance](AGENTS.md): use it for
   explanations and hints, and make and explain your own changes.
 
+## Cappy Marketplace
+
+This repository also contains a local FastAPI and SQLite storefront for
+full-stack engineering practice. See the [marketplace setup and API guide](marketplace/README.md).
+Run its setup and test commands from the `marketplace/` directory; no hosted
+service or container is required.
+
 ## Round 1 — Pull Request Reviews
 
 | # | Problem | Difficulty |
