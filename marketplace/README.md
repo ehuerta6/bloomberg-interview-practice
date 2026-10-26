@@ -1,4 +1,4 @@
-# cic-nightmare-codebase
+# Cappy Marketplace
 Cappy Marketplace — a realistic full-stack codebase for CIC Nightmare Mode interview practice.
 
 Fork or clone the repository and run it locally using the instructions below. No cloud environment or container is required.
