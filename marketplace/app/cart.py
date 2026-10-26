@@ -111,7 +111,15 @@ def save_quantity(
 def get_cart(
     user_id: str = Depends(require_shopper),
     connection: sqlite3.Connection = Depends(get_connection),
+    cart_id: int | None = None,
 ) -> dict[str, object]:
+    if cart_id is not None:
+        cart = connection.execute(
+            "SELECT user_id FROM carts WHERE id = ?", (cart_id,)
+        ).fetchone()
+        if cart is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart not found")
+        return cart_snapshot(connection, cart["user_id"])
     return cart_snapshot(connection, user_id)
 
 

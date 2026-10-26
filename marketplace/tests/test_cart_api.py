@@ -63,6 +63,21 @@ def test_shopper_can_add_change_and_remove_cart_quantities(client):
     assert client.get("/cart", headers=SHOPPER).json() == {"items": [], "total_cents": 0}
 
 
+def test_shopper_can_retrieve_their_cart_by_id(client, database):
+    client.post(
+        "/cart/items", headers=SHOPPER, json={"product_id": PRODUCT, "quantity": 2}
+    )
+    with closing(connect(database)) as connection:
+        cart_id = connection.execute(
+            "SELECT id FROM carts WHERE user_id = ?", ("shopper-river",)
+        ).fetchone()[0]
+
+    response = client.get(f"/cart?cart_id={cart_id}", headers=SHOPPER)
+
+    assert response.status_code == 200
+    assert response.json()["items"][0]["quantity"] == 2
+
+
 @pytest.mark.parametrize("quantity", [0, -1, True])
 def test_cart_rejects_nonpositive_or_noninteger_quantities(client, quantity):
     assert client.post(
