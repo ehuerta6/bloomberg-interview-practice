@@ -60,6 +60,24 @@ class CatalogTests(unittest.TestCase):
         self.assertIn('rel="icon" type="image/png" href="assets/cic-logo.png"', self.result)
         self.assertIn('src="assets/cic-logo.png"', self.result)
 
+    def test_nightmare_assignments_are_linked_with_purple_mode_tags(self):
+        assignments = [
+            link for link in self.html.links
+            if link.startswith("https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/")
+        ]
+        self.assertEqual(assignments, [
+            "https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/NIGHT-01.md",
+            "https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/NIGHT-02.md",
+        ])
+        self.assertEqual(self.result.count('class="tag tag-nightmare">Nightmare</span>'), 2)
+        self.assertIn('<a href="#nightmares">Nightmare Mode</a>', self.result)
+        self.assertIn("target=\"_blank\" rel=\"noopener noreferrer\"", self.result)
+        css = (ROOT / "docs/assets/site.css").read_text(encoding="utf-8")
+        self.assertIn(
+            ".tag-nightmare { border-color: #7e22ce; background: #f3e8ff; color: #4c1d95; }",
+            css,
+        )
+
     def test_catalog_uses_manifest_metadata_and_escapes_markup(self):
         manifest = {"problems": [dict(self.manifest["problems"][0], title='<img src=x onerror="alert(1)">', difficulty="A & B")]}
         result = render_catalog(manifest)
