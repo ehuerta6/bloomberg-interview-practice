@@ -69,7 +69,6 @@ def adjust_stock(
     adjustment: StockAdjustment,
     connection: sqlite3.Connection = Depends(get_connection),
 ) -> dict[str, int | str]:
-    connection.execute("BEGIN IMMEDIATE")
     try:
         product = connection.execute(
             "SELECT stock FROM products WHERE id = ?", (product_id,)
@@ -84,6 +83,7 @@ def adjust_stock(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Stock adjustment would exceed valid stock",
             )
+        connection.execute("BEGIN IMMEDIATE")
         connection.execute(
             "UPDATE products SET stock = ? WHERE id = ?", (new_stock, product_id)
         )

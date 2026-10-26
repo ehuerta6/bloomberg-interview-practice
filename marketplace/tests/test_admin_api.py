@@ -43,6 +43,17 @@ def test_admin_adjusts_stock_atomically(client, delta):
         ).fetchone()[0] == 12 + delta
 
 
+def test_stock_adjustment_returns_a_nonnegative_quantity(client):
+    response = client.post(
+        f"/admin/products/{PRODUCT}/stock-adjustments",
+        headers=ADMIN,
+        json={"delta": 3},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["stock"] >= 0
+
+
 @pytest.mark.parametrize(
     "payload", [{"delta": 0}, {"delta": 2**63}, {"delta": True}, {"delta": 1.5}, {"delta": 1, "other": 2}]
 )
