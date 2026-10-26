@@ -183,8 +183,8 @@ def checkout(
                 }
             )
 
-        if request.payment_outcome == "decline":
-            detail = "Payment declined"
+        if request.payment_outcome in {"decline", "temporary_error"}:
+            detail = "Payment could not be completed"
             save_attempt(
                 connection,
                 user_id,
@@ -195,20 +195,6 @@ def checkout(
             )
             return JSONResponse(
                 status_code=status.HTTP_402_PAYMENT_REQUIRED, content={"detail": detail}
-            )
-        if request.payment_outcome == "temporary_error":
-            detail = "Temporary payment error"
-            save_attempt(
-                connection,
-                user_id,
-                idempotency_key,
-                request.payment_outcome,
-                status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=detail,
-            )
-            return JSONResponse(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                content={"detail": detail},
             )
 
         order_cursor = connection.execute(
