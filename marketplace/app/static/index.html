@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f4ec">
+    <meta name="description" content="A local capybara shop for gentle everyday finds.">
+    <title>Cappy Cove — Cappy Marketplace</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/assets/styles.css">
+    <script src="/assets/app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#app-content">Skip to shop content</a>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Cappy Cove home">
+        <svg class="brand-mark" viewBox="0 0 52 52" role="img" aria-label="Capybara face">
+          <circle cx="26" cy="26" r="25" fill="#d9e6d5"/>
+          <circle cx="15" cy="15" r="6" fill="#855c43"/>
+          <circle cx="37" cy="15" r="6" fill="#855c43"/>
+          <ellipse cx="26" cy="28" rx="18" ry="16" fill="#b98059"/>
+          <ellipse cx="34" cy="30" rx="9" ry="7" fill="#ead3b7"/>
+          <circle cx="21" cy="25" r="1.8" fill="#26382f"/>
+          <circle cx="31" cy="25" r="1.8" fill="#26382f"/>
+          <ellipse cx="38" cy="29" rx="2.2" ry="1.7" fill="#26382f"/>
+        </svg>
+        <span class="brand-copy"><strong>Cappy Cove</strong><small>Market for slow days</small></span>
+      </a>
+      <div class="header-tools">
+        <span class="local-note"><span class="local-dot"></span>Local demo</span>
+        <label class="identity-control" for="identity-select">
+          <span>Browsing as</span>
+          <select id="identity-select" aria-label="Select local shopper or admin">
+            <option value="shopper-river">Riley · Shopper</option>
+            <option value="admin-stone">Sage · Admin</option>
+          </select>
+        </label>
+      </div>
+    </header>
+
+    <div class="page-wrap">
+      <nav class="main-nav" aria-label="Marketplace sections" id="main-nav">
+        <button type="button" class="nav-link is-active" data-view="shop" aria-current="page">Shop</button>
+        <button type="button" class="nav-link" data-view="cart">Cart <span class="nav-count" id="cart-count">0</span></button>
+        <button type="button" class="nav-link" data-view="orders">Orders</button>
+        <button type="button" class="nav-link admin-nav" data-view="admin" hidden>Admin</button>
+      </nav>
+
+      <div id="app-message" class="message" role="status" aria-live="polite" hidden></div>
+      <main id="app-content" tabindex="-1"></main>
+
+      <footer class="site-footer">
+        <span>Made for a slower sort of shopping.</span>
+        <span>Local practice shop · No real payments</span>
+      </footer>
+    </div>
+  </body>
+</html>
