@@ -60,17 +60,22 @@ class CatalogTests(unittest.TestCase):
         self.assertIn('rel="icon" type="image/png" href="assets/cic-logo.png"', self.result)
         self.assertIn('src="assets/cic-logo.png"', self.result)
 
-    def test_nightmare_assignments_are_linked_with_purple_mode_tags(self):
+    def test_ten_numbered_nightmare_assignments_have_standard_cards(self):
         assignments = [
             link for link in self.html.links
             if link.startswith("https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/")
         ]
         self.assertEqual(assignments, [
-            "https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/NIGHT-01.md",
-            "https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/NIGHT-02.md",
+            f"https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/nightmares/{number:02d}.md"
+            for number in range(1, 11)
         ])
-        self.assertEqual(self.result.count('class="tag tag-nightmare">Nightmare</span>'), 2)
+        self.assertEqual(self.result.count('class="tag tag-nightmare">Nightmare</span>'), 10)
         self.assertIn('<a href="#nightmares">Nightmare Mode</a>', self.result)
+        self.assertIn("five Engineering Tickets and five PR Reviews", self.result)
+        for number in range(1, 11):
+            self.assertIn(f'<span class="problem-number">{number:02d}</span>', self.result)
+        self.assertNotIn("NIGHT-", self.result)
+        self.assertNotIn("minutes", self.result)
         self.assertIn("target=\"_blank\" rel=\"noopener noreferrer\"", self.result)
         css = (ROOT / "docs/assets/site.css").read_text(encoding="utf-8")
         self.assertIn(
