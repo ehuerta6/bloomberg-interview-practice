@@ -72,6 +72,11 @@ unknown products return HTTP 404, and requests exceeding stock return HTTP 409.
 Cart rows are stored in the configured SQLite database and survive restarting
 the app with the same database path.
 
+The Checkout Price Mismatch exercise defines a challenge-specific quote
+contract: cart unit prices are captured when an item is added and remain fixed
+until it is removed. That ticket's contract supersedes the generic
+current-catalog-price description above for the challenge version.
+
 ## Checkout API
 
 `POST /checkout` requires `X-User-Id` and an `Idempotency-Key` header scoped to

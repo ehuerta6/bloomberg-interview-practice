@@ -179,6 +179,21 @@ def test_order_replay_preserves_purchased_product_details(client):
     assert replay.json()["items"][0]["price_cents"] == 425
 
 
+def test_checkout_persists_the_price_quoted_in_the_existing_cart(client):
+    add_to_cart(client, BERRY, 2)
+    client.put(
+        f"/admin/products/{BERRY}",
+        headers=ADMIN,
+        json={"name": "Berry Bowl", "category": "food", "price_cents": 500, "stock": 12},
+    )
+
+    order = checkout(client, "quoted-price").json()
+
+    assert order["total_cents"] == 850
+    assert order["items"][0]["price_cents"] == 425
+    assert order["items"][0]["line_total_cents"] == 850
+
+
 def test_same_idempotency_key_is_scoped_to_each_shopper(client, database):
     with closing(connect(database)) as connection:
         connection.execute(

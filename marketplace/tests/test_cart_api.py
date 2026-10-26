@@ -105,7 +105,7 @@ def test_cart_rejects_quantities_over_available_stock_without_partial_write(clie
     assert client.get("/cart", headers=SHOPPER).json() == {"items": [], "total_cents": 0}
 
 
-def test_cart_uses_current_product_price(client):
+def test_cart_keeps_the_price_quoted_when_product_was_added(client):
     client.post("/cart/items", headers=SHOPPER, json={"product_id": PRODUCT, "quantity": 2})
     client.put(
         f"/admin/products/{PRODUCT}",
@@ -115,9 +115,9 @@ def test_cart_uses_current_product_price(client):
 
     cart = client.get("/cart", headers=SHOPPER).json()
 
-    assert cart["items"][0]["price_cents"] == 500
-    assert cart["items"][0]["line_total_cents"] == 1000
-    assert cart["total_cents"] == 1000
+    assert cart["items"][0]["price_cents"] == 425
+    assert cart["items"][0]["line_total_cents"] == 850
+    assert cart["total_cents"] == 850
 
 
 def test_each_shopper_has_an_independent_cart(client, database):
