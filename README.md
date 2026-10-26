@@ -34,7 +34,7 @@ service or container is required.
 
 ## Nightmare Mode
 
-Two original timed exercises use Cappy Marketplace to practice AI-assisted engineering: [NIGHT-01](nightmares/NIGHT-01.md) is a checkout reliability ticket, and [NIGHT-02](nightmares/NIGHT-02.md) is an inventory change review. They are independent practice scenarios, not official Bloomberg interview questions. Read the [Nightmare Mode guide](nightmares/README.md) to check out a pinned version and start locally. In NIGHT-01, investigate and fix the behavior; in NIGHT-02, review the linked pull request and report evidence-based findings and stronger tests. The nested [AI Interview Mode policy](marketplace/AGENTS.md) keeps the student in control while allowing useful investigation, testing, and focused implementation.
+Nightmare Mode contains ten original exercises using Cappy Marketplace: five Engineering Tickets and five PR Reviews. They are independent practice scenarios, not official Bloomberg interview questions. Browse the [numbered Nightmare Mode assignments](nightmares/README.md), then use each assignment's pinned challenge version. The nested [AI Interview Mode policy](marketplace/AGENTS.md) keeps the student in control while allowing useful investigation, testing, and focused implementation.
 
 ## Round 1 — Pull Request Reviews
 
