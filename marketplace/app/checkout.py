@@ -226,21 +226,27 @@ def checkout(
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT, detail="Insufficient stock"
                 )
-            connection.execute(
-                """INSERT INTO order_items
-                   (order_id, product_id, product_name, category, price_cents,
-                    quantity, line_total_cents)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (
-                    order_id,
-                    item["product_id"],
-                    item["product_name"],
-                    item["category"],
-                    item["price_cents"],
-                    item["quantity"],
-                    item["line_total_cents"],
-                ),
-            )
+            try:
+                connection.execute(
+                    """INSERT INTO order_items
+                       (order_id, product_id, product_name, category, price_cents,
+                        quantity, line_total_cents)
+                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                    (
+                        order_id,
+                        item["product_id"],
+                        item["product_name"],
+                        item["category"],
+                        item["price_cents"],
+                        item["quantity"],
+                        item["line_total_cents"],
+                    ),
+                )
+            except sqlite3.IntegrityError:
+                return JSONResponse(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    content={"detail": "Order could not be saved"},
+                )
         connection.execute("DELETE FROM cart_items WHERE cart_id = ?", (cart["id"],))
         save_attempt(
             connection,

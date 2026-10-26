@@ -80,6 +80,34 @@ def test_successful_checkout_persists_order_snapshots_stock_and_clears_cart(clie
     assert client.get("/cart", headers=SHOPPER).json() == {"items": [], "total_cents": 0}
 
 
+def test_line_persistence_failure_leaves_checkout_state_unchanged(client, database):
+    add_to_cart(client, BERRY, 2)
+    with closing(connect(database)) as connection:
+        connection.execute(
+            """CREATE TRIGGER reject_berry_order_line BEFORE INSERT ON order_items
+               WHEN NEW.product_id = 'food-berry-bowl'
+               BEGIN SELECT RAISE(ABORT, 'controlled order-line failure'); END"""
+        )
+        connection.commit()
+
+    response = checkout(client, "controlled-line-failure")
+
+    with closing(connect(database)) as connection:
+        orders = connection.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
+        order_lines = connection.execute("SELECT COUNT(*) FROM order_items").fetchone()[0]
+        stock = connection.execute(
+            "SELECT stock FROM products WHERE id = ?", (BERRY,)
+        ).fetchone()[0]
+
+    assert (
+        response.status_code,
+        orders,
+        order_lines,
+        stock,
+        client.get("/cart", headers=SHOPPER).json()["items"][0]["quantity"],
+    ) == (503, 0, 0, 12, 2)
+
+
 def test_reset_restarts_order_ids_from_the_initial_state(client, database):
     add_to_cart(client, BERRY)
     first = checkout(client, "order-before-reset")
