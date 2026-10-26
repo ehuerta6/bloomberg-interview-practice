@@ -171,7 +171,7 @@ def checkout(
                 return JSONResponse(
                     status_code=status.HTTP_409_CONFLICT, content={"detail": detail}
                 )
-            total_cents += line_total
+            total_cents = line_total
             order_items.append(
                 {
                     "product_id": item["product_id"],
