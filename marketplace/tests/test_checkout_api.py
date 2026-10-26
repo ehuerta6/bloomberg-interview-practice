@@ -46,9 +46,36 @@ def checkout(client, key, outcome="success", headers=SHOPPER):
     )
 
 
-def test_successful_checkout_persists_order_snapshots_stock_and_clears_cart(client):
+def test_successful_checkout_persists_order_snapshots_stock_and_clears_cart(client, monkeypatch):
     add_to_cart(client, BERRY, 2)
     add_to_cart(client, DUCK, 1)
+    monkeypatch.setattr(
+        "app.checkout.order_snapshot",
+        lambda connection, order_id: {
+            "id": order_id,
+            "status": "placed",
+            "created_at": "2026-01-01 00:00:00",
+            "total_cents": 1749,
+            "items": [
+                {
+                    "product_id": BERRY,
+                    "name": "Berry Bowl",
+                    "category": "food",
+                    "price_cents": 425,
+                    "quantity": 2,
+                    "line_total_cents": 850,
+                },
+                {
+                    "product_id": DUCK,
+                    "name": "Floating Duck",
+                    "category": "toys",
+                    "price_cents": 899,
+                    "quantity": 1,
+                    "line_total_cents": 899,
+                },
+            ],
+        },
+    )
 
     response = checkout(client, "order-river-1")
 
