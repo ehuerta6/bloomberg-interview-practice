@@ -25,6 +25,7 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-pr-title">PR title</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
           <li class="toc-h2"><a href="#heading-input-and-output">Input and output</a></li>
@@ -44,10 +45,19 @@
       <article class="prose" data-problem-id="round-1-19">
 <h1 id="heading-pr-19--feature-flag-evaluation">PR #19 — Feature Flag Evaluation</h1>
 <p><strong>Difficulty:</strong> Medium</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> PR review / focused debugging.</li>
+<li><strong>Primary skills:</strong> stable rollout cohorts, percentage boundaries, regression testing.</li>
+<li><strong>Expected duration:</strong> 45–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.</li>
+<li><strong>Interviewer evaluation:</strong> Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <h2 id="heading-pr-title">PR title</h2>
 <p>Evaluate feature rollouts consistently</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A rollout service releases a feature to selected users before enabling it for everyone. A feature flag is the policy describing that release: a global switch, explicit exceptions, and an optional percentage of users. You are reviewing evaluation so a user receives the same decision on repeated calls and explicit exclusions keep their priority.</p>
+<p>A checkout team is expanding a new payment flow to a percentage of customers. The rollout service hashes each stable user ID into a bucket so the same customer keeps the same decision across requests. A support report says one customer at the configured rollout boundary received the feature even though the rollout percentage was meant to include only lower-numbered buckets. You are reviewing the flag evaluator.</p>
 <h2 id="heading-input-and-output">Input and output</h2>
 <p><code>evaluate_flag(flag, user)</code> receives a flag dictionary with <code>enabled</code>, optional <code>allowlist</code>, optional <code>denylist</code>, and optional <code>rollout_percent</code> fields. The user dictionary supplies a stable <code>user_id</code>. The function returns a boolean.</p>
 <p>If rollout is used, the percentage must be numeric and between 0 and 100. A missing user ID is treated as off.</p>
@@ -92,7 +102,7 @@
 </table></div>
 <p>A percentage rollout assigns each identified user a repeatable bucket, numbered 0 through 99. A user without an ID is off even at 100 percent. An enabled flag with <code>rollout_percent=&quot;50&quot;</code> is invalid: a numeric-looking string is not a numeric percentage.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Compare the evaluator and its assertions with global disable, direct exclusions, direct inclusion, and rollout decisions. Correct discrepancies and add tests for the exact bucket boundary, repeated calls for one user, missing IDs, and invalid percentages. Explain which assertions establish precedence and which establish repeatability.</p>
+<p>Reproduce the reported customer decision from the bucket rule. Correct the boundary behavior and add a regression assertion that checks both the exact boundary and repeatability for the same user. Explain the limits of a deterministic local test for a production rollout.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/19-feature-flag-evaluation" target="_blank" rel="noopener noreferrer">View starter code</a></p>
 <details class="solution-reveal">

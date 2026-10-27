@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Shipping Fee Calculator | CIC Interview Practice</title>
+  <title>Shipping Minimum Charge | CIC Interview Practice</title>
   <link rel="icon" type="image/png" href="../assets/cic-logo.png">
   <link rel="stylesheet" href="../assets/site.css">
 </head>
@@ -25,10 +25,11 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
           <li class="toc-h2"><a href="#heading-input-and-output">Input and output</a></li>
-          <li class="toc-h2"><a href="#heading-expected-behavior-and-invariants">Expected behavior and invariants</a></li>
-          <li class="toc-h2"><a href="#heading-contract-example">Contract example</a></li>
+          <li class="toc-h2"><a href="#heading-expected-behavior">Expected behavior</a></li>
+          <li class="toc-h2"><a href="#heading-reproduction">Reproduction</a></li>
           <li class="toc-h2"><a href="#heading-review-task">Review task</a></li>
           <li class="toc-h2"><a href="#heading-starter-code">Starter Code</a></li>
           <li class="toc-h2"><a href="#heading-reference-solution">Reference Solution</a></li>
@@ -41,77 +42,33 @@
         </div>
       </aside>
       <article class="prose" data-problem-id="round-1-20">
-<h1 id="heading-pr-20--shipping-fee-calculator">PR #20 — Shipping Fee Calculator</h1>
+<h1 id="heading-pr-20--shipping-minimum-charge">PR #20 — Shipping Minimum Charge</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<p><strong>PR title:</strong> Calculate discounted, zone-based shipping fees</p>
-<h2 id="heading-summary">Summary</h2>
-<p>A store shows the shipping charge before checkout. The carrier prices parcels by destination and total weight, while the store offers shipping discounts and a free-shipping threshold. You are reviewing the pricing PR so the quote follows the carrier minimum and produces a predictable dollar amount rounded to cents.</p>
-<h2 id="heading-input-and-output">Input and output</h2>
-<p><code>calculate_shipping(order, rates)</code> receives an order with <code>zone</code>, <code>subtotal</code>, <code>weight_kg</code>, and optional <code>shipping_discount_percent</code> fields. The discount defaults to zero. <code>rates</code> maps each zone to <code>base_fee</code>, <code>minimum_fee</code>, <code>free_over</code>, and an ordered <code>weight_brackets</code> list. Each band has an inclusive <code>up_to_kg</code> limit and <code>per_kg</code> rate; the final band uses <code>None</code> for an unbounded limit. The function returns a <code>Decimal</code> fee in dollars rounded to cents.</p>
-<h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
 <ul>
-<li>Reject unknown zones, missing fields, malformed or non-finite amounts, booleans, negative amounts, discounts over 100 percent, and invalid weight-band ordering with <code>ValueError</code>.</li>
-<li>A subtotal equal to or above the zone's <code>free_over</code> threshold receives free shipping regardless of weight or minimum fee.</li>
-<li>Otherwise select the first band whose upper limit is greater than or equal to the parcel's weight; use the final unbounded band for heavier parcels.</li>
-<li>Calculate <code>base_fee + weight_kg * per_kg</code>, apply the percentage shipping discount, then enforce <code>minimum_fee</code>.</li>
-<li>Round only the final fee to two decimal places using half-up currency rounding.</li>
-<li>Do not mutate the order or rate table.</li>
+<li><strong>Interview format:</strong> PR review / focused debugging.</li>
+<li><strong>Primary skills:</strong> pricing arithmetic, rounding, threshold behavior.</li>
+<li><strong>Expected duration:</strong> 45–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.</li>
+<li><strong>Interviewer evaluation:</strong> Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
 </ul>
-<h2 id="heading-contract-example">Contract example</h2>
-<p>Use this rate table:</p>
-<pre tabindex="0" role="group" aria-label="Code sample"><code class="language-python">{
-    &quot;local&quot;: {
-        &quot;base_fee&quot;: &quot;3.00&quot;,
-        &quot;minimum_fee&quot;: &quot;5.00&quot;,
-        &quot;free_over&quot;: &quot;75.00&quot;,
-        &quot;weight_brackets&quot;: [
-            {&quot;up_to_kg&quot;: &quot;2&quot;, &quot;per_kg&quot;: &quot;1.25&quot;},
-            {&quot;up_to_kg&quot;: &quot;5&quot;, &quot;per_kg&quot;: &quot;1.00&quot;},
-            {&quot;up_to_kg&quot;: None, &quot;per_kg&quot;: &quot;0.80&quot;},
-        ],
-    }
-}
-</code></pre>
-<p>Each row is an independent order in zone <code>&quot;local&quot;</code>:</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="Table"><table>
-<thead>
-<tr>
-<th style="text-align:right">Subtotal in dollars</th>
-<th style="text-align:right">Weight in kg</th>
-<th style="text-align:right">Shipping discount</th>
-<th>Expected <code>Decimal</code> fee</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:right"><code>&quot;20&quot;</code></td>
-<td style="text-align:right"><code>&quot;2&quot;</code></td>
-<td style="text-align:right">0</td>
-<td><code>Decimal(&quot;5.50&quot;)</code></td>
-</tr>
-<tr>
-<td style="text-align:right"><code>&quot;20&quot;</code></td>
-<td style="text-align:right"><code>&quot;2.01&quot;</code></td>
-<td style="text-align:right">0</td>
-<td><code>Decimal(&quot;5.01&quot;)</code></td>
-</tr>
-<tr>
-<td style="text-align:right"><code>&quot;20&quot;</code></td>
-<td style="text-align:right"><code>&quot;1&quot;</code></td>
-<td style="text-align:right">50</td>
-<td><code>Decimal(&quot;5.00&quot;)</code></td>
-</tr>
-<tr>
-<td style="text-align:right"><code>&quot;75.00&quot;</code></td>
-<td style="text-align:right"><code>&quot;10&quot;</code></td>
-<td style="text-align:right">0</td>
-<td><code>Decimal(&quot;0.00&quot;)</code></td>
-</tr>
-</tbody>
-</table></div>
-<p>The 50 percent discount on the one-kilogram parcel would fall below the carrier minimum, so the fee is $5.00. An order at the free-shipping threshold pays zero even when a carrier minimum exists.</p>
+<p><strong>PR title:</strong> Enforce the carrier minimum on discounted shipping quotes</p>
+<h2 id="heading-summary">Summary</h2>
+<p>The checkout page shows a shipping quote before an order is placed. The local carrier charges a base amount plus a per-kilogram rate, with a $5 minimum. A percentage promotion can reduce the quote, while orders at or above $75 receive free shipping. Support reports that some light parcels show a charge below the carrier's minimum after a promotion.</p>
+<h2 id="heading-input-and-output">Input and output</h2>
+<p><code>calculate_shipping(order, rates)</code> returns a <code>Decimal</code> in dollars rounded to cents. An order supplies <code>zone</code>, <code>subtotal</code>, and <code>weight_kg</code>; the discount is optional and defaults to zero. Each zone supplies <code>base_fee</code>, <code>per_kg</code>, <code>minimum_fee</code>, and <code>free_over</code>.</p>
+<h2 id="heading-expected-behavior">Expected behavior</h2>
+<ul>
+<li>For a paid shipping order, calculate <code>base_fee + weight_kg * per_kg</code>, apply the percentage discount, then charge at least the zone's <code>minimum_fee</code>.</li>
+<li>The minimum applies after the discount.</li>
+<li>A subtotal equal to or greater than <code>free_over</code> receives free shipping.</li>
+<li>Round the final charge to cents using half-up rounding.</li>
+</ul>
+<h2 id="heading-reproduction">Reproduction</h2>
+<p>With local rates <code>{ &quot;base_fee&quot;: &quot;3.00&quot;, &quot;per_kg&quot;: &quot;1.25&quot;, &quot;minimum_fee&quot;: &quot;5.00&quot;, &quot;free_over&quot;: &quot;75.00&quot; }</code>, a one-kilogram order with subtotal <code>$20</code> and a 50% shipping discount has a calculated discounted amount below $5. The expected quote is <code>Decimal(&quot;5.00&quot;)</code>. At a <code>$75</code> subtotal, the expected quote is <code>Decimal(&quot;0.00&quot;)</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review the quote and assertions against inclusive weight bands, discounts, the carrier minimum, and free shipping. Correct misleading expectations and implementation defects, then add cases on both sides of the boundaries and at a half-cent rounding point. Check the final fee and unchanged order/rate inputs, and explain the evidence for the pricing order.</p>
+<p>Trace the quote calculation and compare the returned amount with the minimum and free-shipping contract. Add a focused regression assertion for the discounted light parcel and explain why the free-shipping threshold takes precedence over the minimum.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/20-shipping-fee-calculator" target="_blank" rel="noopener noreferrer">View starter code</a></p>
 <details class="solution-reveal">

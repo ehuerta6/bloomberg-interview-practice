@@ -25,6 +25,7 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
           <li class="toc-h2"><a href="#heading-input-and-output">Input and output</a></li>
           <li class="toc-h2"><a href="#heading-expected-behavior-and-invariants">Expected behavior and invariants</a></li>
@@ -43,6 +44,15 @@
       <article class="prose" data-problem-id="round-1-17">
 <h1 id="heading-pr-17--search-ranking">PR #17 — Search Ranking</h1>
 <p><strong>Difficulty:</strong> Medium</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Algorithmic coding / PR review.</li>
+<li><strong>Primary skills:</strong> ranking algorithms, tie behavior, complexity.</li>
+<li><strong>Expected duration:</strong> 45–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Assess the proposed algorithm and tests against the stated contract; explain complexity and verify boundary behavior.</li>
+<li><strong>Interviewer evaluation:</strong> Algorithm selection, correctness argument, complexity, edge cases, and clear communication. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <p><strong>PR title:</strong> Rank search results by normalized relevance</p>
 <h2 id="heading-summary">Summary</h2>
 <p>A search endpoint must put documents with relevant titles ahead of weaker body-only matches while keeping equally relevant results predictable. You are reviewing the ranking PR, which returns document IDs and normalized scores so the caller can display a limited result list.</p>

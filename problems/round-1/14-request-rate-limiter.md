@@ -2,6 +2,15 @@
 
 **Difficulty:** Hard
 
+## Practice Metadata
+
+- **Interview format:** PR review / focused debugging.
+- **Primary skills:** time windows, request accounting, boundary behavior.
+- **Expected duration:** 45–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.
+- **Interviewer evaluation:** Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 **PR title:** Enforce per-user request limits over a sliding window
 
 ## Summary

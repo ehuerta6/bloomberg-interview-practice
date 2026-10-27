@@ -1,43 +1,40 @@
-# PR #09 — Gradebook Aggregation
+# PR #09 — Gradebook Batch Replay
 
 **Difficulty:** Medium
 
-**PR title:** Aggregate weighted assessment scores into student grades
+## Practice Metadata
+
+- **Interview format:** PR review / focused debugging.
+- **Primary skills:** data aggregation, identity normalization, numeric reasoning.
+- **Expected duration:** 45–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.
+- **Interviewer evaluation:** Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
+**PR title:** Ignore a repeated assessment import
 
 ## Summary
 
-A course publishes a final grade for each student from assessment records submitted in several batches. Exams and projects can have different weights, and the course may drop low scores within each category. You are reviewing the PR that combines those records into a grade summary while retaining the number of input entries for reporting.
+An instructor can import assessment scores in batches. If the import job retries after a timeout, rows from the same batch may arrive again. You are reviewing a change to the grade summary so a replay does not count the same student's assessment twice.
 
 ## Input and output
 
-`summarize_gradebook(rows, weights, drop_lowest=1)` accepts rows containing a `student` name and a `scores` mapping from category name to a list of percentage scores. `weights` maps each category name to its percentage weight. It returns a mapping from the first trimmed student spelling to a summary with `count`, `average`, and `letter`.
+`summarize_gradebook(rows)` receives rows with a student name, an `assessment_id` unique for that student's assessment, and a numeric score. It returns each student's first trimmed display name with the number of distinct assessments and their average rounded to two decimal places. Student names differing only in surrounding whitespace or case identify the same student.
 
-## Expected behavior and invariants
-- Merge rows whose trimmed student names match without regard to case; keep the first trimmed spelling as the output key.
-- Weights must be a nonempty mapping of nonblank category names to finite, non-boolean percentages from 0 through 100, totaling 100. Row categories must be included in that mapping.
-- Each category value is a score list. Every entry is a finite, non-boolean percentage from 0 through 100 or `None`. `None` represents a missing submission and contributes a score of zero.
-- Drop `drop_lowest` lowest entries from each student's category after merging rows. The drop count is a nonnegative integer and includes zero-valued or missing entries. If no entries remain, that category contributes a mean of zero.
-- Combine category means using their percentage weights. `count` is the total number of entries before dropping, including missing and later-dropped entries.
-- Round the final average to two decimal places. Assign letters from the unrounded average: A at 90, B at 80, C at 70, D at 60, and F below 60.
-- Reject malformed row/category/weight shapes, invalid scores, and invalid drop counts with `ValueError`.
+## Expected behavior
 
-## Contract examples
+- Distinct assessment IDs for one student contribute once each.
+- Repeating a row with the same student identity, assessment ID, and score is an import replay and contributes only once.
+- Reusing an assessment ID for the same student with a different score is inconsistent input and raises `ValueError`.
+- The result's count and average reflect distinct assessments only.
 
-For this input, with `weights={"exam": 80, "project": 20}` and `drop_lowest=0`:
+## Reproduction
 
-```python
-[{"student": "Ari", "scores": {"exam": [100], "project": [0]}}]
-```
-
-The expected return is `{"Ari": {"count": 2, "average": 80.0, "letter": "B"}}`: the two category percentages contribute according to their weights.
-
-For `[{"student": "Cal", "scores": {"exam": [100, None, 90]}}]`, `weights={"exam": 100}`, and the default drop count of 1, the expected summary for Cal is `{"count": 3, "average": 95.0, "letter": "A"}`. The missing entry counts toward `count` even though it is dropped.
-
-An unrounded average of `89.995` displays as `90.0` but receives letter `"B"`.
+Importing `{"student": "Ari", "assessment_id": "quiz-1", "score": 80}` twice must produce `{"Ari": {"count": 1, "average": 80.0}}`.
 
 ## Review task
 
-Review the aggregation and assertions against weighted grades, merged student identities, and the drop policy. Correct discrepancies and add cases that check all three summary fields, including missing submissions and a displayed average near a letter boundary. Explain how the tests distinguish the displayed number from the grade decision.
+Compare the import behavior and tests with replay and conflict semantics. Add a regression test that verifies both count and average after an exact replay, then explain why a conflicting replay must not silently change a published grade.
 
 ## Starter Code
 

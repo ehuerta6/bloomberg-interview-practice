@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 TEMPLATE = Path(__file__).resolve().parent / "site/index.html"
 CATEGORIES = (
-    ("round-1", "PR Reviews", "Review code, investigate defects, and explain the changes you would make."),
+    ("round-1", "Round 1 Practice", "Mostly PR reviews, with programming fundamentals and algorithm exercises labeled by format."),
     ("round-2", "Engineering Tickets", "Implement a feature from its requirements and reason about edge cases."),
     ("system-design", "System Designs", "Explore requirements, architecture, and the tradeoffs behind a design."),
 )

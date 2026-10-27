@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gradebook Aggregation | CIC Interview Practice</title>
+  <title>Gradebook Batch Replay | CIC Interview Practice</title>
   <link rel="icon" type="image/png" href="../assets/cic-logo.png">
   <link rel="stylesheet" href="../assets/site.css">
 </head>
@@ -25,10 +25,11 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
           <li class="toc-h2"><a href="#heading-input-and-output">Input and output</a></li>
-          <li class="toc-h2"><a href="#heading-expected-behavior-and-invariants">Expected behavior and invariants</a></li>
-          <li class="toc-h2"><a href="#heading-contract-examples">Contract examples</a></li>
+          <li class="toc-h2"><a href="#heading-expected-behavior">Expected behavior</a></li>
+          <li class="toc-h2"><a href="#heading-reproduction">Reproduction</a></li>
           <li class="toc-h2"><a href="#heading-review-task">Review task</a></li>
           <li class="toc-h2"><a href="#heading-starter-code">Starter Code</a></li>
           <li class="toc-h2"><a href="#heading-reference-solution">Reference Solution</a></li>
@@ -41,32 +42,33 @@
         </div>
       </aside>
       <article class="prose" data-problem-id="round-1-09">
-<h1 id="heading-pr-09--gradebook-aggregation">PR #09 — Gradebook Aggregation</h1>
+<h1 id="heading-pr-09--gradebook-batch-replay">PR #09 — Gradebook Batch Replay</h1>
 <p><strong>Difficulty:</strong> Medium</p>
-<p><strong>PR title:</strong> Aggregate weighted assessment scores into student grades</p>
-<h2 id="heading-summary">Summary</h2>
-<p>A course publishes a final grade for each student from assessment records submitted in several batches. Exams and projects can have different weights, and the course may drop low scores within each category. You are reviewing the PR that combines those records into a grade summary while retaining the number of input entries for reporting.</p>
-<h2 id="heading-input-and-output">Input and output</h2>
-<p><code>summarize_gradebook(rows, weights, drop_lowest=1)</code> accepts rows containing a <code>student</code> name and a <code>scores</code> mapping from category name to a list of percentage scores. <code>weights</code> maps each category name to its percentage weight. It returns a mapping from the first trimmed student spelling to a summary with <code>count</code>, <code>average</code>, and <code>letter</code>.</p>
-<h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
 <ul>
-<li>Merge rows whose trimmed student names match without regard to case; keep the first trimmed spelling as the output key.</li>
-<li>Weights must be a nonempty mapping of nonblank category names to finite, non-boolean percentages from 0 through 100, totaling 100. Row categories must be included in that mapping.</li>
-<li>Each category value is a score list. Every entry is a finite, non-boolean percentage from 0 through 100 or <code>None</code>. <code>None</code> represents a missing submission and contributes a score of zero.</li>
-<li>Drop <code>drop_lowest</code> lowest entries from each student's category after merging rows. The drop count is a nonnegative integer and includes zero-valued or missing entries. If no entries remain, that category contributes a mean of zero.</li>
-<li>Combine category means using their percentage weights. <code>count</code> is the total number of entries before dropping, including missing and later-dropped entries.</li>
-<li>Round the final average to two decimal places. Assign letters from the unrounded average: A at 90, B at 80, C at 70, D at 60, and F below 60.</li>
-<li>Reject malformed row/category/weight shapes, invalid scores, and invalid drop counts with <code>ValueError</code>.</li>
+<li><strong>Interview format:</strong> PR review / focused debugging.</li>
+<li><strong>Primary skills:</strong> data aggregation, identity normalization, numeric reasoning.</li>
+<li><strong>Expected duration:</strong> 45–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.</li>
+<li><strong>Interviewer evaluation:</strong> Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
 </ul>
-<h2 id="heading-contract-examples">Contract examples</h2>
-<p>For this input, with <code>weights={&quot;exam&quot;: 80, &quot;project&quot;: 20}</code> and <code>drop_lowest=0</code>:</p>
-<pre tabindex="0" role="group" aria-label="Code sample"><code class="language-python">[{&quot;student&quot;: &quot;Ari&quot;, &quot;scores&quot;: {&quot;exam&quot;: [100], &quot;project&quot;: [0]}}]
-</code></pre>
-<p>The expected return is <code>{&quot;Ari&quot;: {&quot;count&quot;: 2, &quot;average&quot;: 80.0, &quot;letter&quot;: &quot;B&quot;}}</code>: the two category percentages contribute according to their weights.</p>
-<p>For <code>[{&quot;student&quot;: &quot;Cal&quot;, &quot;scores&quot;: {&quot;exam&quot;: [100, None, 90]}}]</code>, <code>weights={&quot;exam&quot;: 100}</code>, and the default drop count of 1, the expected summary for Cal is <code>{&quot;count&quot;: 3, &quot;average&quot;: 95.0, &quot;letter&quot;: &quot;A&quot;}</code>. The missing entry counts toward <code>count</code> even though it is dropped.</p>
-<p>An unrounded average of <code>89.995</code> displays as <code>90.0</code> but receives letter <code>&quot;B&quot;</code>.</p>
+<p><strong>PR title:</strong> Ignore a repeated assessment import</p>
+<h2 id="heading-summary">Summary</h2>
+<p>An instructor can import assessment scores in batches. If the import job retries after a timeout, rows from the same batch may arrive again. You are reviewing a change to the grade summary so a replay does not count the same student's assessment twice.</p>
+<h2 id="heading-input-and-output">Input and output</h2>
+<p><code>summarize_gradebook(rows)</code> receives rows with a student name, an <code>assessment_id</code> unique for that student's assessment, and a numeric score. It returns each student's first trimmed display name with the number of distinct assessments and their average rounded to two decimal places. Student names differing only in surrounding whitespace or case identify the same student.</p>
+<h2 id="heading-expected-behavior">Expected behavior</h2>
+<ul>
+<li>Distinct assessment IDs for one student contribute once each.</li>
+<li>Repeating a row with the same student identity, assessment ID, and score is an import replay and contributes only once.</li>
+<li>Reusing an assessment ID for the same student with a different score is inconsistent input and raises <code>ValueError</code>.</li>
+<li>The result's count and average reflect distinct assessments only.</li>
+</ul>
+<h2 id="heading-reproduction">Reproduction</h2>
+<p>Importing <code>{&quot;student&quot;: &quot;Ari&quot;, &quot;assessment_id&quot;: &quot;quiz-1&quot;, &quot;score&quot;: 80}</code> twice must produce <code>{&quot;Ari&quot;: {&quot;count&quot;: 1, &quot;average&quot;: 80.0}}</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review the aggregation and assertions against weighted grades, merged student identities, and the drop policy. Correct discrepancies and add cases that check all three summary fields, including missing submissions and a displayed average near a letter boundary. Explain how the tests distinguish the displayed number from the grade decision.</p>
+<p>Compare the import behavior and tests with replay and conflict semantics. Add a regression test that verifies both count and average after an exact replay, then explain why a conflicting replay must not silently change a published grade.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/09-gradebook-aggregation" target="_blank" rel="noopener noreferrer">View starter code</a></p>
 <details class="solution-reveal">

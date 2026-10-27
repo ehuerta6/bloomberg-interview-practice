@@ -25,6 +25,7 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
           <li class="toc-h2"><a href="#heading-input-and-output">Input and output</a></li>
           <li class="toc-h2"><a href="#heading-expected-behavior-and-invariants">Expected behavior and invariants</a></li>
@@ -43,6 +44,15 @@
       <article class="prose" data-problem-id="round-1-16">
 <h1 id="heading-pr-16--log-filtering">PR #16 — Log Filtering</h1>
 <p><strong>Difficulty:</strong> Easy</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Algorithmic coding / PR review.</li>
+<li><strong>Primary skills:</strong> filtering semantics, structured data, test design.</li>
+<li><strong>Expected duration:</strong> 45–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Assess the proposed algorithm and tests against the stated contract; explain complexity and verify boundary behavior.</li>
+<li><strong>Interviewer evaluation:</strong> Algorithm selection, correctness argument, complexity, edge cases, and clear communication. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <p><strong>PR title:</strong> Filter structured logs by severity and time range</p>
 <h2 id="heading-summary">Summary</h2>
 <p>An operator uses a log viewer to inspect messages at a chosen severity within a time range. The stored list may also contain malformed records; those records should not prevent the operator from seeing valid matching entries. You are reviewing the filtering PR and its interpretation of the selected boundaries.</p>

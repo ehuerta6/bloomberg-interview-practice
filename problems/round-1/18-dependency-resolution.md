@@ -2,6 +2,15 @@
 
 **Difficulty:** Hard
 
+## Practice Metadata
+
+- **Interview format:** Algorithmic coding / PR review.
+- **Primary skills:** dependency graphs, cycle detection, topological reasoning.
+- **Expected duration:** 45–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Assess the proposed algorithm and tests against the stated contract; explain complexity and verify boundary behavior.
+- **Interviewer evaluation:** Algorithm selection, correctness argument, complexity, edge cases, and clear communication. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 **PR title:** Resolve package dependencies into installation order
 
 ## Summary

@@ -71,14 +71,19 @@ them as exact reproductions.
 
 ## Use the right shape for each category
 
-### Round 1: PR Review
+### Round 1: PR Review, Fundamentals, or Algorithm Practice
 
-Write a short PR description with a product goal, the behavior contract, useful
+For review problems, write a short PR description with a product goal, the behavior contract, useful
 examples, and a review task. State the valid inputs and outputs, important
 boundaries, and relevant state where applicable. Ask the student to compare the
 proposed code and tests with the contract, add meaningful regression coverage,
 and explain the evidence. Do not turn a contract example into a disclosure of
 the starter's defect.
+
+For exercises whose main objective is a data structure, algorithm, or language
+fundamental, label that format directly. State the function contract and
+expected scope, then include a code-review or test-analysis component only when
+it serves the learning objective.
 
 ### Round 2: Engineering Ticket
 
@@ -191,3 +196,46 @@ When the text already meets the standard, record that review instead of
 rewriting it for novelty. When the source, tests, and reference do not agree,
 report the exact paths and behavior to the issue owner; preserve the existing
 code, test behavior, and difficulty until the contract is resolved.
+
+## Required interview metadata
+
+Every Round 1 and Round 2 assignment includes a short **Practice Metadata**
+section near the top. It names the interview format, primary skills, expected
+duration, AI assistance policy, candidate objective, and interviewer evaluation
+criteria. Keep this concise and specific to the exercise; the shared
+[interviewer rubric](interviewer-rubric.md) supplies common evaluation detail.
+
+Use `Algorithmic coding` or `Programming fundamentals` where that is the honest
+format. Do not describe every Round 1 exercise as debugging, and do not imply
+that the exercise is an official company question. AI-assisted practice allows
+explanations, hypotheses, and test suggestions while the candidate remains
+responsible for verifying and explaining changes.
+
+## Reusable exercise-quality checklist
+
+Before adding or materially revising an assignment, verify:
+
+1. **Credible task:** The scenario maps to a plausible PR, bug report, feature,
+   or explicitly labeled algorithm exercise. The story does not disguise an
+   unrelated puzzle.
+2. **One primary objective:** State the main skill and keep optional follow-ups
+   separate from the core task.
+3. **Observable contract:** Give the candidate enough context to determine
+   expected outputs or state transitions. Keep implementation choices open
+   unless they affect correctness.
+4. **Investigable starter:** The relevant behavior exists in believable code;
+   the intended defect can be found by tracing the code and tests. Do not make
+   a review exercise an unbounded rewrite.
+5. **Focused test evidence:** Tests assert externally meaningful behavior,
+   demonstrate the intended defect, and cover important boundaries without
+   encoding unrelated design choices.
+6. **Interview-sized scope:** A prepared candidate can clarify, investigate,
+   implement or make meaningful progress, and explain evidence in the stated
+   duration.
+7. **AI-verifiable work:** Candidates can validate suggestions with source,
+   tests, or reasoning. The task rewards judgment rather than prompt wording.
+8. **Safe candidate material:** Prompts and public HTML do not reveal the root
+   cause, patch, or reference answer; references remain separate.
+9. **Synchronized catalog:** Markdown, starter, tests, reference, links, and
+   generated HTML agree. Regenerate HTML and run the repository's applicable
+   catalog and exercise checks.

@@ -2,13 +2,22 @@
 
 **Difficulty:** Hard
 
+## Practice Metadata
+
+- **Interview format:** PR review / focused debugging.
+- **Primary skills:** permission revocation, authorization precedence, least privilege.
+- **Expected duration:** 45–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.
+- **Interviewer evaluation:** Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## PR title
 
 Enforce access rule precedence
 
 ## Summary
 
-A document service decides whether a user can read, write, or perform another named action on a resource. Roles provide shared grants, direct user rules provide exceptions, and ownership grants a limited read permission. You are reviewing the permission PR so conflicting rules produce a predictable access decision. An access-control list (ACL) is the policy data supplied to this decision.
+A document service grants project-wide read access to members of the `reader` role. A user-specific revocation was added after an account lost access, but the user can still read one document through the shared role. You are reviewing the authorization change. An access-control list (ACL) is the policy data supplied to the decision.
 
 ## Input and output
 
@@ -48,7 +57,7 @@ The `"*"` resource key means the role's read grant applies to any resource. Owni
 
 ## Review task
 
-Review permission decisions and tests for direct-rule conflicts, role grants, wildcard resources, and owner reads. Correct discrepancies and add cases where two policy sources disagree, as well as missing IDs and actions with no matching grant. Explain which rule determines each expected result.
+Reproduce a revoked user request that still receives access through a role. Correct the precedence decision and add a regression test asserting that the denied request remains denied even when the role grants it. Explain why missing and unrelated grants should stay closed.
 
 ## Starter Code
 

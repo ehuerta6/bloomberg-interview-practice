@@ -25,6 +25,7 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
           <li class="toc-h2"><a href="#heading-expected-behavior">Expected behavior</a></li>
           <li class="toc-h2"><a href="#heading-contract-examples">Contract examples</a></li>
@@ -42,6 +43,15 @@
       <article class="prose" data-problem-id="round-1-04">
 <h1 id="heading-pr-04--coupon-eligibility">PR #04 — Coupon Eligibility</h1>
 <p><strong>Difficulty:</strong> Medium</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> PR review / focused debugging.</li>
+<li><strong>Primary skills:</strong> contract consistency, monetary arithmetic, precedence.</li>
+<li><strong>Expected duration:</strong> 45–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.</li>
+<li><strong>Interviewer evaluation:</strong> Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <p><strong>PR title:</strong> Apply checkout promotions</p>
 <h2 id="heading-summary">Summary</h2>
 <p>Checkout shows a customer the amount due before an order is placed. Employee pricing and a coupon can both be present on the request. The quote must apply employee pricing first; otherwise it may apply one eligible coupon. You are reviewing the PR that calculates the amount due in whole cents.</p>

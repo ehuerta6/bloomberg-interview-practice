@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Seat Allocation | CIC Interview Practice</title>
+  <title>Seat Reservation Conflict | CIC Interview Practice</title>
   <link rel="icon" type="image/png" href="../assets/cic-logo.png">
   <link rel="stylesheet" href="../assets/site.css">
 </head>
@@ -21,16 +21,17 @@
     <div class="page-layout content-layout">
       <aside class="problem-sidebar" aria-label="Problem navigation and resources">
         <p class="eyebrow">Round 1 · Code Review · Problem 12</p>
-        <p><span class="tag difficulty-hard">Hard</span></p>
+        <p><span class="tag difficulty-easy">Easy</span></p>
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
-          <li class="toc-h2"><a href="#heading-input-and-output">Input and output</a></li>
-          <li class="toc-h2"><a href="#heading-expected-behavior-and-invariants">Expected behavior and invariants</a></li>
-          <li class="toc-h2"><a href="#heading-contract-example">Contract example</a></li>
+          <li class="toc-h2"><a href="#heading-expected-behavior">Expected behavior</a></li>
+          <li class="toc-h2"><a href="#heading-reproduction">Reproduction</a></li>
           <li class="toc-h2"><a href="#heading-review-task">Review task</a></li>
           <li class="toc-h2"><a href="#heading-starter-code">Starter Code</a></li>
+          <li class="toc-h2"><a href="#heading-optional-algorithm-extension">Optional algorithm extension</a></li>
           <li class="toc-h2"><a href="#heading-reference-solution">Reference Solution</a></li>
           </ul>
         </nav>
@@ -41,53 +42,35 @@
         </div>
       </aside>
       <article class="prose" data-problem-id="round-1-12">
-<h1 id="heading-pr-12--seat-allocation">PR #12 — Seat Allocation</h1>
-<p><strong>Difficulty:</strong> Hard</p>
-<p><strong>PR title:</strong> Allocate prioritized groups to available seats</p>
-<h2 id="heading-summary">Summary</h2>
-<p>An event team must seat each party together while respecting priority and accessible-seat requests. A party that cannot fit must be reported rather than split across rows. You are reviewing the allocation PR; the venue map is a caller-owned snapshot, and the function returns a seating proposal without changing it.</p>
-<h2 id="heading-input-and-output">Input and output</h2>
-<p><code>allocate_seats(rows, groups)</code> receives an insertion-ordered mapping of row names to seat dictionaries and a list of group requests. Each seat has a positive number, an accessibility flag, and an availability flag. Each group has an ID, positive size, optional numeric priority, and optional accessibility requirement. The result contains an assignment mapping and the IDs that could not be seated.</p>
-<h2 id="heading-expected-behavior-and-invariants">Expected behavior and invariants</h2>
+<h1 id="heading-pr-12--seat-reservation-conflict">PR #12 — Seat Reservation Conflict</h1>
+<p><strong>Difficulty:</strong> Easy</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
 <ul>
-<li>Process higher numeric priority first; preserve input order for groups with equal priority.</li>
-<li>Assign a group only to a whole, consecutive block of available seats in one row. Never split groups or reuse seats.</li>
-<li>When accessibility is requested, every seat in the group's block must be accessible.</li>
-<li>Among eligible blocks, choose the row with the least available capacity left after placement. Break ties by row insertion order, then lowest seat number.</li>
-<li>Keep the supplied venue data unchanged. Report every unseated group in processing order.</li>
-<li>Reject malformed rows or groups, nonpositive or boolean sizes, and repeated group IDs with <code>ValueError</code>.</li>
+<li><strong>Interview format:</strong> PR review / focused debugging.</li>
+<li><strong>Primary skills:</strong> State conflict investigation, regression testing, communication.</li>
+<li><strong>Expected duration:</strong> 35–45 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Trace one conflicting reservation attempt, prevent an existing reservation from being replaced, and verify the stored owner remains unchanged.</li>
+<li><strong>Interviewer evaluation:</strong> Code investigation, observable state reasoning, a focused regression test, and a clear explanation of why this in-memory example does not prove concurrency safety. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
 </ul>
-<h2 id="heading-contract-example">Contract example</h2>
-<p>The venue has these rows in insertion order. Each listed seat is available and has <code>accessible=False</code>:</p>
-<div class="table-scroll" tabindex="0" role="region" aria-label="Table"><table>
-<thead>
-<tr>
-<th>Row key</th>
-<th>Seat numbers</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>&quot;A&quot;</code></td>
-<td><code>1, 2, 3, 4</code></td>
-</tr>
-<tr>
-<td><code>&quot;B&quot;</code></td>
-<td><code>1, 2</code></td>
-</tr>
-</tbody>
-</table></div>
-<p>Each seat is represented as <code>{&quot;number&quot;: n, &quot;accessible&quot;: False, &quot;available&quot;: True}</code>. For <code>groups=[{&quot;group_id&quot;: &quot;g&quot;, &quot;size&quot;: 2}]</code>, the expected result is:</p>
-<pre tabindex="0" role="group" aria-label="Code sample"><code class="language-python">{
-    &quot;assigned&quot;: {&quot;g&quot;: [{&quot;row&quot;: &quot;B&quot;, &quot;seat&quot;: 1}, {&quot;row&quot;: &quot;B&quot;, &quot;seat&quot;: 2}]},
-    &quot;unassigned&quot;: [],
-}
-</code></pre>
-<p>Row B leaves no unused available seats after the placement, while row A would leave two. The input seats must still be marked available after the call. In a separate venue with only two available seats, a size-2 group at priority 5 is seated before a size-1 group at priority 1, even when the smaller group appears first in <code>groups</code>.</p>
+<p><strong>PR title:</strong> Prevent a second customer from replacing an existing seat reservation</p>
+<h2 id="heading-summary">Summary</h2>
+<p>The event checkout service keeps a small reservation snapshot mapping seat IDs to customer IDs. Support reports that a second checkout can appear successful for a seat that another customer already reserved. You are reviewing the change that handles one reservation attempt.</p>
+<h2 id="heading-expected-behavior">Expected behavior</h2>
+<ul>
+<li><code>reserve_seat(reservations, seat_id, customer_id)</code> returns <code>True</code> and records the customer when the seat is not present.</li>
+<li>If the seat already has a reservation, return <code>False</code> and preserve the existing customer.</li>
+<li>A conflict on one seat must not prevent a later reservation for a different seat.</li>
+</ul>
+<p>The mapping is a single-process snapshot. Thread safety, persistence, payment handling, and multi-seat group allocation are outside this review.</p>
+<h2 id="heading-reproduction">Reproduction</h2>
+<p>Starting with <code>{&quot;A-12&quot;: &quot;customer-1&quot;}</code>, calling <code>reserve_seat(reservations, &quot;A-12&quot;, &quot;customer-2&quot;)</code> must return <code>False</code> and leave the mapping unchanged.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review whether the allocation and assertions satisfy request priority, whole-party placement, and the specified row choice. Add layouts that distinguish accessible from mixed blocks, occupied from free seats, and equal choices from impossible requests. Check the returned assignments, unassigned order, and unchanged venue snapshot, then explain the evidence for each constraint.</p>
+<p>Trace the reservation result and stored state for both an open seat and an already claimed seat. Correct the regression, add or refine a focused test that verifies the original owner remains recorded, and explain what this in-memory example proves and what it does not prove about concurrent requests.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/12-seat-allocation" target="_blank" rel="noopener noreferrer">View starter code</a></p>
+<h2 id="heading-optional-algorithm-extension">Optional algorithm extension</h2>
+<p>The earlier contiguous-group allocation exercise remains available as an optional extension in <code>round-1/12-seat-allocation/extensions/seat_allocation_algorithm.py</code>. It is separate from the 45-minute reservation review.</p>
 <details class="solution-reveal">
 <summary>Reveal reference solution link</summary>
 <div class="details-content">

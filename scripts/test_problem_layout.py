@@ -75,6 +75,27 @@ class ProblemLayoutTests(unittest.TestCase):
                 disclosed = render_markdown(markdown, source, ROOT, self.pages, reveal_solutions=True)
                 self.assertEqual(disclosed.replace(OPENING, "").replace(CLOSING, ""), ordinary)
 
+    def test_round_one_and_two_assignments_name_the_practice_contract(self):
+        required = (
+            "Interview format:",
+            "Primary skills:",
+            "Expected duration:",
+            "AI assistance:",
+            "Candidate objective:",
+            "Interviewer evaluation:",
+        )
+        for problem in self.manifest["problems"]:
+            if problem["category"] not in {"round-1", "round-2"}:
+                continue
+            with self.subTest(problem=problem["id"]):
+                source = ROOT / problem["source_path"]
+                markdown = source.read_text(encoding="utf-8")
+                for field in required:
+                    self.assertIn(field, markdown)
+                rendered = render_page(problem, ROOT, self.pages)
+                self.assertIn("Practice Metadata", rendered)
+                self.assertIn("interviewer-rubric", rendered)
+
     def test_generation_never_reads_reference_solution_contents(self):
         read_text = Path.read_text
 
