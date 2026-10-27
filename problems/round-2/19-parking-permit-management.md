@@ -2,6 +2,15 @@
 
 **Difficulty:** Easy
 
+## Practice Metadata
+
+- **Interview format:** Engineering ticket / existing-code debugging.
+- **Primary skills:** inclusive day boundaries, expiration state, temporal regression testing.
+- **Expected duration:** 50–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Explain the integer-day expiration contract and reject renewal after the final valid day even when a cleanup sweep has not run.
+- **Interviewer evaluation:** Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## Context
 
 You maintain a city's parking-permit ledger. Each zone has a quota of permits

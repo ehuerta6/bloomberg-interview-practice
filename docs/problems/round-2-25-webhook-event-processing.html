@@ -25,6 +25,7 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-context">Context</a></li>
           <li class="toc-h2"><a href="#heading-practice-report">Practice report</a></li>
           <li class="toc-h2"><a href="#heading-acceptance-criteria">Acceptance Criteria</a></li>
@@ -43,6 +44,15 @@
       <article class="prose" data-problem-id="round-2-25">
 <h1 id="heading-ticket-25--webhook-event-processing">Ticket #25 — Webhook Event Processing</h1>
 <p><strong>Difficulty:</strong> Medium</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Engineering ticket / existing-code debugging.</li>
+<li><strong>Primary skills:</strong> duplicate delivery, idempotency, observable state changes.</li>
+<li><strong>Expected duration:</strong> 50–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Trace the reported behavior through the supplied code, state an invariant, make a focused change, and prove it with a regression test.</li>
+<li><strong>Interviewer evaluation:</strong> Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <h2 id="heading-context">Context</h2>
 <p>You maintain an order-status receiver for a delivery partner. A <strong>webhook</strong> is
 an incoming event notification; partners may retry it or deliver it late.

@@ -2,6 +2,15 @@
 
 **Difficulty:** Easy
 
+## Practice Metadata
+
+- **Interview format:** Engineering ticket / existing-code debugging.
+- **Primary skills:** priority ordering, FIFO behavior, load-aware dispatch.
+- **Expected duration:** 50–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Trace why an older lower-priority ticket is selected and correct the dispatch order while preserving the assignment-load invariant.
+- **Interviewer evaluation:** Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## Context
 
 You maintain dispatch for a support desk with billing and technical teams.
@@ -21,19 +30,21 @@ that order. With all agent loads initially zero, call `assign_next("technical")`
 
 The next selection should be `mid`, assigned to the less-loaded eligible agent.
 
-## Acceptance Criteria
+## Core acceptance criteria
 
-- Reject malformed/duplicate ticket submissions without changing saved tickets
-  or loads. Priority is an integer from 1 through 5; booleans are invalid.
 - Select the highest-priority open ticket in the requested category. Equal
-  priorities preserve submission order, and an assigned ticket is not dispatched again.
-- Assign to an eligible agent with the lowest current load. Keep the supplied
-  agent-list order for equal loads. An empty category queue returns no ticket.
-- Each assigned ticket has exactly one eligible assignee. After assignment or
-  reassignment, every agent's load equals their assigned-ticket count.
-- Reassignment moves one unit of load from the old assignee to the new one.
-  Unknown/unassigned tickets and agents outside that ticket's category are rejected
-  without state changes.
+  priorities preserve submission order, and an assigned ticket is not dispatched
+  again.
+- Assign the selected ticket to an eligible agent with the lowest current load.
+  An empty category queue returns no ticket.
+- After assignment, the selected ticket has one assignee and that agent's load
+  increases by one.
+
+## Optional follow-ups
+
+If time remains, inspect malformed submissions, reassignment, and tie behavior
+for equally loaded agents. Agree on any unspecified tie policy with the
+interviewer before implementing it.
 
 ## Out of Scope
 
@@ -43,9 +54,7 @@ are outside this ticket.
 
 ## Investigation
 
-Trace selection and assignment for the report, then test equal priorities,
-independent categories, and reassignment. Compare actual assigned tickets with
-load counters after each transition, including a rejected reassignment.
+Reproduce the priority report and verify the selected ticket and agent load. Add a focused test for equal-priority FIFO ordering. Discuss how you would clarify an equal-load tie before choosing a policy.
 
 ## Starter Code
 

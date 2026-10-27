@@ -25,6 +25,7 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-context">Context</a></li>
           <li class="toc-h2"><a href="#heading-practice-report">Practice report</a></li>
           <li class="toc-h2"><a href="#heading-acceptance-criteria">Acceptance Criteria</a></li>
@@ -43,6 +44,15 @@
       <article class="prose" data-problem-id="round-2-19">
 <h1 id="heading-ticket-19--parking-permit-management">Ticket #19 — Parking Permit Management</h1>
 <p><strong>Difficulty:</strong> Easy</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Engineering ticket / existing-code debugging.</li>
+<li><strong>Primary skills:</strong> inclusive day boundaries, expiration state, temporal regression testing.</li>
+<li><strong>Expected duration:</strong> 50–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Explain the integer-day expiration contract and reject renewal after the final valid day even when a cleanup sweep has not run.</li>
+<li><strong>Interviewer evaluation:</strong> Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <h2 id="heading-context">Context</h2>
 <p>You maintain a city's parking-permit ledger. Each zone has a quota of permits
 active on a requested day. Days are integers. A permit's <code>expires_day</code> is

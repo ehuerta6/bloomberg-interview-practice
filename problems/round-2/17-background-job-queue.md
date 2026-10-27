@@ -2,6 +2,15 @@
 
 **Difficulty:** Hard
 
+## Practice Metadata
+
+- **Interview format:** Engineering ticket / existing-code debugging.
+- **Primary skills:** lease expiry, stale worker ownership, deterministic state-machine testing.
+- **Expected duration:** 50–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Reclaim a job at its exact lease deadline, then prove the former worker cannot alter the new owner's lease.
+- **Interviewer evaluation:** Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## Context
 
 You maintain background work such as digest emails and image resizing. A
@@ -23,21 +32,21 @@ maximum 3 attempts. Immediately call `claim("worker-b", 100)`.
 These are sequential calls at the same supplied time; the report requires no
 thread scheduler to reproduce.
 
-## Acceptance Criteria
+## Core acceptance criteria
 
-- A live lease excludes other workers. Each successful claim records one owner,
-  increments attempts once, and sets a deadline using the configured lease duration.
-- At the exact deadline the lease is expired. An eligible expired job can be
-  reclaimed without losing attempt history.
-- Only the current owner of an unexpired lease can complete or fail it. A stale
-  worker or wrong worker gets `conflict` without changing the current lease.
-- Completion makes a job `done`; repeated completion is harmless and a done
-  job is never claimed again.
-- A reported failure records the error and requeues the job until the attempt
-  limit; the final failure is terminal. If the final worker disappears, the
-  next claim after expiry marks the exhausted job `failed` without reclaiming it.
-- Duplicate job IDs are rejected without replacement. Missing completion and
-  invalid ownership requests follow the existing result contract without new jobs.
+- A live lease excludes another worker. The first claim records one owner,
+  increments attempts once, and sets the deadline from the configured lease.
+- At the exact deadline the lease is expired and may be reclaimed if attempts
+  remain. The new claim updates the owner and increments attempts once.
+- The former owner is stale after reassignment. Its completion or failure
+  request returns `conflict` and leaves the current owner's lease unchanged.
+- `now` is supplied by the caller; tests use fixed values and do not sleep.
+
+## Optional follow-ups
+
+After the expiry and stale-owner regression is complete, discuss terminal
+attempts, explicit failure/retry, duplicate completion, or duplicate job IDs.
+These behaviors are not prerequisites for the core task.
 
 ## Out of Scope
 
@@ -47,10 +56,7 @@ validation are outside this ticket.
 
 ## Investigation
 
-Trace claim, completion, failure, and reclaim through stored owner, status,
-attempt count, and deadline. Add deterministic tests before and at expiry,
-a stale worker after reassignment, a reported retry, and a vanished final worker.
-Explain which state proves that only one lease is live.
+Trace claim and reclaim through the stored owner, attempt count, and deadline. Add deterministic tests immediately before and at expiry, then show that the stale worker cannot alter the reassigned lease. Explain which state proves that ownership changed only after expiry.
 
 ## Starter Code
 
