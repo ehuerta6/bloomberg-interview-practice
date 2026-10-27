@@ -1,6 +1,6 @@
 # AI-Assisted Software Engineering Interview Practice
 
-65 independent practice exercises: 25 pull request reviews, 25 multi-file debugging tickets,
+65 independent practice exercises: 25 Round 1 problems (mostly PR reviews), 25 multi-file debugging tickets,
 and 15 system design prompts. These are educational exercises, not official Bloomberg interview
 questions.
 
@@ -53,7 +53,7 @@ Nightmare Mode contains ten original exercises using Cappy Marketplace: five Eng
 | 06 | [API Pagination](problems/round-1/06-api-pagination.md) | Medium |
 | 07 | [Notification Deduplication](problems/round-1/07-notification-deduplication.md) | Medium |
 | 08 | [File Upload Validation](problems/round-1/08-file-upload-validation.md) | Easy |
-| 09 | [Gradebook Aggregation](problems/round-1/09-gradebook-aggregation.md) | Medium |
+| 09 | [Gradebook Batch Replay](problems/round-1/09-gradebook-aggregation.md) | Medium |
 | 10 | [CSV Import Parser](problems/round-1/10-csv-import-parser.md) | Medium |
 | 11 | [URL Query Parameter Parser](problems/round-1/11-url-query-parameter-parser.md) | Easy |
 | 12 | [Seat Reservation Conflict](problems/round-1/12-seat-allocation.md) | Easy |
