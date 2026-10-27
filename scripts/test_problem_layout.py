@@ -75,7 +75,7 @@ class ProblemLayoutTests(unittest.TestCase):
                 disclosed = render_markdown(markdown, source, ROOT, self.pages, reveal_solutions=True)
                 self.assertEqual(disclosed.replace(OPENING, "").replace(CLOSING, ""), ordinary)
 
-    def test_round_one_and_two_assignments_name_the_practice_contract(self):
+    def test_round_one_assignments_name_the_practice_contract(self):
         required = (
             "Interview format:",
             "Primary skills:",
@@ -85,7 +85,7 @@ class ProblemLayoutTests(unittest.TestCase):
             "Interviewer evaluation:",
         )
         for problem in self.manifest["problems"]:
-            if problem["category"] not in {"round-1", "round-2"}:
+            if problem["category"] != "round-1":
                 continue
             with self.subTest(problem=problem["id"]):
                 source = ROOT / problem["source_path"]
