@@ -27,8 +27,11 @@ class RegistrationTests(unittest.TestCase):
         self.register("s1", "r1")
         self.assertEqual(self.register("s1", "r2")["status"], 409)
 
-    def test_cancelled_row_means_capacity_is_full(self):
-        self.assertEqual(1, 1)
+    def test_unknown_cancellation_preserves_active_registration(self):
+        self.assertEqual(self.register("s1", "r1")["status"], 201)
+        self.assertEqual(self.registration_routes.delete_registration("missing")["status"], 404)
+        self.assertEqual(self.repo.get_registration("r1").status, "active")
+        self.assertEqual(len(self.repo.active_for_student("career-night", "s1")), 1)
 
 
 if __name__ == "__main__":

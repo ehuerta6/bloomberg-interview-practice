@@ -44,13 +44,13 @@
 <p><strong>Difficulty:</strong> Medium</p>
 <p><strong>PR title:</strong> Apply checkout promotions</p>
 <h2 id="heading-summary">Summary</h2>
-<p>Checkout shows a customer the amount due before an order is placed. Employee pricing, a first-order offer, and a coupon can all be present on the request, but only the highest-priority eligible promotion applies. You are reviewing the PR that calculates this quote in whole cents.</p>
+<p>Checkout shows a customer the amount due before an order is placed. Employee pricing and a coupon can both be present on the request. The quote must apply employee pricing first; otherwise it may apply one eligible coupon. You are reviewing the PR that calculates the amount due in whole cents.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
-<li><code>calculate_total(subtotal_cents, coupon_code=None, first_order=False, employee=False)</code> returns an integer amount in cents and rejects negative, non-integer, or boolean subtotals.</li>
-<li>Employee pricing is a 20% discount and takes precedence over all other promotions. Otherwise, a first-order discount is 15% and takes precedence over a coupon.</li>
-<li>With no automatic promotion, <code>SAVE10</code> removes 10% when the original subtotal is at least 5000 cents; <code>TAKE500</code> removes 500 cents when it is at least 2500 cents.</li>
-<li>Coupon codes ignore surrounding whitespace and letter case. An unknown nonblank code is rejected. A known coupon below its minimum gives no discount.</li>
+<li><code>calculate_total(subtotal_cents, coupon_code=None, employee=False)</code> returns an integer amount in cents and rejects negative, non-integer, or boolean subtotals.</li>
+<li>Employee pricing is a 20% discount and takes precedence over a coupon.</li>
+<li>Without employee pricing, coupon <code>SAVE10</code> removes 10% when the original subtotal is at least 5000 cents.</li>
+<li>Coupon codes ignore surrounding whitespace and letter case. An unknown nonblank code is rejected. A known coupon below its minimum gives no discount. A blank coupon means no coupon.</li>
 <li>Discounts use whole-cent floor rounding and cannot reduce the amount due below zero.</li>
 </ul>
 <h2 id="heading-contract-examples">Contract examples</h2>
@@ -60,7 +60,6 @@
 <tr>
 <th style="text-align:right">Subtotal</th>
 <th>Coupon</th>
-<th>First order</th>
 <th>Employee</th>
 <th style="text-align:right">Expected amount due</th>
 </tr>
@@ -70,13 +69,11 @@
 <td style="text-align:right">4999</td>
 <td><code>&quot;SAVE10&quot;</code></td>
 <td><code>False</code></td>
-<td><code>False</code></td>
 <td style="text-align:right">4999</td>
 </tr>
 <tr>
 <td style="text-align:right">5000</td>
 <td><code>&quot;SAVE10&quot;</code></td>
-<td><code>False</code></td>
 <td><code>False</code></td>
 <td style="text-align:right">4500</td>
 </tr>
@@ -84,21 +81,13 @@
 <td style="text-align:right">10000</td>
 <td><code>&quot;SAVE10&quot;</code></td>
 <td><code>True</code></td>
-<td><code>True</code></td>
 <td style="text-align:right">8000</td>
-</tr>
-<tr>
-<td style="text-align:right">2500</td>
-<td><code>&quot; take500 &quot;</code></td>
-<td><code>False</code></td>
-<td><code>False</code></td>
-<td style="text-align:right">2000</td>
 </tr>
 </tbody>
 </table></div>
 <p>A quote for 100 cents with the unknown code <code>&quot;NOT-A-COUPON&quot;</code> raises <code>ValueError</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Compare the quote results and tests with the promotion priority and original-subtotal minimums. Correct misleading assertions and implementation defects, then add tests for competing promotions, threshold boundaries, whole-cent rounding, and invalid money input. Explain how the assertions establish that a quote applies only one promotion.</p>
+<p>Compare quote results and tests with the employee-pricing priority and coupon threshold. Correct the contradictory assertion and implementation defect, then verify the threshold immediately below and at 5000 cents. Explain which evidence shows that only one promotion applies.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/04-coupon-eligibility" target="_blank" rel="noopener noreferrer">View starter code</a></p>
 <details class="solution-reveal">
