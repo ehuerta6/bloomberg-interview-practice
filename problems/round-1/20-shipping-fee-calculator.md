@@ -1,58 +1,40 @@
-# PR #20 — Shipping Fee Calculator
+# PR #20 — Shipping Minimum Charge
 
 **Difficulty:** Medium
 
-**PR title:** Calculate discounted, zone-based shipping fees
+## Practice Metadata
+
+- **Interview format:** PR review / focused debugging.
+- **Primary skills:** pricing arithmetic, rounding, threshold behavior.
+- **Expected duration:** 45–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.
+- **Interviewer evaluation:** Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
+**PR title:** Enforce the carrier minimum on discounted shipping quotes
 
 ## Summary
 
-A store shows the shipping charge before checkout. The carrier prices parcels by destination and total weight, while the store offers shipping discounts and a free-shipping threshold. You are reviewing the pricing PR so the quote follows the carrier minimum and produces a predictable dollar amount rounded to cents.
+The checkout page shows a shipping quote before an order is placed. The local carrier charges a base amount plus a per-kilogram rate, with a $5 minimum. A percentage promotion can reduce the quote, while orders at or above $75 receive free shipping. Support reports that some light parcels show a charge below the carrier's minimum after a promotion.
 
 ## Input and output
 
-`calculate_shipping(order, rates)` receives an order with `zone`, `subtotal`, `weight_kg`, and optional `shipping_discount_percent` fields. The discount defaults to zero. `rates` maps each zone to `base_fee`, `minimum_fee`, `free_over`, and an ordered `weight_brackets` list. Each band has an inclusive `up_to_kg` limit and `per_kg` rate; the final band uses `None` for an unbounded limit. The function returns a `Decimal` fee in dollars rounded to cents.
+`calculate_shipping(order, rates)` returns a `Decimal` in dollars rounded to cents. An order supplies `zone`, `subtotal`, and `weight_kg`; the discount is optional and defaults to zero. Each zone supplies `base_fee`, `per_kg`, `minimum_fee`, and `free_over`.
 
-## Expected behavior and invariants
-- Reject unknown zones, missing fields, malformed or non-finite amounts, booleans, negative amounts, discounts over 100 percent, and invalid weight-band ordering with `ValueError`.
-- A subtotal equal to or above the zone's `free_over` threshold receives free shipping regardless of weight or minimum fee.
-- Otherwise select the first band whose upper limit is greater than or equal to the parcel's weight; use the final unbounded band for heavier parcels.
-- Calculate `base_fee + weight_kg * per_kg`, apply the percentage shipping discount, then enforce `minimum_fee`.
-- Round only the final fee to two decimal places using half-up currency rounding.
-- Do not mutate the order or rate table.
+## Expected behavior
 
-## Contract example
+- For a paid shipping order, calculate `base_fee + weight_kg * per_kg`, apply the percentage discount, then charge at least the zone's `minimum_fee`.
+- The minimum applies after the discount.
+- A subtotal equal to or greater than `free_over` receives free shipping.
+- Round the final charge to cents using half-up rounding.
 
-Use this rate table:
+## Reproduction
 
-```python
-{
-    "local": {
-        "base_fee": "3.00",
-        "minimum_fee": "5.00",
-        "free_over": "75.00",
-        "weight_brackets": [
-            {"up_to_kg": "2", "per_kg": "1.25"},
-            {"up_to_kg": "5", "per_kg": "1.00"},
-            {"up_to_kg": None, "per_kg": "0.80"},
-        ],
-    }
-}
-```
-
-Each row is an independent order in zone `"local"`:
-
-| Subtotal in dollars | Weight in kg | Shipping discount | Expected `Decimal` fee |
-| ---: | ---: | ---: | --- |
-| `"20"` | `"2"` | 0 | `Decimal("5.50")` |
-| `"20"` | `"2.01"` | 0 | `Decimal("5.01")` |
-| `"20"` | `"1"` | 50 | `Decimal("5.00")` |
-| `"75.00"` | `"10"` | 0 | `Decimal("0.00")` |
-
-The 50 percent discount on the one-kilogram parcel would fall below the carrier minimum, so the fee is $5.00. An order at the free-shipping threshold pays zero even when a carrier minimum exists.
+With local rates `{ "base_fee": "3.00", "per_kg": "1.25", "minimum_fee": "5.00", "free_over": "75.00" }`, a one-kilogram order with subtotal `$20` and a 50% shipping discount has a calculated discounted amount below $5. The expected quote is `Decimal("5.00")`. At a `$75` subtotal, the expected quote is `Decimal("0.00")`.
 
 ## Review task
 
-Review the quote and assertions against inclusive weight bands, discounts, the carrier minimum, and free shipping. Correct misleading expectations and implementation defects, then add cases on both sides of the boundaries and at a half-cent rounding point. Check the final fee and unchanged order/rate inputs, and explain the evidence for the pricing order.
+Trace the quote calculation and compare the returned amount with the minimum and free-shipping contract. Add a focused regression assertion for the discounted light parcel and explain why the free-shipping threshold takes precedence over the minimum.
 
 ## Starter Code
 

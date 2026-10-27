@@ -1,52 +1,45 @@
-# PR #12 — Seat Allocation
+# PR #12 — Seat Reservation Conflict
 
-**Difficulty:** Hard
+**Difficulty:** Easy
 
-**PR title:** Allocate prioritized groups to available seats
+## Practice Metadata
+
+- **Interview format:** PR review / focused debugging.
+- **Primary skills:** State conflict investigation, regression testing, communication.
+- **Expected duration:** 35–45 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Trace one conflicting reservation attempt, prevent an existing reservation from being replaced, and verify the stored owner remains unchanged.
+- **Interviewer evaluation:** Code investigation, observable state reasoning, a focused regression test, and a clear explanation of why this in-memory example does not prove concurrency safety. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
+**PR title:** Prevent a second customer from replacing an existing seat reservation
 
 ## Summary
 
-An event team must seat each party together while respecting priority and accessible-seat requests. A party that cannot fit must be reported rather than split across rows. You are reviewing the allocation PR; the venue map is a caller-owned snapshot, and the function returns a seating proposal without changing it.
+The event checkout service keeps a small reservation snapshot mapping seat IDs to customer IDs. Support reports that a second checkout can appear successful for a seat that another customer already reserved. You are reviewing the change that handles one reservation attempt.
 
-## Input and output
+## Expected behavior
 
-`allocate_seats(rows, groups)` receives an insertion-ordered mapping of row names to seat dictionaries and a list of group requests. Each seat has a positive number, an accessibility flag, and an availability flag. Each group has an ID, positive size, optional numeric priority, and optional accessibility requirement. The result contains an assignment mapping and the IDs that could not be seated.
+- `reserve_seat(reservations, seat_id, customer_id)` returns `True` and records the customer when the seat is not present.
+- If the seat already has a reservation, return `False` and preserve the existing customer.
+- A conflict on one seat must not prevent a later reservation for a different seat.
 
-## Expected behavior and invariants
-- Process higher numeric priority first; preserve input order for groups with equal priority.
-- Assign a group only to a whole, consecutive block of available seats in one row. Never split groups or reuse seats.
-- When accessibility is requested, every seat in the group's block must be accessible.
-- Among eligible blocks, choose the row with the least available capacity left after placement. Break ties by row insertion order, then lowest seat number.
-- Keep the supplied venue data unchanged. Report every unseated group in processing order.
-- Reject malformed rows or groups, nonpositive or boolean sizes, and repeated group IDs with `ValueError`.
+The mapping is a single-process snapshot. Thread safety, persistence, payment handling, and multi-seat group allocation are outside this review.
 
-## Contract example
+## Reproduction
 
-The venue has these rows in insertion order. Each listed seat is available and has `accessible=False`:
-
-| Row key | Seat numbers |
-| --- | --- |
-| `"A"` | `1, 2, 3, 4` |
-| `"B"` | `1, 2` |
-
-Each seat is represented as `{"number": n, "accessible": False, "available": True}`. For `groups=[{"group_id": "g", "size": 2}]`, the expected result is:
-
-```python
-{
-    "assigned": {"g": [{"row": "B", "seat": 1}, {"row": "B", "seat": 2}]},
-    "unassigned": [],
-}
-```
-
-Row B leaves no unused available seats after the placement, while row A would leave two. The input seats must still be marked available after the call. In a separate venue with only two available seats, a size-2 group at priority 5 is seated before a size-1 group at priority 1, even when the smaller group appears first in `groups`.
+Starting with `{"A-12": "customer-1"}`, calling `reserve_seat(reservations, "A-12", "customer-2")` must return `False` and leave the mapping unchanged.
 
 ## Review task
 
-Review whether the allocation and assertions satisfy request priority, whole-party placement, and the specified row choice. Add layouts that distinguish accessible from mixed blocks, occupied from free seats, and equal choices from impossible requests. Check the returned assignments, unassigned order, and unchanged venue snapshot, then explain the evidence for each constraint.
+Trace the reservation result and stored state for both an open seat and an already claimed seat. Correct the regression, add or refine a focused test that verifies the original owner remains recorded, and explain what this in-memory example proves and what it does not prove about concurrent requests.
 
 ## Starter Code
 
 [View starter code](../../round-1/12-seat-allocation/)
+
+## Optional algorithm extension
+
+The earlier contiguous-group allocation exercise remains available as an optional extension in `round-1/12-seat-allocation/extensions/seat_allocation_algorithm.py`. It is separate from the 45-minute reservation review.
 
 ## Reference Solution
 

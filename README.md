@@ -4,7 +4,8 @@
 and 15 system design prompts. These are educational exercises, not official Bloomberg interview
 questions.
 
-Round 1 asks you to review a proposed change against its requirements and tests. Round 2 asks you
+Round 1 primarily asks you to review a proposed change against its requirements and tests; a few
+fundamentals and algorithm exercises are labeled as such in their assignments. Round 2 asks you
 to trace a reported bug through a small multi-file codebase. System Design problems practice
 whiteboard discussion using **Clarify → Interactions → Data → Design → Improve**. Problems 01–02
 come from Noel's Coding Interview Club (CIC) workshop; 03–15 are additional practice material.
@@ -24,6 +25,10 @@ come from Noel's Coding Interview Club (CIC) workshop; 03–15 are additional pr
   [exporter](scripts/export-exercise.py).
 - When using an AI assistant, follow the [practice-agent guidance](AGENTS.md): use it for
   explanations and hints, and make and explain your own changes.
+- Round 1 and Round 2 assignments show their interview format, primary skills, expected time,
+  AI practice policy, candidate objective, and evaluation criteria. Interviewers can use the
+  shared [interviewer rubric](docs/editorial/interviewer-rubric.md); authors should use the
+  [exercise quality checklist](docs/editorial/assignment-standard.md#reusable-exercise-quality-checklist).
 
 ## Cappy Marketplace
 
@@ -36,7 +41,7 @@ service or container is required.
 
 Nightmare Mode contains ten original exercises using Cappy Marketplace: five Engineering Tickets and five PR Reviews. They are independent practice scenarios, not official Bloomberg interview questions. Browse the [numbered Nightmare Mode assignments](nightmares/README.md), then use each assignment's pinned challenge version. The nested [AI Interview Mode policy](marketplace/AGENTS.md) keeps the student in control while allowing useful investigation, testing, and focused implementation.
 
-## Round 1 — Pull Request Reviews
+## Round 1 — Code Review, Fundamentals, and Algorithms
 
 | # | Problem | Difficulty |
 |---:|---|---|
@@ -45,13 +50,13 @@ Nightmare Mode contains ten original exercises using Cappy Marketplace: five Eng
 | 03 | [Cappy's Snack Inventory](problems/round-1/03-snack-inventory.md) | Easy |
 | 04 | [Coupon Eligibility](problems/round-1/04-coupon-eligibility.md) | Medium |
 | 05 | [Session Token Expiration](problems/round-1/05-session-token-expiration.md) | Medium |
-| 06 | [API Pagination](problems/round-1/06-api-pagination.md) | Hard |
+| 06 | [API Pagination](problems/round-1/06-api-pagination.md) | Medium |
 | 07 | [Notification Deduplication](problems/round-1/07-notification-deduplication.md) | Medium |
 | 08 | [File Upload Validation](problems/round-1/08-file-upload-validation.md) | Easy |
 | 09 | [Gradebook Aggregation](problems/round-1/09-gradebook-aggregation.md) | Medium |
 | 10 | [CSV Import Parser](problems/round-1/10-csv-import-parser.md) | Medium |
 | 11 | [URL Query Parameter Parser](problems/round-1/11-url-query-parameter-parser.md) | Easy |
-| 12 | [Seat Allocation](problems/round-1/12-seat-allocation.md) | Hard |
+| 12 | [Seat Reservation Conflict](problems/round-1/12-seat-allocation.md) | Easy |
 | 13 | [LRU Cache](problems/round-1/13-lru-cache.md) | Medium |
 | 14 | [Request Rate Limiter](problems/round-1/14-request-rate-limiter.md) | Hard |
 | 15 | [Balance Transfer](problems/round-1/15-balance-transfer.md) | Medium |

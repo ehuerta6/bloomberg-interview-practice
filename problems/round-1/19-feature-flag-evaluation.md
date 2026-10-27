@@ -2,13 +2,22 @@
 
 **Difficulty:** Medium
 
+## Practice Metadata
+
+- **Interview format:** PR review / focused debugging.
+- **Primary skills:** stable rollout cohorts, percentage boundaries, regression testing.
+- **Expected duration:** 45–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.
+- **Interviewer evaluation:** Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## PR title
 
 Evaluate feature rollouts consistently
 
 ## Summary
 
-A rollout service releases a feature to selected users before enabling it for everyone. A feature flag is the policy describing that release: a global switch, explicit exceptions, and an optional percentage of users. You are reviewing evaluation so a user receives the same decision on repeated calls and explicit exclusions keep their priority.
+A checkout team is expanding a new payment flow to a percentage of customers. The rollout service hashes each stable user ID into a bucket so the same customer keeps the same decision across requests. A support report says one customer at the configured rollout boundary received the feature even though the rollout percentage was meant to include only lower-numbered buckets. You are reviewing the flag evaluator.
 
 ## Input and output
 
@@ -38,7 +47,7 @@ A percentage rollout assigns each identified user a repeatable bucket, numbered 
 
 ## Review task
 
-Compare the evaluator and its assertions with global disable, direct exclusions, direct inclusion, and rollout decisions. Correct discrepancies and add tests for the exact bucket boundary, repeated calls for one user, missing IDs, and invalid percentages. Explain which assertions establish precedence and which establish repeatability.
+Reproduce the reported customer decision from the bucket rule. Correct the boundary behavior and add a regression assertion that checks both the exact boundary and repeatability for the same user. Explain the limits of a deterministic local test for a production rollout.
 
 ## Starter Code
 

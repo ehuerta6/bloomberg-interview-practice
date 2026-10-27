@@ -2,6 +2,15 @@
 
 **Difficulty:** Easy
 
+## Practice Metadata
+
+- **Interview format:** Programming fundamentals / PR review.
+- **Primary skills:** file metadata validation, safe paths, negative testing.
+- **Expected duration:** 30–45 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Check a small proposed change against its contract and show how a focused test demonstrates the required behavior.
+- **Interviewer evaluation:** Code comprehension, input and output contracts, basic test design, and concise explanation. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 **PR title:** Validate document upload metadata
 
 ## Summary

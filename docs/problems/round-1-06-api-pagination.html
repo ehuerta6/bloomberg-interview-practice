@@ -21,13 +21,15 @@
     <div class="page-layout content-layout">
       <aside class="problem-sidebar" aria-label="Problem navigation and resources">
         <p class="eyebrow">Round 1 · Code Review · Problem 06</p>
-        <p><span class="tag difficulty-hard">Hard</span></p>
+        <p><span class="tag difficulty-medium">Medium</span></p>
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
+          <li class="toc-h2"><a href="#heading-input-and-output">Input and output</a></li>
           <li class="toc-h2"><a href="#heading-expected-behavior">Expected behavior</a></li>
-          <li class="toc-h2"><a href="#heading-contract-example">Contract example</a></li>
+          <li class="toc-h2"><a href="#heading-reproduction">Reproduction</a></li>
           <li class="toc-h2"><a href="#heading-review-task">Review task</a></li>
           <li class="toc-h2"><a href="#heading-starter-code">Starter Code</a></li>
           <li class="toc-h2"><a href="#heading-reference-solution">Reference Solution</a></li>
@@ -41,30 +43,32 @@
       </aside>
       <article class="prose" data-problem-id="round-1-06">
 <h1 id="heading-pr-06--api-pagination">PR #06 — API Pagination</h1>
-<p><strong>Difficulty:</strong> Hard</p>
-<p><strong>PR title:</strong> Add stable keyset pagination to the records endpoint</p>
+<p><strong>Difficulty:</strong> Medium</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> PR review / focused debugging.</li>
+<li><strong>Primary skills:</strong> cursor invariants, stable ordering, regression testing.</li>
+<li><strong>Expected duration:</strong> 45–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Compare the proposed change and its tests with the observable contract, then make a targeted correction and regression test.</li>
+<li><strong>Interviewer evaluation:</strong> Clarifying questions, code investigation, root-cause reasoning, maintainable changes, testing, and communication. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
+<p><strong>PR title:</strong> Continue record feeds without repeating or skipping rows</p>
 <h2 id="heading-summary">Summary</h2>
-<p>A records endpoint must let a client continue browsing as records change between requests. Each record has a unique string <code>id</code>, integer <code>created_at</code>, and optional integer <code>version</code>. Results from separate data partitions can overlap, so the same ID may occur more than once. You are reviewing the pagination PR, including the rule for continuing after a record has been deleted. A cursor is a position in the ordered results, represented by <code>(created_at, id)</code>.</p>
+<p>A client reads a records feed in pages while new records may be written between requests. The endpoint orders records by creation time, but several records can share the same timestamp. You are reviewing a keyset-pagination change after clients reported repeated rows at a page boundary.</p>
+<h2 id="heading-input-and-output">Input and output</h2>
+<p><code>paginate(records, cursor=None, limit=2)</code> returns <code>(page, next_cursor)</code>. Each record has a unique string <code>id</code> and integer <code>created_at</code>. Results are ordered by <code>(created_at, id)</code>, and the cursor is the same pair. <code>limit</code> must be a positive integer and cannot be a boolean.</p>
 <h2 id="heading-expected-behavior">Expected behavior</h2>
 <ul>
-<li><code>paginate(records, cursor=None, limit=2)</code> returns <code>(page, next_cursor)</code>. The limit is a positive integer, not a boolean.</li>
-<li>Rows missing a nonblank string ID or integer timestamp are skipped. For duplicate IDs, retain the row with the greatest version; equal versions retain the first row.</li>
-<li>Sort by <code>(created_at, id)</code>. A cursor is that same tuple, and the next page contains only rows with a strictly greater key.</li>
-<li>The next cursor is the final row's key only when additional rows remain. An empty or final page returns <code>None</code>.</li>
-<li>A cursor remains useful even if its original record is no longer present.</li>
+<li>The first page is the first <code>limit</code> records in compound-key order.</li>
+<li>A later page contains only records whose compound key is strictly greater than the supplied cursor. The cursor's record may have been deleted.</li>
+<li>Return the last page record's compound key only when additional records remain; otherwise return <code>None</code>.</li>
+<li>Do not repeat or skip a record solely because timestamps are equal.</li>
 </ul>
-<h2 id="heading-contract-example">Contract example</h2>
-<p>The input records are:</p>
-<pre tabindex="0" role="group" aria-label="Code sample"><code class="language-python">[
-    {&quot;id&quot;: &quot;b&quot;, &quot;created_at&quot;: 10, &quot;version&quot;: 1},
-    {&quot;id&quot;: &quot;a&quot;, &quot;created_at&quot;: 10, &quot;version&quot;: 1},
-    {&quot;id&quot;: &quot;c&quot;, &quot;created_at&quot;: 20, &quot;version&quot;: 1},
-]
-</code></pre>
-<p>With <code>limit=2</code>, the first call returns records <code>a</code>, <code>b</code> in that order and cursor <code>(10, &quot;b&quot;)</code>. A call with that cursor returns only <code>c</code> and cursor <code>None</code>. If record <code>b</code> has been removed before the second call, the expected second page is still only <code>c</code>.</p>
-<p>If an additional row for <code>a</code> has <code>created_at=5</code> and <code>version=2</code>, a full page contains <code>a</code> version 2, <code>b</code> version 1, then <code>c</code> version 1.</p>
+<h2 id="heading-reproduction">Reproduction</h2>
+<p>For records <code>b@10</code>, <code>a@10</code>, and <code>c@20</code>, a page of two returns <code>a</code>, <code>b</code> and cursor <code>(10, &quot;b&quot;)</code>. Continuing with that cursor returns only <code>c</code>. If <code>b</code> was deleted between requests, continuation still returns <code>c</code>.</p>
 <h2 id="heading-review-task">Review task</h2>
-<p>Review the implementation and assertions against the page contents, ordering, and continuation contract. Add regression coverage for equal timestamps, duplicate versions, a deleted boundary record, invalid limits, and the final page. Explain why the results demonstrate that records are neither repeated nor skipped at a page boundary.</p>
+<p>Trace how sorting and cursor comparison interact. Add or refine tests for equal timestamps, the next page, and continuation after deletion. Explain what the compound key guarantees and what can still change when records are inserted during pagination.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-1/06-api-pagination" target="_blank" rel="noopener noreferrer">View starter code</a></p>
 <details class="solution-reveal">

@@ -25,6 +25,7 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-summary">Summary</a></li>
           <li class="toc-h2"><a href="#heading-expected-behavior">Expected behavior</a></li>
           <li class="toc-h2"><a href="#heading-contract-examples">Contract examples</a></li>
@@ -42,6 +43,15 @@
       <article class="prose" data-problem-id="round-1-08">
 <h1 id="heading-pr-08--file-upload-validation">PR #08 — File Upload Validation</h1>
 <p><strong>Difficulty:</strong> Easy</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Programming fundamentals / PR review.</li>
+<li><strong>Primary skills:</strong> file metadata validation, safe paths, negative testing.</li>
+<li><strong>Expected duration:</strong> 30–45 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Check a small proposed change against its contract and show how a focused test demonstrates the required behavior.</li>
+<li><strong>Interviewer evaluation:</strong> Code comprehension, input and output contracts, basic test design, and concise explanation. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <p><strong>PR title:</strong> Validate document upload metadata</p>
 <h2 id="heading-summary">Summary</h2>
 <p>A profile service accepts PDF documents and PNG images. Before metadata reaches storage, it needs a filename, declared media type, and byte count that agree with the upload policy. You are reviewing <code>validate_upload(filename, content_type, size_bytes)</code>; this task validates metadata, not the contents of the uploaded file.</p>
