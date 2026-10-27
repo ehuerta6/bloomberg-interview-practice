@@ -11,7 +11,6 @@ import sys
 import tempfile
 from urllib.parse import unquote, urlsplit
 
-
 ROOT = Path(__file__).resolve().parents[3]
 REPOSITORY = "https://github.com/ehuerta6/bloomberg-interview-practice"
 COUNTS = {"round-1": 25, "round-2": 25, "system-design": 15}
@@ -51,14 +50,25 @@ def confined(path, boundary):
 def check_reference(reference, source, site, root, pages):
     parts = urlsplit(reference)
     if reference.startswith(REPOSITORY + "/"):
-        match = re.fullmatch(r"/ehuerta6/bloomberg-interview-practice/(blob|tree|raw)/main/(.+)", parts.path)
-        if not match:
-            raise ValueError(f"unsupported repository reference: {reference}")
-        target = confined(root / unquote(match[2]), root)
-        exists = target.is_dir() if match[1] == "tree" else target.is_file()
-        if not exists:
-            raise ValueError(f"missing repository target: {reference}")
-        return
+        prefix = "/ehuerta6/bloomberg-interview-practice/"
+        main_match = re.fullmatch(r"(blob|tree|raw)/main/(.+)", parts.path.removeprefix(prefix))
+        if main_match:
+            target = confined(root / unquote(main_match[2]), root)
+            exists = target.is_dir() if main_match[1] == "tree" else target.is_file()
+            if not exists:
+                raise ValueError(f"missing repository target: {reference}")
+            return
+        pinned = re.fullmatch(r"(blob|tree)/(night-\d{2}-v1|challenge/\d{2})(?:/(.*))?", parts.path.removeprefix(prefix))
+        if pinned:
+            if pinned[3]:
+                target = confined(root / unquote(pinned[3]), root)
+                exists = target.is_dir() if pinned[1] == "tree" else target.is_file()
+                if not exists:
+                    raise ValueError(f"missing challenge snapshot path: {reference}")
+            return
+        if re.fullmatch(r"/ehuerta6/bloomberg-interview-practice/(commit/[0-9a-f]{40}|pull/\d+/files)", parts.path):
+            return
+        raise ValueError(f"unsupported repository reference: {reference}")
     if parts.scheme in ("https", "http", "mailto"):
         return  # External availability is independent of this offline build gate.
     if parts.scheme or parts.netloc or "\\" in unquote(parts.path):
@@ -84,6 +94,9 @@ def validate_site(root):
     expected = {site / "problems" / f"{problem['slug']}.html" for problem in problems}
     if len(expected) != 65 or set((site / "problems").glob("*.html")) != expected:
         raise ValueError("generated problem pages must exactly match all 65 manifest entries")
+    nightmare_expected = {site / "nightmares" / f"{number:02d}.html" for number in range(1, 11)}
+    if set((site / "nightmares").glob("*.html")) != nightmare_expected:
+        raise ValueError("generated Nightmare pages must exactly match challenges 01 through 10")
     pages = {path: Page(path.read_text(encoding="utf-8")) for path in site.rglob("*.html")}
     catalog = pages[site / "index.html"]
     if '<link rel="icon" type="image/png" href="assets/cic-logo.png">' not in (site / "index.html").read_text(encoding="utf-8"):
@@ -91,6 +104,9 @@ def validate_site(root):
     catalog_links = [link for link in catalog.references if link.startswith("problems/")]
     if Counter(catalog_links) != Counter(f"problems/{problem['slug']}.html" for problem in problems):
         raise ValueError("catalog must link to each of the 65 problem pages exactly once")
+    nightmare_links = [link for link in catalog.references if link.startswith("nightmares/")]
+    if Counter(nightmare_links) != Counter(f"nightmares/{number:02d}.html" for number in range(1, 11)):
+        raise ValueError("catalog must link to each of the 10 Nightmare pages exactly once")
     for problem in problems:
         path = site / "problems" / f"{problem['slug']}.html"
         page = pages[path]
@@ -117,13 +133,22 @@ def validate_site(root):
         for href, attrs in page.links:
             if urlsplit(href).scheme.lower() in ("http", "https") and (attrs.get("target") != "_blank" or attrs.get("rel") != "noopener noreferrer"):
                 raise ValueError(f"{path.name}: external link must open safely in a new tab: {href}")
+    for challenge_id in (f"{number:02d}" for number in range(1, 11)):
+        path = site / "nightmares" / f"{challenge_id}.html"
+        page = pages[path]
+        if page.problems != [f"nightmare-{challenge_id}"]:
+            raise ValueError(f"{path.name}: wrong Nightmare identity")
+        if REPOSITORY + f"/blob/main/nightmares/{challenge_id}.md" not in page.references:
+            raise ValueError(f"{path.name}: missing Markdown source link")
+        if "../assets/site.css" not in page.references or "../assets/cic-logo.png" not in page.references:
+            raise ValueError(f"{path.name}: missing shared styles or logo")
     for css in site.rglob("*.css"):
         for match in re.finditer(r"url\(\s*(['\"]?)(.*?)\1\s*\)", css.read_text(encoding="utf-8")):
             check_reference(match[2], css, site, root, pages)
     for asset in (site / "assets/site.css", site / "assets/cic-logo.png"):
         if not asset.is_file() or not asset.stat().st_size:
             raise ValueError(f"missing or empty shared asset: {asset}")
-    print(f"PASS links: catalog, 65 problem pages, fragments, assets, and manifest resource paths ({len(pages)} HTML files)")
+    print(f"PASS links: catalog, 65 problem pages, 10 Nightmare pages, fragments, and assets ({len(pages)} HTML files)")
 
 
 def generated_snapshot(output):

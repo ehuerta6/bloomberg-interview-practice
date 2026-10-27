@@ -16,12 +16,12 @@ ${mermaid_script}</head>
   </header>
   <main class="container problem-page" id="main-content" tabindex="-1">
     <nav class="breadcrumbs" aria-label="Breadcrumb">
-      <ol><li><a href="../index.html">All problems</a></li><li><a href="../index.html#$category_id">$category</a></li><li aria-current="page">Problem $number</li></ol>
+      <ol><li><a href="../index.html">All problems</a></li><li><a href="../index.html#$category_id">$category</a></li><li aria-current="page">$page_kind $number</li></ol>
     </nav>
     <div class="page-layout content-layout">
       <aside class="problem-sidebar" aria-label="Problem navigation and resources">
-        <p class="eyebrow">$category · Problem $number</p>
-        <p><span class="tag difficulty-$difficulty_class">$difficulty</span></p>
+        <p class="eyebrow">$sidebar_label</p>
+        <p><span class="tag $badge_class">$badge_label</span></p>
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
 $toc

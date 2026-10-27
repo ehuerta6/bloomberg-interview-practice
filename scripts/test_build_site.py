@@ -147,7 +147,7 @@ class BuildTests(unittest.TestCase):
     def snapshot(self, directory):
         return {path.relative_to(directory).as_posix(): path.read_bytes() for path in directory.rglob("*") if path.is_file()}
 
-    def test_65_pages_and_module_build_identically_in_clean_directories(self):
+    def test_all_problem_and_nightmare_pages_build_identically(self):
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
             first, second = Path(first), Path(second)
             build.build_site(ROOT, first)
@@ -155,13 +155,30 @@ class BuildTests(unittest.TestCase):
             before = self.snapshot(first)
             self.assertEqual(before, self.snapshot(second))
             self.assertEqual(len(list((first / "problems").glob("*.html"))), 65)
+            self.assertEqual(len(list((first / "nightmares").glob("*.html"))), 10)
             for page in (first / "problems").glob("*.html"):
                 self.assertEqual(HTML(page.read_text()).attributes("script", "src"), [])
             for prefix, count in (("round-1", 25), ("round-2", 25), ("system-design", 15)):
                 self.assertEqual(len(list((first / "problems").glob(prefix + "-*.html"))), count)
+            for number in range(1, 11):
+                page = first / "nightmares" / f"{number:02d}.html"
+                self.assertTrue(page.is_file())
+                self.assertIn(f'data-problem-id="nightmare-{number:02d}"', page.read_text())
             build.build_site(ROOT, first, check=True)
             build.build_site(ROOT, first)
             self.assertEqual(before, self.snapshot(first))
+
+    def test_nightmare_pages_use_shared_layout_and_resolve_resources(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            build.build_site(ROOT, output)
+            page = HTML((output / "nightmares/05.html").read_text())
+            self.assertIn("Nightmare Mode", (output / "nightmares/05.html").read_text())
+            links = page.attributes("a", "href")
+            self.assertIn("../index.html#nightmares", links)
+            self.assertIn(REPOSITORY_URL + "/tree/night-05-v1", links)
+            self.assertIn(REPOSITORY_URL + "/tree/challenge/05", links)
+            self.assertIn(REPOSITORY_URL + "/blob/main/marketplace/README.md", links)
 
     def test_check_detects_missing_and_stale_output_without_writing(self):
         with tempfile.TemporaryDirectory() as directory:

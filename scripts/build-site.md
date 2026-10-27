@@ -25,20 +25,21 @@ to the current working directory. Invocation works from any working directory.
 writing. Generation uses no timestamps, absolute output paths, or build-time
 network requests. Identical sources and pinned dependencies produce identical
 output bytes. Old pages bearing the generator marker are removed; unexpected
-unowned HTML files in `docs/problems/` cause an error.
+unowned HTML files in `docs/problems/` or `docs/nightmares/` cause an error.
 
 ## Output contract
 
 - `docs/problems/<manifest slug>.html`: 25 Round 1, 25 Round 2, 15 System Design.
-- `docs/index.html`: the three-category catalog, generated from the same manifest
-  with `scripts/site/index.html` and `scripts/site_catalog.py`.
+- `docs/nightmares/01.html` through `docs/nightmares/10.html`: the ten Nightmare assignments.
+- `docs/index.html`: the catalog, generated from the manifest and Nightmare
+  assignment list with `scripts/site/index.html` and `scripts/site_catalog.py`.
 - `docs/renderer/mermaid.mjs`: generated copy of `scripts/site/mermaid.mjs`.
 - Shared CSS and logo: `../assets/site.css`, `../assets/cic-logo.png` from each
   problem page. Shared assets are maintained separately and never overwritten.
 - Catalog navigation: `../index.html` from problem pages; category anchors on the
   homepage work without JavaScript and wrap on small screens.
 
-The generator owns the catalog, problem pages, and the Mermaid module. It
+The generator owns the catalog, problem pages, Nightmare pages, and the Mermaid module. It
 preserves export and shared asset files. `scripts/site/page.html` is the common
 problem template; `scripts/site_renderer.py` renders Markdown. The manifest and all
 assignment, starter, and reference solution files remain untouched.

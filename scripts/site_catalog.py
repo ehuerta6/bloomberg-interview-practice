@@ -16,13 +16,13 @@ NIGHTMARE_ASSIGNMENTS = (
     ("01", "Duplicate Checkout", "nightmares/01.md"),
     ("02", "Inventory Validation", "nightmares/02.md"),
     ("03", "Double Cancellation", "nightmares/03.md"),
-    ("04", "Cart Ownership Leak", "nightmares/04.md"),
+    ("04", "Cart Retrieval", "nightmares/04.md"),
     ("05", "Checkout Price Mismatch", "nightmares/05.md"),
     ("06", "Payment Error Handling", "nightmares/06.md"),
     ("07", "Partial Checkout Failure", "nightmares/07.md"),
-    ("08", "Admin Authorization Regression", "nightmares/08.md"),
+    ("08", "Admin Order Access", "nightmares/08.md"),
     ("09", "Cart Update Race", "nightmares/09.md"),
-    ("10", "Misleading Regression Tests", "nightmares/10.md"),
+    ("10", "Checkout Total Calculation", "nightmares/10.md"),
 )
 
 
@@ -53,13 +53,9 @@ def render_catalog(manifest):
         )
     nightmare_cards = []
     for challenge_id, title, assignment_path in NIGHTMARE_ASSIGNMENTS:
-        assignment_url = (
-            "https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/"
-            + assignment_path
-        )
         nightmare_cards.append(
             '        <li>\n'
-            f'          <a class="problem-card" href="{escape(assignment_url, quote=True)}" target="_blank" rel="noopener noreferrer">\n'
+            f'          <a class="problem-card" href="nightmares/{escape(challenge_id)}.html">\n'
             f'            <span class="problem-number">{escape(challenge_id)}</span>\n'
             f'            <span class="problem-title">{escape(title)}</span>\n'
             '            <span class="tag tag-nightmare">Nightmare</span>\n'
@@ -69,7 +65,7 @@ def render_catalog(manifest):
     nightmares = (
         '    <section aria-labelledby="nightmares">\n'
         '      <h2 id="nightmares" tabindex="-1">Nightmare Mode</h2>\n'
-        '      <p>Ten original CIC exercises for practicing AI-assisted engineering: five Engineering Tickets and five PR Reviews. These are not official Bloomberg interview questions.</p>\n'
+        '      <p>Ten AI-assisted engineering exercises: five Engineering Tickets and five PR Reviews.</p>\n'
         '      <ul class="problem-grid">\n' + "\n".join(nightmare_cards) + '\n      </ul>\n'
         '      <p class="meta"><a href="#main-content">Back to top</a></p>\n'
         '    </section>'
