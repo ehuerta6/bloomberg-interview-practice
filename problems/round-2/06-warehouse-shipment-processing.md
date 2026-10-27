@@ -2,6 +2,15 @@
 
 **Difficulty:** Hard
 
+## Practice Metadata
+
+- **Interview format:** Engineering ticket / existing-code debugging.
+- **Primary skills:** stock rollback, reservation invariants, stateful regression testing.
+- **Expected duration:** 50–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Reproduce a later-line stock shortage and prove that a rejected all-or-nothing shipment leaves every reservation and quantity unchanged.
+- **Interviewer evaluation:** Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## Context
 
 You maintain a warehouse's shipment service. A **SKU** is an identifier for one
@@ -28,11 +37,9 @@ Start with no reservations and stock `sku-a=4`, `sku-b=2`. Call
 | Expected after the failed attempt | 4 on hand; 0 reserved | 2 on hand; 0 reserved |
 
 The unsuccessful order must not leave those 3 `sku-a` units unavailable to the
-next order. On a fresh copy of the same stock, allowing partial fulfillment
-instead should ship 3 `sku-a` and 2 `sku-b`, leave on-hand quantities 1 and 0,
-and record a backorder of 1 `sku-b`.
+next order.
 
-## Acceptance Criteria
+## Core acceptance criteria
 
 - An all-or-nothing order ships every line or leaves on-hand quantities and
   reservations as they were before the attempt. Its backorder covers the
@@ -40,13 +47,11 @@ and record a backorder of 1 `sku-b`.
 - Existing reservations reduce availability and must survive another order's
   failed attempt. Reserved stock never exceeds on-hand stock.
 - A failed attempt leaves no reservation created by that attempt behind.
-- With partial fulfillment enabled, ship only available units and record each
-  unshipped remainder. Shipped plus backordered units equal requested units.
-- Retrying a shipped or partially shipped order returns `already_shipped`
-  without deducting stock again.
-- Reject empty requests and invalid quantities before stock changes. Quantities
-  must satisfy the existing positive-integer contract; zero, negative, and
-  non-integer quantities are rejected.
+
+
+## Optional follow-ups
+
+If the core rollback regression is complete, discuss partial fulfillment or an order retry. With partial fulfillment enabled on a fresh copy of the sample stock, the expected result is to ship 3 `sku-a` and 2 `sku-b`, leave on-hand quantities 1 and 0, and record a backorder of 1 `sku-b`. State the additional invariant each follow-up requires; neither is needed to finish the core interview task.
 
 ## Out of Scope
 

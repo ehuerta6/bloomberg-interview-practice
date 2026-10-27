@@ -25,9 +25,11 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-context">Context</a></li>
           <li class="toc-h2"><a href="#heading-practice-report">Practice report</a></li>
-          <li class="toc-h2"><a href="#heading-acceptance-criteria">Acceptance Criteria</a></li>
+          <li class="toc-h2"><a href="#heading-core-acceptance-criteria">Core acceptance criteria</a></li>
+          <li class="toc-h2"><a href="#heading-optional-follow-ups">Optional follow-ups</a></li>
           <li class="toc-h2"><a href="#heading-out-of-scope">Out of Scope</a></li>
           <li class="toc-h2"><a href="#heading-investigation">Investigation</a></li>
           <li class="toc-h2"><a href="#heading-starter-code">Starter Code</a></li>
@@ -43,6 +45,15 @@
       <article class="prose" data-problem-id="round-2-18">
 <h1 id="heading-ticket-18--support-ticket-assignment">Ticket #18 — Support Ticket Assignment</h1>
 <p><strong>Difficulty:</strong> Easy</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Engineering ticket / existing-code debugging.</li>
+<li><strong>Primary skills:</strong> priority ordering, FIFO behavior, load-aware dispatch.</li>
+<li><strong>Expected duration:</strong> 50–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Trace why an older lower-priority ticket is selected and correct the dispatch order while preserving the assignment-load invariant.</li>
+<li><strong>Interviewer evaluation:</strong> Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <h2 id="heading-context">Context</h2>
 <p>You maintain dispatch for a support desk with billing and technical teams.
 Tickets have integer priorities from 1 (least urgent) to 5 (most urgent).
@@ -73,28 +84,26 @@ that order. With all agent loads initially zero, call <code>assign_next(&quot;te
 </tbody>
 </table></div>
 <p>The next selection should be <code>mid</code>, assigned to the less-loaded eligible agent.</p>
-<h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
+<h2 id="heading-core-acceptance-criteria">Core acceptance criteria</h2>
 <ul>
-<li>Reject malformed/duplicate ticket submissions without changing saved tickets
-or loads. Priority is an integer from 1 through 5; booleans are invalid.</li>
 <li>Select the highest-priority open ticket in the requested category. Equal
-priorities preserve submission order, and an assigned ticket is not dispatched again.</li>
-<li>Assign to an eligible agent with the lowest current load. Keep the supplied
-agent-list order for equal loads. An empty category queue returns no ticket.</li>
-<li>Each assigned ticket has exactly one eligible assignee. After assignment or
-reassignment, every agent's load equals their assigned-ticket count.</li>
-<li>Reassignment moves one unit of load from the old assignee to the new one.
-Unknown/unassigned tickets and agents outside that ticket's category are rejected
-without state changes.</li>
+priorities preserve submission order, and an assigned ticket is not dispatched
+again.</li>
+<li>Assign the selected ticket to an eligible agent with the lowest current load.
+An empty category queue returns no ticket.</li>
+<li>After assignment, the selected ticket has one assignee and that agent's load
+increases by one.</li>
 </ul>
+<h2 id="heading-optional-follow-ups">Optional follow-ups</h2>
+<p>If time remains, inspect malformed submissions, reassignment, and tie behavior
+for equally loaded agents. Agree on any unspecified tie policy with the
+interviewer before implementing it.</p>
 <h2 id="heading-out-of-scope">Out of Scope</h2>
 <p>Keep the configured teams and route response shapes. Agent availability,
 automatic escalation, ticket resolution, and changing the tie-breaking policy
 are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Trace selection and assignment for the report, then test equal priorities,
-independent categories, and reassignment. Compare actual assigned tickets with
-load counters after each transition, including a rejected reassignment.</p>
+<p>Reproduce the priority report and verify the selected ticket and agent load. Add a focused test for equal-priority FIFO ordering. Discuss how you would clarify an equal-load tie before choosing a policy.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/18-support-ticket-assignment" target="_blank" rel="noopener noreferrer">View starter code</a></p>
 <details class="solution-reveal">

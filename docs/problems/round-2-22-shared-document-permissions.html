@@ -25,9 +25,11 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-context">Context</a></li>
           <li class="toc-h2"><a href="#heading-practice-report">Practice report</a></li>
-          <li class="toc-h2"><a href="#heading-acceptance-criteria">Acceptance Criteria</a></li>
+          <li class="toc-h2"><a href="#heading-core-acceptance-criteria">Core acceptance criteria</a></li>
+          <li class="toc-h2"><a href="#heading-optional-follow-ups">Optional follow-ups</a></li>
           <li class="toc-h2"><a href="#heading-out-of-scope">Out of Scope</a></li>
           <li class="toc-h2"><a href="#heading-investigation">Investigation</a></li>
           <li class="toc-h2"><a href="#heading-starter-code">Starter Code</a></li>
@@ -43,6 +45,15 @@
       <article class="prose" data-problem-id="round-2-22">
 <h1 id="heading-ticket-22--shared-document-permissions">Ticket #22 — Shared Document Permissions</h1>
 <p><strong>Difficulty:</strong> Hard</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Engineering ticket / existing-code debugging.</li>
+<li><strong>Primary skills:</strong> permission revocation, grant precedence, security regression testing.</li>
+<li><strong>Expected duration:</strong> 50–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Ensure a document revocation blocks existing grants and verify that explicit regrant restores only the affected user's access.</li>
+<li><strong>Interviewer evaluation:</strong> Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <h2 id="heading-context">Context</h2>
 <p>You maintain sharing for documents inside nested folders. A direct grant is on
 the document; an inherited grant comes from its folder or a parent folder.
@@ -74,30 +85,24 @@ Revoke <code>sam</code> on <code>d</code>, then ask for <code>role(&quot;d&quot;
 </tbody>
 </table></div>
 <p>The document revocation must hold despite the two existing grant sources.</p>
-<h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
+<h2 id="heading-core-acceptance-criteria">Core acceptance criteria</h2>
 <ul>
-<li>The immutable document owner always resolves as <code>owner</code> and cannot be revoked.
-Owner, editor, and viewer capabilities follow the read/edit/share levels above.</li>
-<li>A document revocation denies direct and inherited grants until an explicit
-document regrant clears it. Revocation must not change another user's access.</li>
-<li>Otherwise, a document grant wins over inherited grants. Without a document
-grant, use the nearest applicable folder grant while walking toward the root.</li>
-<li>A folder revocation blocks inherited access through that scope. A direct
-document grant can still provide access; it is distinct from inheritance.</li>
-<li>Resolve by scope, independently of grant insertion order. Folder traversal
-must terminate even if the supplied folder graph contains a cycle.</li>
-<li>Unknown documents and unsupported actions are denied. Invalid grants and
-attempts to revoke an owner do not change existing permissions.</li>
+<li>A document-level revocation denies that user's document access even when
+direct or inherited grants already exist.</li>
+<li>An explicit document regrant clears the revocation for that user and document.</li>
+<li>Revoking one user's access does not change another user's resolved role.</li>
+<li>The immutable document owner retains owner access.</li>
 </ul>
+<h2 id="heading-optional-follow-ups">Optional follow-ups</h2>
+<p>If the core regression is complete, discuss nearest-folder inheritance,
+folder-level revocation, grant ordering, or cyclic folder data. Clarify the
+intended precedence with the interviewer before implementing additional rules.</p>
 <h2 id="heading-out-of-scope">Out of Scope</h2>
 <p>Keep the existing grant/revoke APIs, role set, and folder graph. Login,
 organization-wide policies, new actions such as deletion, and redesigning folder
 storage are outside this ticket.</p>
 <h2 id="heading-investigation">Investigation</h2>
-<p>Reproduce the revocation report and compare direct, nearest-folder, and
-parent-folder grants. Add tests for document and folder revocation, explicit
-regrant, owner protection, and unsupported actions. Assert both the resolved role and
-route result after each permission change.</p>
+<p>Reproduce the document revocation report and trace the resolved role to the route response. Add a regression test for a denied user with existing grants, plus a focused check that explicit regrant restores only that user's access. Explain which other user's state remains unchanged.</p>
 <h2 id="heading-starter-code">Starter Code</h2>
 <p><a href="https://github.com/ehuerta6/bloomberg-interview-practice/tree/main/round-2/22-shared-document-permissions" target="_blank" rel="noopener noreferrer">View starter code</a></p>
 <details class="solution-reveal">

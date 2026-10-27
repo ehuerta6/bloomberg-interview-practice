@@ -2,6 +2,15 @@
 
 **Difficulty:** Hard
 
+## Practice Metadata
+
+- **Interview format:** Engineering ticket / existing-code debugging.
+- **Primary skills:** state transitions, consistency, retries, regression testing.
+- **Expected duration:** 50–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Trace the reported behavior through the supplied code, state an invariant, make a focused change, and prove it with a regression test.
+- **Interviewer evaluation:** Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## Context
 
 You maintain stock transfers between shop locations. **On-hand** stock can be

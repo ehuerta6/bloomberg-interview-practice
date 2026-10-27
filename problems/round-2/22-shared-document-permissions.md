@@ -2,6 +2,15 @@
 
 **Difficulty:** Hard
 
+## Practice Metadata
+
+- **Interview format:** Engineering ticket / existing-code debugging.
+- **Primary skills:** permission revocation, grant precedence, security regression testing.
+- **Expected duration:** 50–60 minutes.
+- **AI assistance:** Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.
+- **Candidate objective:** Ensure a document revocation blocks existing grants and verify that explicit regrant restores only the affected user's access.
+- **Interviewer evaluation:** Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the [shared interviewer rubric](../../docs/editorial/interviewer-rubric.md).
+
 ## Context
 
 You maintain sharing for documents inside nested folders. A direct grant is on
@@ -22,20 +31,19 @@ Revoke `sam` on `d`, then ask for `role("d", "sam")` and read access.
 
 The document revocation must hold despite the two existing grant sources.
 
-## Acceptance Criteria
+## Core acceptance criteria
 
-- The immutable document owner always resolves as `owner` and cannot be revoked.
-  Owner, editor, and viewer capabilities follow the read/edit/share levels above.
-- A document revocation denies direct and inherited grants until an explicit
-  document regrant clears it. Revocation must not change another user's access.
-- Otherwise, a document grant wins over inherited grants. Without a document
-  grant, use the nearest applicable folder grant while walking toward the root.
-- A folder revocation blocks inherited access through that scope. A direct
-  document grant can still provide access; it is distinct from inheritance.
-- Resolve by scope, independently of grant insertion order. Folder traversal
-  must terminate even if the supplied folder graph contains a cycle.
-- Unknown documents and unsupported actions are denied. Invalid grants and
-  attempts to revoke an owner do not change existing permissions.
+- A document-level revocation denies that user's document access even when
+  direct or inherited grants already exist.
+- An explicit document regrant clears the revocation for that user and document.
+- Revoking one user's access does not change another user's resolved role.
+- The immutable document owner retains owner access.
+
+## Optional follow-ups
+
+If the core regression is complete, discuss nearest-folder inheritance,
+folder-level revocation, grant ordering, or cyclic folder data. Clarify the
+intended precedence with the interviewer before implementing additional rules.
 
 ## Out of Scope
 
@@ -45,10 +53,7 @@ storage are outside this ticket.
 
 ## Investigation
 
-Reproduce the revocation report and compare direct, nearest-folder, and
-parent-folder grants. Add tests for document and folder revocation, explicit
-regrant, owner protection, and unsupported actions. Assert both the resolved role and
-route result after each permission change.
+Reproduce the document revocation report and trace the resolved role to the route response. Add a regression test for a denied user with existing grants, plus a focused check that explicit regrant restores only that user's access. Explain which other user's state remains unchanged.
 
 ## Starter Code
 

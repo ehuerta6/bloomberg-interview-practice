@@ -25,9 +25,11 @@
         <nav class="table-of-contents" aria-label="On this page">
           <h2>On this page</h2>
           <ul>
+          <li class="toc-h2"><a href="#heading-practice-metadata">Practice Metadata</a></li>
           <li class="toc-h2"><a href="#heading-context">Context</a></li>
           <li class="toc-h2"><a href="#heading-practice-report">Practice report</a></li>
-          <li class="toc-h2"><a href="#heading-acceptance-criteria">Acceptance Criteria</a></li>
+          <li class="toc-h2"><a href="#heading-core-acceptance-criteria">Core acceptance criteria</a></li>
+          <li class="toc-h2"><a href="#heading-optional-follow-ups">Optional follow-ups</a></li>
           <li class="toc-h2"><a href="#heading-out-of-scope">Out of Scope</a></li>
           <li class="toc-h2"><a href="#heading-investigation">Investigation</a></li>
           <li class="toc-h2"><a href="#heading-starter-code">Starter Code</a></li>
@@ -43,6 +45,15 @@
       <article class="prose" data-problem-id="round-2-06">
 <h1 id="heading-ticket-06--warehouse-shipment-processing">Ticket #06 — Warehouse Shipment Processing</h1>
 <p><strong>Difficulty:</strong> Hard</p>
+<h2 id="heading-practice-metadata">Practice Metadata</h2>
+<ul>
+<li><strong>Interview format:</strong> Engineering ticket / existing-code debugging.</li>
+<li><strong>Primary skills:</strong> stock rollback, reservation invariants, stateful regression testing.</li>
+<li><strong>Expected duration:</strong> 50–60 minutes.</li>
+<li><strong>AI assistance:</strong> Allowed in guided practice mode for explanations, hypotheses, test ideas, and focused hints; the candidate owns and explains every change.</li>
+<li><strong>Candidate objective:</strong> Reproduce a later-line stock shortage and prove that a rejected all-or-nothing shipment leaves every reservation and quantity unchanged.</li>
+<li><strong>Interviewer evaluation:</strong> Problem decomposition, code navigation, root-cause explanation, incremental implementation, and test evidence. See the <a href="https://github.com/ehuerta6/bloomberg-interview-practice/blob/main/docs/editorial/interviewer-rubric.md" target="_blank" rel="noopener noreferrer">shared interviewer rubric</a>.</li>
+</ul>
 <h2 id="heading-context">Context</h2>
 <p>You maintain a warehouse's shipment service. A <strong>SKU</strong> is an identifier for one
 stock item, such as <code>sku-a</code>. <strong>Stock on hand</strong> is the quantity physically in the
@@ -92,10 +103,8 @@ requested units that could not ship.</p>
 </tbody>
 </table></div>
 <p>The unsuccessful order must not leave those 3 <code>sku-a</code> units unavailable to the
-next order. On a fresh copy of the same stock, allowing partial fulfillment
-instead should ship 3 <code>sku-a</code> and 2 <code>sku-b</code>, leave on-hand quantities 1 and 0,
-and record a backorder of 1 <code>sku-b</code>.</p>
-<h2 id="heading-acceptance-criteria">Acceptance Criteria</h2>
+next order.</p>
+<h2 id="heading-core-acceptance-criteria">Core acceptance criteria</h2>
 <ul>
 <li>An all-or-nothing order ships every line or leaves on-hand quantities and
 reservations as they were before the attempt. Its backorder covers the
@@ -103,14 +112,9 @@ unshipped request.</li>
 <li>Existing reservations reduce availability and must survive another order's
 failed attempt. Reserved stock never exceeds on-hand stock.</li>
 <li>A failed attempt leaves no reservation created by that attempt behind.</li>
-<li>With partial fulfillment enabled, ship only available units and record each
-unshipped remainder. Shipped plus backordered units equal requested units.</li>
-<li>Retrying a shipped or partially shipped order returns <code>already_shipped</code>
-without deducting stock again.</li>
-<li>Reject empty requests and invalid quantities before stock changes. Quantities
-must satisfy the existing positive-integer contract; zero, negative, and
-non-integer quantities are rejected.</li>
 </ul>
+<h2 id="heading-optional-follow-ups">Optional follow-ups</h2>
+<p>If the core rollback regression is complete, discuss partial fulfillment or an order retry. With partial fulfillment enabled on a fresh copy of the sample stock, the expected result is to ship 3 <code>sku-a</code> and 2 <code>sku-b</code>, leave on-hand quantities 1 and 0, and record a backorder of 1 <code>sku-b</code>. State the additional invariant each follow-up requires; neither is needed to finish the core interview task.</p>
 <h2 id="heading-out-of-scope">Out of Scope</h2>
 <p>Keep the supplied repository and recorded backorders. Purchasing replacement
 stock, automatically retrying backorders, shipping-carrier APIs, and database
