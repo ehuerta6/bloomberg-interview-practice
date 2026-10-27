@@ -143,12 +143,15 @@ def render_page(problem, root, pages):
     )
     values = {
         "title": problem["title"],
-        "category": CATEGORY_LABELS[problem["category"]],
+        "category": problem.get("category_label", CATEGORY_LABELS[problem["category"]]),
         "difficulty": problem["difficulty"],
-        "difficulty_class": problem["difficulty"].lower(),
         "problem_id": problem["id"],
-        "category_id": problem["category"],
+        "category_id": problem.get("category_id", problem["category"]),
         "number": f'{problem["number"]:02d}',
+        "page_kind": problem.get("page_kind", "Problem"),
+        "sidebar_label": problem.get("sidebar_label", f'{CATEGORY_LABELS[problem["category"]]} · Problem {problem["number"]:02d}'),
+        "badge_label": problem.get("badge_label", problem["difficulty"]),
+        "badge_class": problem.get("badge_class", "difficulty-" + problem["difficulty"].lower()),
         "source_url": repository_link(source.as_posix()),
         "toc": toc,
         "starter_link": starter_link,

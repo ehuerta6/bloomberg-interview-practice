@@ -45,6 +45,16 @@ class SiteValidationTests(unittest.TestCase):
                            '<link rel="icon" type="image/png" href="../assets/cic-logo.png"><link href="../assets/site.css"><img src="../assets/cic-logo.png">'
                            f'<a href="../index.html#catalog">Catalog</a><article data-problem-id="{problem["id"]}" id="assignment">{body}</article>')
                 links.append(f'<a href="problems/{slug}.html">Problem</a>')
+        for number in range(1, 11):
+            challenge_id = f"{number:02d}"
+            source = f"nightmares/{challenge_id}.md"
+            self.write(source, "# Synthetic Nightmare")
+            self.write(
+                f"docs/nightmares/{challenge_id}.html",
+                '<link rel="icon" type="image/png" href="../assets/cic-logo.png"><link href="../assets/site.css"><img src="../assets/cic-logo.png">'
+                f'<article data-problem-id="nightmare-{challenge_id}"><a href="{REPOSITORY}/blob/main/{source}" target="_blank" rel="noopener noreferrer">Source</a></article>',
+            )
+            links.append(f'<a href="nightmares/{challenge_id}.html">Nightmare</a>')
         self.write("scripts/problem-manifest.json", json.dumps({"problems": problems}))
         self.write("docs/index.html", '<link rel="icon" type="image/png" href="assets/cic-logo.png"><main id="catalog">' + "".join(links) + "</main>")
         self.page = self.site / "problems/round-1-01-fixture.html"
@@ -61,12 +71,17 @@ class SiteValidationTests(unittest.TestCase):
     def append(self, markup):
         self.page.write_text(self.page.read_text() + markup, encoding="utf-8")
 
-    def test_complete_65_page_fixture_passes(self):
+    def test_complete_problem_and_nightmare_site_fixture_passes(self):
         self.validate()
 
     def test_missing_problem_page_fails(self):
         self.page.unlink()
         with self.assertRaisesRegex(ValueError, "exactly match all 65"):
+            self.validate()
+
+    def test_missing_nightmare_page_fails(self):
+        (self.site / "nightmares/10.html").unlink()
+        with self.assertRaisesRegex(ValueError, "exactly match challenges 01 through 10"):
             self.validate()
 
     def test_catalog_omission_fails(self):
