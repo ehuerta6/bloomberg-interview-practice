@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.dependencies import get_connection, require_admin
 
-router = APIRouter(dependencies=[Depends(require_admin)])
+router = APIRouter()
 MAX_INTEGER = 2**63 - 1
 
 
@@ -26,6 +26,7 @@ class StockAdjustment(BaseModel):
 
 @router.get("/admin/orders")
 def list_orders(
+    _admin_user_id: str = Depends(require_admin),
     connection: sqlite3.Connection = Depends(get_connection),
 ) -> list[dict[str, object]]:
     orders = connection.execute(
@@ -63,10 +64,49 @@ def list_orders(
     return result
 
 
+@router.get("/admin/orders/{order_id}")
+def get_order(
+    order_id: int,
+    connection: sqlite3.Connection = Depends(get_connection),
+) -> dict[str, object]:
+    order = connection.execute(
+        """SELECT id, user_id, status, total_cents, created_at
+           FROM orders WHERE id = ?""",
+        (order_id,),
+    ).fetchone()
+    if order is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    items = connection.execute(
+        """SELECT product_id, product_name, category, price_cents,
+                  quantity, line_total_cents
+           FROM order_items WHERE order_id = ? ORDER BY product_id""",
+        (order_id,),
+    ).fetchall()
+    return {
+        "id": order["id"],
+        "user_id": order["user_id"],
+        "status": order["status"],
+        "total_cents": order["total_cents"],
+        "created_at": order["created_at"],
+        "items": [
+            {
+                "product_id": item["product_id"],
+                "name": item["product_name"],
+                "category": item["category"],
+                "price_cents": item["price_cents"],
+                "quantity": item["quantity"],
+                "line_total_cents": item["line_total_cents"],
+            }
+            for item in items
+        ],
+    }
+
+
 @router.post("/admin/products/{product_id}/stock-adjustments")
 def adjust_stock(
     product_id: str,
     adjustment: StockAdjustment,
+    _admin_user_id: str = Depends(require_admin),
     connection: sqlite3.Connection = Depends(get_connection),
 ) -> dict[str, int | str]:
     connection.execute("BEGIN IMMEDIATE")
